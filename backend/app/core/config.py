@@ -1,13 +1,15 @@
 from functools import lru_cache
 
-from pydantic import Field, SecretStr
+from cryptography.fernet import Fernet
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Runtime configuration, read from environment variables (and .env locally)."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # hide_input_in_errors: a bad secret must never be echoed in a startup traceback.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
     environment: str = "development"
     log_level: str = "INFO"
@@ -49,6 +51,77 @@ class Settings(BaseSettings):
     forwarded_for_hops: int = Field(default=0, ge=0, le=5)
     # Salt for hashing client IPs into quota keys. Change in production.
     client_key_salt: str = "dev-salt-change-me"
+
+    # --- Sign in with GitHub (GitHub App user authorization) ---
+    github_app_client_id: str | None = None
+    github_app_client_secret: SecretStr | None = None
+    github_oauth_base: str = "https://github.com"
+    # Public URL of the FRONTEND. The OAuth callback lives on it (it proxies /api to this API).
+    app_base_url: str = "http://localhost:3000"
+    # Signs and encrypts the short-lived login state cookie.
+    session_secret: SecretStr | None = None
+    # Encrypts GitHub tokens at rest: 32 random bytes, url-safe base64 (a Fernet key).
+    token_encryption_key: SecretStr | None = None
+    cookie_secure: bool = True  # false only for plain-http local development
+    session_absolute_days: int = 14
+    session_idle_hours: int = 24
+    login_state_ttl_seconds: int = 600
+    ip_rate_limit_per_minute: int = 600  # backstop per IP on all /api routes
+    auth_rate_limit_per_minute: int = 30  # per IP on the sign-in endpoints
+
+    @field_validator(
+        "github_token",
+        "github_app_client_id",
+        "github_app_client_secret",
+        "session_secret",
+        "token_encryption_key",
+        "alembic_database_url",
+        mode="before",
+    )
+    @classmethod
+    def _blank_to_none(cls, v: object) -> object:
+        # docker compose passes unset variables as empty strings.
+        return None if isinstance(v, str) and not v.strip() else v
+
+    @model_validator(mode="after")
+    def _validate_auth(self) -> "Settings":
+        if self.token_encryption_key is not None:
+            try:
+                Fernet(self.token_encryption_key.get_secret_value().encode())
+            except (ValueError, TypeError):
+                raise ValueError(
+                    "TOKEN_ENCRYPTION_KEY must be 32 random bytes, url-safe base64 encoded."
+                ) from None
+        if self.environment == "production":
+            problems = []
+            if not self.auth_configured:
+                problems.append("GitHub App credentials, SESSION_SECRET and TOKEN_ENCRYPTION_KEY")
+            if not self.cookie_secure:
+                problems.append("COOKIE_SECURE=true")
+            if not self.app_base_url.startswith("https://"):
+                problems.append("an https APP_BASE_URL")
+            if self.client_key_salt == "dev-salt-change-me":
+                problems.append("a non-default CLIENT_KEY_SALT")
+            if problems:
+                raise ValueError("Production requires " + ", ".join(problems) + ".")
+        return self
+
+    @property
+    def auth_configured(self) -> bool:
+        return bool(
+            self.github_app_client_id
+            and self.github_app_client_secret
+            and self.session_secret
+            and self.token_encryption_key
+        )
+
+    @property
+    def callback_url(self) -> str:
+        return self.app_base_url.rstrip("/") + "/api/auth/github/callback"
+
+    @property
+    def allowed_origins(self) -> set[str]:
+        return {o.rstrip("/") for o in [self.app_base_url, *self.cors_origin_list]}
 
     @property
     def cors_origin_list(self) -> list[str]:

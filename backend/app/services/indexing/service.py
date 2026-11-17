@@ -3,6 +3,7 @@
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -54,7 +55,7 @@ def start_indexing(
     db: Session,
     repo: Repository,
     ref: str | None,
-    client_key: str,
+    requested_by: UUID,
     gh: GitHubGateway,
     settings: Settings,
 ) -> tuple[Snapshot, IndexJob, bool]:
@@ -86,7 +87,7 @@ def start_indexing(
         select(func.count())
         .select_from(Snapshot)
         .where(
-            Snapshot.client_key == client_key,
+            Snapshot.requested_by == requested_by,
             Snapshot.created_at >= func.now() - timedelta(hours=24),
         )
     )
@@ -97,7 +98,7 @@ def start_indexing(
             details={"limit": settings.ingestions_per_client_per_day},
         )
 
-    snapshot = Snapshot(repository_id=repo.id, commit_sha=info.sha, client_key=client_key)
+    snapshot = Snapshot(repository_id=repo.id, commit_sha=info.sha, requested_by=requested_by)
     db.add(snapshot)
     try:
         db.flush()

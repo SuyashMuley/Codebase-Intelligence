@@ -6,6 +6,7 @@ Security notes:
 - Downloads are streamed and capped; nothing is written to disk and nothing is executed.
 """
 
+import copy
 import re
 import time
 from collections.abc import Iterator
@@ -19,6 +20,7 @@ import httpx
 from app.core.errors import (
     GithubRateLimited,
     GithubUnavailable,
+    ReauthRequired,
     RepoNotFound,
     RepoTooLarge,
 )
@@ -87,16 +89,17 @@ class GitHubClient:
         timeout: float = 15.0,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
-        headers = {
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": _USER_AGENT,
-        }
-        if token:
-            headers["Authorization"] = f"Bearer {token}"
+        # The token is added per request (see _auth_headers), so one shared client can serve
+        # many users, each with their own token.
+        self._token = token
+        self._token_is_user = False
         self._api = httpx.Client(
             base_url=api_base,
-            headers=headers,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": _USER_AGENT,
+            },
             timeout=timeout,
             transport=transport,
             follow_redirects=False,
@@ -109,17 +112,33 @@ class GitHubClient:
             follow_redirects=False,
         )
 
+    def bind(self, user_token: str) -> "GitHubClient":
+        """A view of this client that authenticates as one user. Shares the connection pool."""
+        bound = copy.copy(self)
+        bound._token = user_token
+        bound._token_is_user = True
+        return bound
+
+    def _auth_headers(self, extra: dict[str, str] | None = None) -> dict[str, str]:
+        headers = dict(extra or {})
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}"
+        return headers
+
     def close(self) -> None:
         self._api.close()
         self._download.close()
 
     # --- errors -------------------------------------------------------------------------
 
-    @staticmethod
-    def _raise_for_response(resp: httpx.Response) -> None:
+    def _raise_for_response(self, resp: httpx.Response) -> None:
         status = resp.status_code
         if status < 400:
             return
+        if status == 401:
+            if self._token_is_user:
+                raise ReauthRequired("GitHub rejected your authorization. Please sign in again.")
+            raise GithubUnavailable("GitHub rejected the server's access token.")
         remaining = resp.headers.get("x-ratelimit-remaining")
         if status in (403, 429) and (remaining == "0" or "retry-after" in resp.headers):
             raise GithubRateLimited(
@@ -134,7 +153,7 @@ class GitHubClient:
 
     def _get(self, path: str, headers: dict[str, str] | None = None) -> httpx.Response:
         try:
-            resp = self._api.get(path, headers=headers)
+            resp = self._api.get(path, headers=self._auth_headers(headers))
         except httpx.HTTPError:
             raise GithubUnavailable("Could not reach GitHub.") from None
         if resp.status_code != 302:

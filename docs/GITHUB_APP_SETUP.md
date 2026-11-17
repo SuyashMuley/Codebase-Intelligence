@@ -30,8 +30,8 @@ On the app's settings page:
 ```bash
 # session signing secret
 python3 -c "import secrets; print(secrets.token_urlsafe(48))"
-# token encryption key (Fernet); M3 adds the `cryptography` dependency, so run this after M3 lands
-cd backend && uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# token encryption key (32 random bytes, url-safe base64; needs no extra packages)
+python3 -c "import base64, os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())"
 ```
 
 ## 4. Put them in `backend/.env`
@@ -41,9 +41,27 @@ GITHUB_APP_CLIENT_SECRET=...
 SESSION_SECRET=...
 TOKEN_ENCRYPTION_KEY=...
 APP_BASE_URL=http://localhost:3000
+COOKIE_SECURE=false
 ```
 
-These names are what M3 will read; `.env.example` will list them when M3 lands. If you rotate `TOKEN_ENCRYPTION_KEY`, users have to sign in again.
+Use `backend/.env` when you run the API directly, and the repo-root `.env` when you use `docker compose`. `.env.example` lists every name; M3 is the first milestone that reads them. If you rotate `TOKEN_ENCRYPTION_KEY`, users have to sign in again.
+
+## 5. Run it locally
+Three terminals (the frontend is not in `docker-compose.yml` yet):
+
+```bash
+docker compose up -d db                                   # Postgres with pgvector
+cd backend && uv run alembic upgrade head && uv run uvicorn app.main:app --reload   # API on :8000
+cd frontend && npm install && npm run dev                 # app on :3000
+```
+
+Open http://localhost:3000, choose **Continue with GitHub**, approve, and you land on your repositories. Connect a public repo and press **Index latest commit**; the page drives the job forward and shows progress.
+
+If sign-in fails:
+- `auth_not_configured` on the login page: one of the four secrets is missing from `backend/.env`.
+- GitHub says the redirect URI is not valid: the Callback URL in the app settings must be exactly `http://localhost:3000/api/auth/github/callback`.
+- You land back on the login page with "link expired": the state cookie did not survive. Make sure you start at `http://localhost:3000` (not `127.0.0.1`) and that `APP_BASE_URL` matches.
+- Indexing says "authorization expired": GitHub did not accept the user token for that call; sign in again. If it keeps happening for public repos, tell me: it would mean a GitHub App user token needs a permission I assumed it did not.
 
 ## Deployment notes (M8)
 - Add the production callback URL to the app.

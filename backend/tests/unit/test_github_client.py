@@ -1,7 +1,13 @@
 import httpx
 import pytest
 
-from app.core.errors import GithubRateLimited, GithubUnavailable, RepoNotFound, RepoTooLarge
+from app.core.errors import (
+    GithubRateLimited,
+    GithubUnavailable,
+    ReauthRequired,
+    RepoNotFound,
+    RepoTooLarge,
+)
 from app.services.github.client import GitHubClient
 
 SHA = "b" * 40
@@ -182,3 +188,40 @@ def test_open_tarball_requires_full_sha() -> None:
         make_client(handler).open_tarball("o", "n", "main", max_bytes=10),
     ):
         pass
+
+
+def test_bound_client_uses_the_users_token_and_leaves_the_original_alone() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return api_handler(request)
+
+    platform = make_client(handler, token="platform-token")
+    platform.bind("user-token").resolve_commit("o", "n")
+    platform.resolve_commit("o", "n")
+    assert seen[0].headers["authorization"] == "Bearer user-token"
+    assert seen[-1].headers["authorization"] == "Bearer platform-token"
+
+
+def test_rejected_user_token_asks_for_reauth_but_platform_token_does_not() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(401, json={"message": "Bad credentials"})
+
+    client = make_client(handler, token="platform-token")
+    with pytest.raises(ReauthRequired):
+        client.bind("user-token").resolve_commit("o", "n")
+    with pytest.raises(GithubUnavailable):  # operator problem, not the user's
+        client.resolve_commit("o", "n")
+
+
+def test_user_token_never_goes_to_codeload() -> None:
+    handler, seen = tarball_handler(b"data")
+    with (
+        make_client(handler, token=None)
+        .bind("user-token")
+        .open_tarball("o", "n", SHA, max_bytes=1024) as src
+    ):
+        assert src.read() == b"data"
+    assert seen[0].headers["authorization"] == "Bearer user-token"
+    assert "authorization" not in seen[1].headers

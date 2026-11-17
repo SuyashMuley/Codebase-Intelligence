@@ -1,26 +1,32 @@
-import uuid
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api.deps import general_limit
-from app.core.errors import RepoNotFound
-from app.db.models import Repository
-from app.db.session import get_db
+from app.api.deps import (
+    CurrentUser,
+    DbSession,
+    OwnedRepo,
+    csrf_guard,
+    ip_backstop,
+    user_general_limit,
+)
+from app.db.models import Repository, UserRepository
 from app.schemas.repository import ErrorEnvelope, RepositoryCreate, RepositoryList, RepositoryOut
 from app.services.github.url import parse_github_url
 
 router = APIRouter(
-    prefix="/api/repositories", tags=["repositories"], dependencies=[Depends(general_limit)]
+    prefix="/api/repositories",
+    tags=["repositories"],
+    dependencies=[Depends(ip_backstop), Depends(csrf_guard), Depends(user_general_limit)],
 )
-
-DbSession = Annotated[Session, Depends(get_db)]
 
 _ERRORS: dict[int | str, dict[str, Any]] = {
     400: {"model": ErrorEnvelope, "description": "Invalid GitHub URL"},
+    401: {"model": ErrorEnvelope, "description": "Not signed in"},
     422: {"model": ErrorEnvelope, "description": "Request validation failed"},
 }
 
@@ -34,51 +40,69 @@ def _find_by_name(db: Session, owner: str, name: str) -> Repository | None:
     )
 
 
+def _link(db: Session, user: CurrentUser, repo: Repository) -> bool:
+    """Connect the repository to the user. Returns True if the link is new."""
+    result = db.execute(
+        pg_insert(UserRepository)
+        .values(user_id=user.id, repository_id=repo.id)
+        .on_conflict_do_nothing()
+        .returning(UserRepository.user_id)
+    )
+    created = result.first() is not None
+    db.commit()
+    return created
+
+
 @router.post(
     "",
     response_model=RepositoryOut,
     status_code=status.HTTP_201_CREATED,
-    responses={200: {"model": RepositoryOut, "description": "Already registered"}, **_ERRORS},
+    responses={200: {"model": RepositoryOut, "description": "Already connected"}, **_ERRORS},
 )
-def create_repository(body: RepositoryCreate, response: Response, db: DbSession) -> Repository:
-    """Register a public GitHub repository. Idempotent: re-registering returns the existing one.
+def create_repository(
+    body: RepositoryCreate, response: Response, db: DbSession, user: CurrentUser
+) -> Repository:
+    """Connect a public GitHub repository to your account. Idempotent.
 
-    This validates and stores the URL only; fetching and indexing happen separately.
+    The repository record itself is shared between users (public data); what is yours is the
+    connection. This validates and stores the URL only; indexing happens separately.
     """
     ref = parse_github_url(body.url)
 
-    existing = _find_by_name(db, ref.owner, ref.name)
-    if existing:
-        response.status_code = status.HTTP_200_OK
-        return existing
+    repo = _find_by_name(db, ref.owner, ref.name)
+    if repo is None:
+        repo = Repository(owner=ref.owner, name=ref.name, url=ref.url)
+        db.add(repo)
+        try:
+            db.commit()
+        except IntegrityError:
+            # Lost a race with a concurrent identical request; use the winner's row.
+            db.rollback()
+            repo = _find_by_name(db, ref.owner, ref.name)
+            if repo is None:
+                raise
 
-    repo = Repository(owner=ref.owner, name=ref.name, url=ref.url)
-    db.add(repo)
-    try:
-        db.commit()
-    except IntegrityError:
-        # Lost a race with a concurrent identical request; return the winner.
-        db.rollback()
-        winner = _find_by_name(db, ref.owner, ref.name)
-        if winner is None:
-            raise
+    if not _link(db, user, repo):
         response.status_code = status.HTTP_200_OK
-        return winner
     return repo
 
 
-@router.get("", response_model=RepositoryList)
+@router.get("", response_model=RepositoryList, responses={401: _ERRORS[401]})
 def list_repositories(
     db: DbSession,
+    user: CurrentUser,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> RepositoryList:
-    total = db.scalar(select(func.count()).select_from(Repository)) or 0
-    rows = db.scalars(
+    """Repositories you connected, newest first."""
+    mine = (
         select(Repository)
-        .order_by(Repository.created_at.desc(), Repository.id)
-        .limit(limit)
-        .offset(offset)
+        .join(UserRepository, UserRepository.repository_id == Repository.id)
+        .where(UserRepository.user_id == user.id)
+    )
+    total = db.scalar(select(func.count()).select_from(mine.subquery())) or 0
+    rows = db.scalars(
+        mine.order_by(UserRepository.created_at.desc(), Repository.id).limit(limit).offset(offset)
     ).all()
     return RepositoryList(
         items=[RepositoryOut.model_validate(r) for r in rows],
@@ -91,10 +115,10 @@ def list_repositories(
 @router.get(
     "/{repository_id}",
     response_model=RepositoryOut,
-    responses={404: {"model": ErrorEnvelope, "description": "Repository not found"}},
+    responses={
+        401: _ERRORS[401],
+        404: {"model": ErrorEnvelope, "description": "Repository not found"},
+    },
 )
-def get_repository(repository_id: uuid.UUID, db: DbSession) -> Repository:
-    repo = db.get(Repository, repository_id)
-    if repo is None:
-        raise RepoNotFound(f"Repository {repository_id} not found.")
+def get_repository(repo: OwnedRepo) -> Repository:
     return repo

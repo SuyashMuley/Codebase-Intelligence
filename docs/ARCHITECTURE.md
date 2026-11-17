@@ -109,6 +109,14 @@ sequenceDiagram
 
 **Ownership.** Repositories stay global, because a public repo and its snapshots are shared. What is per user is the link in `user_repositories`: a user lists, queries and ticks only repositories they connected. Anything else returns 404, not 403, so repository IDs cannot be probed. Quotas and the index rate limit key on the user; IP-based limits remain for the unauthenticated auth endpoints.
 
+**Implementation notes.**
+- The session cookie is `__Host-cip_session` when cookies are Secure (host-only, `Path=/`), and `cip_session` for plain-http local development.
+- The login state lives in `cip_oauth_state` (`Path=/api/auth`, 10 minute lifetime). It is encrypted and authenticated with a key derived from `SESSION_SECRET`, so the browser cannot read the PKCE verifier or forge it, and it is cleared by every response from the callback. A replayed callback therefore fails.
+- The `next` parameter is accepted only as a same-site relative path, on the server and again in the frontend.
+- GitHub refresh tokens are single-use, so concurrent refreshes are serialized with a row lock. If a refresh fails or a stored token cannot be decrypted, the stored credentials are deleted and the user is asked to sign in again.
+- If GitHub rejects a token that looks valid locally (revoked), the API returns 401 `reauth_required` and the UI offers a "Sign in again" link. Signing in again replaces the old session.
+- Settings fail fast in production: GitHub App credentials, `SESSION_SECRET`, `TOKEN_ENCRYPTION_KEY`, Secure cookies, an https `APP_BASE_URL` and a non-default `CLIENT_KEY_SALT` are all required, and a rejected secret is never echoed in the startup error.
+
 **Token use.** An index or tick request uses the calling user's GitHub token, so each user gets their own GitHub rate limit. The optional platform `GITHUB_TOKEN` is only a fallback.
 
 ## Database schema
@@ -140,7 +148,7 @@ File contents live in Postgres because Render's disk is ephemeral and a resumed 
 - The HNSW index on `chunks.embedding` is not in migration `0001`; it is added in the retrieval milestone (M5).
 - Primary keys: UUID for `repositories`, `snapshots`, `index_jobs`; bigint for the high-volume tables, so chunk IDs in citations stay short.
 - Every row carries `snapshot_id`, so answers are scoped to one commit and old snapshots can be deleted whole.
-- `snapshots.client_key` is the salted hash of the requesting client's IP and drives the rolling 24-hour ingestion quota (default 10 new snapshots).
+- `snapshots.requested_by` references the user who asked for the snapshot and drives the rolling 24-hour ingestion quota (default 10 new snapshots per user). It is `SET NULL` if the user is deleted.
 - `index_jobs.error_code` holds the machine-readable code of the last error; the message is in `error`.
 - `embedding_model` is stored per chunk. A repo never mixes models; changing the model means a re-index.
 - Alembic migrations use Neon's direct (non-pooled) URL. The app uses the pooled URL with a pool of about 3.
@@ -174,12 +182,12 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 {"error": {"code": "invalid_github_url", "message": "...", "details": {}, "request_id": "..."}}
 ```
 
-Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `invalid_state`. Reserved for later milestones: `snapshot_not_ready`, `llm_unavailable`.
+Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Reserved for later milestones: `snapshot_not_ready`, `llm_unavailable`.
 
 **Result shapes that matter**
 - A citation always comes from a retrieved chunk. The server maps chunk IDs to path and lines.
 - The impact response splits `static` (from graph edges, with the edge path) and `ai_suggestions` (labeled, no edges invented). `limitations` names unresolved calls near the target.
-- Rate limits are per client IP and in-process (single instance): 120 requests/minute on all `/api` routes and 10/minute on `POST .../index`, returned as `429` with `Retry-After`. Chat and impact get their own tighter limit in M7. Client IPs are hashed with a salt before they are used as quota keys; raw IPs are not stored.
+- Rate limits are in-process (single instance), returned as `429` with `Retry-After`. Per signed-in user: 120 requests/minute on repository routes and 10/minute on `POST .../index`. Per IP: 600/minute as a backstop on every `/api` route and 30/minute on the sign-in endpoints. Chat and impact get their own tighter limit in M7. IPs are hashed with a salt before they are used as limiter keys; raw IPs are not stored.
 
 ## Repository structure
 

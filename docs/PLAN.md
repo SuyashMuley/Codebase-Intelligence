@@ -85,25 +85,43 @@ Eight MVP milestones (M1 to M8) and two post-MVP ones (M9, M10), each ending wit
 Design: [Authentication and ownership](ARCHITECTURE.md#authentication-and-ownership-m3). One-time setup you do yourself: [GITHUB_APP_SETUP.md](GITHUB_APP_SETUP.md). The backend work is built and tested against a fake GitHub, so it does not wait on the setup; the real login is verified last.
 
 Backend
-- [ ] Migration: `users`, `sessions`, `github_credentials`, `user_repositories`; `snapshots.requested_by`
-- [ ] GitHub App user-authorization flow: login (state and PKCE), callback (code exchange, profile fetch, user upsert), logout, `GET /api/me`
-- [ ] Server-side sessions: random 256-bit ID stored hashed, absolute and idle expiry, HttpOnly Secure SameSite=Lax cookie, new session ID at login
-- [ ] CSRF defense on state-changing routes: Origin check on top of SameSite
-- [ ] GitHub tokens encrypted at rest; refreshed before expiry; a revoked or invalid token returns 401 `reauth_required`
-- [ ] Auth dependency on every `/api` route except the auth endpoints; routes scoped through `user_repositories`, with 404 for repositories the caller has not connected
-- [ ] `POST /api/repositories` links the repository to the caller; `GET /api/repositories` lists only theirs
-- [ ] GitHub client takes the caller's token through a token provider; the platform `GITHUB_TOKEN` stays an optional fallback
-- [ ] Quotas and the index rate limit keyed by user instead of IP
-- [ ] Tests: unauthenticated requests denied on every protected route; a second user gets 404 on every repository route; login with a fake GitHub (state mismatch, replayed code, expired session, session fixation); CSRF rejection; token refresh and revocation; tokens never in responses or logs
+- [x] Migration: `users`, `sessions`, `github_credentials`, `user_repositories`; `snapshots.requested_by`
+- [x] GitHub App user-authorization flow: login (state and PKCE), callback (code exchange, profile fetch, user upsert), logout, `GET /api/me`
+- [x] Server-side sessions: random 256-bit ID stored hashed, absolute and idle expiry, HttpOnly Secure SameSite=Lax cookie, new session ID at login
+- [x] CSRF defense on state-changing routes: Origin check on top of SameSite
+- [x] GitHub tokens encrypted at rest; refreshed before expiry; a revoked or invalid token returns 401 `reauth_required`
+- [x] Auth dependency on every `/api` route except the auth endpoints; routes scoped through `user_repositories`, with 404 for repositories the caller has not connected
+- [x] `POST /api/repositories` links the repository to the caller; `GET /api/repositories` lists only theirs
+- [x] GitHub client takes the caller's token through a token provider; the platform `GITHUB_TOKEN` stays an optional fallback
+- [x] Quotas and the index rate limit keyed by user instead of IP
+- [x] Tests: unauthenticated requests denied on every protected route; a second user gets 404 on every repository route; login with a fake GitHub (state mismatch, replayed code, expired session, session fixation); CSRF rejection; token refresh and revocation; tokens never in responses or logs
 
 Frontend (thin vertical slice)
-- [ ] Next.js, TypeScript, Tailwind dark theme, typed API client with credentials, TanStack Query; `/api` proxied to the backend by Next rewrites so the browser sees one origin
-- [ ] Pages: sign in, repository list with connect form, repository page with an Index button, tick driver, progress and error display, and a "waking backend" state
-- [ ] Frontend tests for the auth gate and the tick driver; lint and typecheck added to CI
+- [x] Next.js, TypeScript, Tailwind dark theme, typed API client with credentials, TanStack Query; `/api` proxied to the backend by Next rewrites so the browser sees one origin
+- [x] Pages: sign in, repository list with connect form, repository page with an Index button, tick driver, progress and error display, and a "waking backend" state
+- [x] Frontend tests for the auth gate and the tick driver; lint and typecheck added to CI
 
 **Exit:** you can sign in with GitHub, connect a public repo, index it, and watch fetch progress in the browser; a second account cannot see or tick it.
 
-**Needs verifying with a real login:** that a GitHub App user token with no extra permissions can read public repositories and download their tarballs. I expect it can but have not confirmed it.
+**Status: built and verified locally, except the real GitHub login.**
+- Backend: 278 tests (ruff, mypy strict). Nine security properties were mutation-tested, each broken in turn and caught by a test: ownership check, CSRF guard, OAuth state check, session rotation at login, open-redirect guard, token deletion at logout, idle timeout, absolute expiry, and token encryption at rest.
+- Frontend: 88 tests, lint, typecheck and a production build pass, with a CI job added.
+- End to end, through the real Next proxy and a headless browser, against a local fake of GitHub's OAuth endpoints: sign-in (with PKCE), HttpOnly session cookie, `/api/me`, CSRF enforced through the proxy, connecting a repository with the form (a real browser's `Origin` header passes), listing, error states, sign-out, and a phone-width layout.
+- Not verified: a login against the real GitHub App (it needs your credentials; see GITHUB_APP_SETUP.md), and indexing from the browser after a real sign-in. Indexing itself was verified against real GitHub in M2, but the fake provider cannot serve tarballs.
+
+**Deviations from the plan**
+- Migration `0003` drops `snapshots.client_key` (added in M2) in favour of `snapshots.requested_by`, a foreign key to the user.
+- Rate limits are per user for repository routes, with a per-IP backstop on every `/api` route and a stricter per-IP limit on the sign-in endpoints.
+- Logout deletes the user's stored GitHub tokens as well as the session, so the server holds no tokens for signed-out users.
+- Added a "Sign in again" notice for the case where GitHub revokes a token while the session is still valid.
+- Sessions, GitHub tokens and ownership are enforced as planned; the `__Host-` cookie prefix is used whenever cookies are Secure.
+
+**Known limitations**
+- The sign-in flow depends on GitHub honoring PKCE parameters and on a GitHub App user token reading public repositories with no extra permissions. Both are expected but unconfirmed until a real login.
+- Refresh tokens are single-use, so refreshes are serialized with a row lock. This is tested at the service level, not under real concurrent load.
+- The frontend has no indexing-progress end-to-end test against a real job yet; the tick driver is unit-tested with a mocked API.
+
+**Still to verify with a real login:** that a GitHub App user token with no extra permissions can read public repositories and download their tarballs. I expect it can but have not confirmed it.
 
 ### M4. Parsing, chunking, secret handling
 - [ ] Tree-sitter adapters for Python, JS, TS, Go: symbols, imports, call sites

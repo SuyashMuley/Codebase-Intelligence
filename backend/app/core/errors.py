@@ -93,6 +93,33 @@ class GithubUnavailable(AppError):
     retryable = True
 
 
+class Unauthenticated(AppError):
+    status_code = 401
+    code = "unauthenticated"
+
+
+class ReauthRequired(AppError):
+    """The user's GitHub authorization is gone or was revoked; they must sign in again."""
+
+    status_code = 401
+    code = "reauth_required"
+
+
+class ForbiddenOrigin(AppError):
+    status_code = 403
+    code = "forbidden_origin"
+
+
+class AuthNotConfigured(AppError):
+    status_code = 503
+    code = "auth_not_configured"
+
+
+class GithubAuthFailed(AppError):
+    status_code = 502
+    code = "github_auth_failed"
+
+
 class InternalError(AppError):
     """Unexpected failure inside a job step. Retried (bounded), since many are transient."""
 

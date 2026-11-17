@@ -4,8 +4,10 @@ import io
 import tarfile
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime, timedelta
 
-from app.core.errors import AppError, GithubUnavailable
+from app.core.errors import AppError, GithubAuthFailed, GithubUnavailable
+from app.services.auth.oauth import GitHubProfile, TokenSet
 from app.services.github.client import ByteSource, CommitInfo
 
 PREFIX = "owner-repo-abc123/"
@@ -93,3 +95,51 @@ class FakeGitHub:
             yield _FailingReader(data, int(len(data) * self.fail_after_fraction))
         else:
             yield io.BytesIO(data)
+
+
+class FakeOAuth:
+    """In-memory GitHubOAuthGateway. Register codes in `codes`; each code works once."""
+
+    def __init__(self) -> None:
+        self.codes: dict[str, GitHubProfile] = {}
+        self.used: set[str] = set()
+        self.exchange_error: AppError | None = None
+        self.refresh_error: AppError | None = None
+        self.last_verifier: str | None = None
+        self.last_challenge: str | None = None
+        self.refresh_calls = 0
+
+    def authorize_url(self, state: str, code_challenge: str) -> str:
+        self.last_challenge = code_challenge
+        return f"https://github.test/authorize?state={state}&cc={code_challenge}"
+
+    def exchange_code(self, code: str, code_verifier: str) -> TokenSet:
+        if self.exchange_error:
+            raise self.exchange_error
+        if code not in self.codes or code in self.used:
+            raise GithubAuthFailed("GitHub rejected the sign-in code.")
+        self.used.add(code)
+        self.last_verifier = code_verifier
+        now = datetime.now(UTC)
+        return TokenSet(
+            access_token=f"gho_access_{code}",
+            refresh_token=f"ghr_refresh_{code}",
+            access_expires_at=now + timedelta(hours=8),
+            refresh_expires_at=now + timedelta(days=180),
+        )
+
+    def refresh(self, refresh_token: str) -> TokenSet:
+        self.refresh_calls += 1
+        if self.refresh_error:
+            raise self.refresh_error
+        now = datetime.now(UTC)
+        return TokenSet(
+            access_token=f"gho_refreshed_{self.refresh_calls}",
+            refresh_token=f"ghr_refreshed_{self.refresh_calls}",
+            access_expires_at=now + timedelta(hours=8),
+            refresh_expires_at=now + timedelta(days=180),
+        )
+
+    def fetch_profile(self, access_token: str) -> GitHubProfile:
+        code = access_token.removeprefix("gho_access_")
+        return self.codes[code]
