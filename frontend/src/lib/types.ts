@@ -57,6 +57,14 @@ export interface ParseProgress {
   done: boolean;
 }
 
+export interface EmbedProgress {
+  embedded: number;
+  total: number;
+  model: string;
+  done: boolean;
+  neurons: number;
+}
+
 export interface JobError {
   code: string;
   message: string;
@@ -74,6 +82,7 @@ export interface IndexStatus {
   can_resume: boolean;
   progress: FetchProgress | null;
   parse: ParseProgress | null;
+  embed: EmbedProgress | null;
   updated_at: string | null;
 }
 
@@ -154,8 +163,34 @@ export interface Stats {
     skipped: Record<string, number>;
   };
   symbols: { total: number; by_kind: Record<string, number> };
-  chunks: { total: number; average_chars: number; largest_chars: number };
+  chunks: {
+    total: number;
+    average_chars: number;
+    largest_chars: number;
+    embedded: number;
+    embedding_model: string | null;
+  };
   refs: { imports: number; calls: number };
   redactions: { spans: number; files: number };
   syntax_error_files: number;
+}
+
+export type SearchMode = "vector" | "hybrid" | "keyword";
+
+export interface SearchHit {
+  chunk_id: number;
+  path: string;
+  start_line: number;
+  end_line: number;
+  symbol: string | null;
+  text: string;
+  score: number;
+  keyword_rank: number | null;
+  vector_rank: number | null;
+}
+
+export interface SearchResponse {
+  mode_used: SearchMode;
+  warnings: string[];
+  hits: SearchHit[];
 }

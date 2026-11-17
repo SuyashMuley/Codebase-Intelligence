@@ -22,6 +22,13 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 EMBEDDING_DIM = 384
 
+TSV_EXPRESSION = (
+    "to_tsvector('simple', "
+    "regexp_replace(text, '[^A-Za-z0-9]+', ' ', 'g') || ' ' || "
+    "regexp_replace(regexp_replace(text, '([a-z0-9])([A-Z])', '\\1 \\2', 'g'), "
+    "'[^A-Za-z0-9]+', ' ', 'g'))"
+)
+
 # Stable constraint names keep Alembic migrations deterministic.
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -226,17 +233,20 @@ class Chunk(Base):
     start_line: Mapped[int] = mapped_column(Integer)
     end_line: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
+    # Keyword index over two clean word lists: every alphanumeric word as written (so a whole
+    # identifier like sessionCookie matches), and the same text with camelCase split (so
+    # "session cookie" matches it too). Punctuation and underscores never glue words together.
     # 'simple' config: no stemming or stop words, which suits identifiers in code.
-    tsv: Mapped[str] = mapped_column(
-        TSVECTOR, Computed("to_tsvector('simple', text)", persisted=True)
-    )
+    tsv: Mapped[str] = mapped_column(TSVECTOR, Computed(TSV_EXPRESSION, persisted=True))
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
     embedding_model: Mapped[str | None] = mapped_column(String(100))
 
     __table_args__ = (
         Index("ix_chunks_snapshot_id_file_id", "snapshot_id", "file_id"),
         Index("ix_chunks_tsv", "tsv", postgresql_using="gin"),
-        # The HNSW vector index is added in the retrieval milestone, after bulk inserts exist.
+        # No vector index on purpose. Every search is scoped to one snapshot (at most a few
+        # thousand rows), so an exact scan is fast and always correct, while an approximate
+        # (HNSW) index combined with a filter can silently return too few results.
     )
 
 

@@ -86,10 +86,9 @@ describe("StatusPanel", () => {
     expect(onIndex).toHaveBeenCalled();
   });
 
-  it("is honest that the steps after parsing are not built yet", () => {
-    setup(makeStatus({ phase: "embed" }), { stopped: "not_implemented" });
-    expect(screen.getByText(/fetched, parsed and split into chunks/i)).toBeInTheDocument();
-    expect(screen.getByText(/not available yet/i)).toBeInTheDocument();
+  it("is honest that the graph and question answering are not built yet", () => {
+    setup(makeStatus({ phase: "graph" }), { stopped: "not_implemented" });
+    expect(screen.getByText(/dependency graph and question answering are not available yet/i)).toBeInTheDocument();
   });
 
   it("shows parse progress and says when secrets were redacted", () => {
@@ -128,5 +127,21 @@ describe("StatusPanel", () => {
   it("disables the action while a start request is in flight", () => {
     setup(makeStatus({ state: "ready", phase: "done" }), { starting: true });
     expect(screen.getByRole("button", { name: /check latest commit/i })).toBeDisabled();
+  });
+
+  it("shows how many chunks are embedded", () => {
+    setup(
+      makeStatus({
+        phase: "embed",
+        embed: { embedded: 32, total: 96, model: "m", done: false, neurons: 28 },
+      }),
+    );
+    expect(screen.getByText("32 of 96")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: /embedding progress/i })).toHaveValue(32);
+  });
+
+  it("says search works once the pipeline stops at the graph phase", () => {
+    setup(makeStatus({ phase: "graph" }), { stopped: "not_implemented" });
+    expect(screen.getByText(/so you can search it/i)).toBeInTheDocument();
   });
 });

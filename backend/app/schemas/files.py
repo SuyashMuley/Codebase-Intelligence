@@ -66,6 +66,8 @@ class FileStats(BaseModel):
 
 class ChunkStats(BaseModel):
     total: int
+    embedded: int
+    embedding_model: str | None
     average_chars: int
     largest_chars: int
 

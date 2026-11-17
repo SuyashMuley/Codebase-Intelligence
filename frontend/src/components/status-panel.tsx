@@ -137,6 +137,23 @@ export function StatusPanel({
         </dl>
       ) : null}
 
+      {status.embed ? (
+        <div>
+          <div className="flex items-baseline justify-between text-xs text-zinc-500">
+            <span>Chunks embedded</span>
+            <span>
+              {status.embed.embedded} of {status.embed.total}
+            </span>
+          </div>
+          <progress
+            className="mt-1 h-2 w-full"
+            aria-label="Embedding progress"
+            max={Math.max(status.embed.total, 1)}
+            value={status.embed.embedded}
+          />
+        </div>
+      ) : null}
+
       {progress && progress.secrets_redacted > 0 ? (
         <p role="note" className="rounded bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
           {progress.secrets_redacted} secret-looking value
@@ -170,9 +187,9 @@ export function StatusPanel({
 
       {stopped === "not_implemented" ? (
         <p className="text-sm text-zinc-400">
-          {status.phase === "embed"
-            ? "The source is fetched, parsed and split into chunks. Search, question answering and the dependency graph come next and are not available yet."
-            : "Source files are fetched and stored. The remaining steps are not available yet."}
+          {status.phase === "graph"
+            ? "The code is fetched, parsed and embedded, so you can search it. The dependency graph and question answering are not available yet."
+            : "Part of the pipeline is not available yet."}
         </p>
       ) : null}
       {stopped === "error" && !driverError ? (

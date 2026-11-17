@@ -39,6 +39,14 @@ class ParseProgress(BaseModel):
     done: bool
 
 
+class EmbedProgress(BaseModel):
+    embedded: int
+    total: int
+    model: str
+    done: bool
+    neurons: float = 0.0  # provider usage so far (Cloudflare "neurons"), for cost visibility
+
+
 class JobError(BaseModel):
     code: str
     message: str
@@ -60,6 +68,7 @@ class StatusOut(BaseModel):
     )
     progress: FetchProgress | None = None
     parse: ParseProgress | None = None
+    embed: EmbedProgress | None = None
     updated_at: datetime | None = None
 
 

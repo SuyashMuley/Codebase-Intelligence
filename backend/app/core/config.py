@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from cryptography.fernet import Fernet
 from pydantic import Field, SecretStr, field_validator, model_validator
@@ -45,6 +46,23 @@ class Settings(BaseSettings):
     max_total_source_bytes: int = 5 * 1024 * 1024  # kept source text
     fetch_timeout_seconds: float = 40.0
 
+    # --- Embeddings (Cloudflare Workers AI, or an offline hash embedder) ---
+    # "cloudflare" needs CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN. "hash" is a
+    # deterministic offline embedder for tests and demos (lexical, not semantic).
+    embedding_provider: Literal["cloudflare", "hash"] = "cloudflare"
+    cloudflare_account_id: str | None = None
+    cloudflare_api_token: SecretStr | None = None
+    cloudflare_api_base: str = "https://api.cloudflare.com/client/v4"
+    cloudflare_embedding_model: str = "@cf/baai/bge-small-en-v1.5"
+    # bge models are trained with CLS pooling; "mean" is only kept for experiments.
+    cloudflare_pooling: Literal["cls", "mean"] = "cls"
+    embedding_dim: int = 384  # fixed by the database column; the model must output this size
+    embedding_batch_size: int = 32  # texts per request
+    # bge's documented instruction for search queries (documents get none).
+    embedding_query_prefix: str = "Represent this sentence for searching relevant passages: "
+    embedding_timeout_seconds: float = 30.0
+    embedding_budget_seconds: float = 20.0  # one tick embeds for at most this long
+
     # --- Parsing and chunking ---
     chunk_max_chars: int = 1800  # about 450 tokens: fits small embedding models
     chunk_merge_below: int = 500  # neighbouring chunks smaller than this are merged
@@ -82,6 +100,7 @@ class Settings(BaseSettings):
     login_state_ttl_seconds: int = 600
     ip_rate_limit_per_minute: int = 600  # backstop per IP on all /api routes
     auth_rate_limit_per_minute: int = 30  # per IP on the sign-in endpoints
+    search_rate_limit_per_minute: int = 20  # per user; each search embeds the query
 
     @field_validator(
         "github_token",
@@ -90,6 +109,8 @@ class Settings(BaseSettings):
         "session_secret",
         "token_encryption_key",
         "alembic_database_url",
+        "cloudflare_account_id",
+        "cloudflare_api_token",
         mode="before",
     )
     @classmethod

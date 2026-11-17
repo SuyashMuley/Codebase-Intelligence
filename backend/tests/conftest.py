@@ -15,6 +15,10 @@ TEST_ENV = {
     "DATABASE_URL": TEST_DATABASE_URL,
     "ENVIRONMENT": "test",
     "GITHUB_TOKEN": "",
+    # Tests never call a real embedding service or use a developer's credentials.
+    "EMBEDDING_PROVIDER": "hash",
+    "CLOUDFLARE_ACCOUNT_ID": "",
+    "CLOUDFLARE_API_TOKEN": "",
     "GITHUB_APP_CLIENT_ID": "test-client-id",
     "GITHUB_APP_CLIENT_SECRET": "test-client-secret-value",
     "SESSION_SECRET": "test-session-secret-0123456789abcdef",

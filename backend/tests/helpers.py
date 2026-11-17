@@ -152,3 +152,56 @@ class FakeOAuth:
     def fetch_profile(self, access_token: str) -> GitHubProfile:
         code = access_token.removeprefix("gho_access_")
         return self.codes[code]
+
+
+class ScriptedEmbedder:
+    """Maps text to one of a few topic vectors by keyword, so a test controls exactly what is
+    "semantically" close to what. `topics` maps a topic name to the words that trigger it for
+    documents; `query_topics` maps a query's words to a topic (this is the "semantic" knowledge
+    that plain keyword matching lacks)."""
+
+    dim = 384
+    batch_size = 16
+    model_id = "scripted-v1"
+
+    def __init__(
+        self,
+        topics: dict[str, list[str]],
+        query_topics: dict[str, str],
+        fail_on_call: int | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        self.topics = topics
+        self.query_topics = query_topics
+        self.names = sorted(topics)
+        self.usage: dict[str, float] = {"requests": 0.0, "neurons": 0.0}
+        self.calls = 0
+        self.seen: list[str] = []  # every document text it was asked to embed
+        self.fail_on_call = fail_on_call
+        self.error = error
+
+    def _vector(self, topic: str | None) -> list[float]:
+        v = [0.0] * self.dim
+        v[self.names.index(topic) if topic in self.names else self.dim - 1] = 1.0
+        return v
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        self.calls += 1
+        if self.fail_on_call is not None and self.calls == self.fail_on_call and self.error:
+            raise self.error
+        self.usage["requests"] += 1
+        self.usage["neurons"] += 0.5 * len(texts)
+        self.seen += texts
+        out = []
+        for text in texts:
+            lowered = text.lower()
+            topic = next((n for n in self.names if any(w in lowered for w in self.topics[n])), None)
+            out.append(self._vector(topic))
+        return out
+
+    def embed_query(self, text: str) -> list[float]:
+        if self.error and self.fail_on_call == -1:
+            raise self.error
+        lowered = text.lower()
+        topic = next((t for w, t in self.query_topics.items() if w in lowered), None)
+        return self._vector(topic)

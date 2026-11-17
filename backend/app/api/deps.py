@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings, get_settings
 from app.core.errors import (
     AuthNotConfigured,
+    EmbeddingNotConfigured,
     ForbiddenOrigin,
     ReauthRequired,
     RepoNotFound,
@@ -21,6 +22,8 @@ from app.core.errors import (
 from app.core.ratelimit import client_ip, client_key
 from app.db.models import Repository, User, UserRepository
 from app.db.session import get_db
+from app.providers.embeddings.base import Embedder
+from app.providers.embeddings.factory import get_embedder as _build_embedder
 from app.services.auth import credentials, sessions
 from app.services.auth.crypto import StateSealer, TokenCipher
 from app.services.auth.oauth import GitHubOAuth, GitHubOAuthGateway
@@ -220,3 +223,13 @@ ip_backstop = ip_limit("api", lambda s: s.ip_rate_limit_per_minute)
 auth_ip_limit = ip_limit("auth", lambda s: s.auth_rate_limit_per_minute)
 user_general_limit = user_limit("general", lambda s: s.rate_limit_per_minute)
 user_index_limit = user_limit("index", lambda s: s.index_rate_limit_per_minute)
+user_search_limit = user_limit("search", lambda s: s.search_rate_limit_per_minute)
+
+
+def get_embedder(settings: AppSettings) -> Embedder | None:
+    """The configured embedder, or None when embeddings are not set up (search then falls back
+    to keyword search and says so). Tests override this."""
+    try:
+        return _build_embedder(settings)
+    except EmbeddingNotConfigured:
+        return None

@@ -18,7 +18,7 @@ flowchart LR
     end
     DB[("Neon Postgres + pgvector<br/>files, chunks, graph, jobs")]
     GH["GitHub REST<br/>commit tarball"]
-    HF["Hugging Face API<br/>embeddings, 384 dims"]
+    HF["Cloudflare Workers AI<br/>embeddings, 384 dims"]
     OR["OpenRouter<br/>answer generation"]
 
     FE -->|REST| R
@@ -78,6 +78,18 @@ A symbol's line range includes its decorators or `export` keyword and the commen
 **Secret redaction** runs in the fetch step, before any text is stored, so a raw credential never reaches the database, the index, the API or a log. Matched values are replaced by `[REDACTED:<kind>]` placeholders on the same line (a private key block keeps its line count), so line numbers stay valid. Rules cover well-known token formats (cloud, source-host, chat, payment, AI-provider and JWT), passwords inside URLs, private key blocks, and quoted high-entropy values next to names like `password` or `api_key`. Generic matches require a random-looking value, so words, slugs, paths, URLs and placeholders are left alone. Findings record the kind and line, never the value. The parse phase redacts again for rows stored by older versions.
 
 **Limits** (configurable): 6,000 chunks per snapshot (over the cap the job fails with `repo_too_large`), 20 files read per batch, 15 seconds of parsing per tick, 400,000 syntax nodes and 5,000 distinct calls per file.
+
+## Embeddings and retrieval (M5)
+
+**Embedding.** The `embed` phase runs after `parse`. Providers implement one `Embedder` protocol (`model_id`, `dim`, `batch_size`, `embed_documents`, `embed_query`): `CloudflareEmbedder` calls Workers AI `@cf/baai/bge-small-en-v1.5` (384 dimensions, CLS pooling, vectors L2-normalised, usage counted in neurons) and `HashEmbedder` is an offline, lexical, deterministic stand-in for tests. Each chunk is embedded as `File: <path>` plus its text. Queries get bge's retrieval instruction; documents do not. Like every phase it is resumable: chunks without a vector are embedded in batches for at most 20 seconds per tick (at least one batch), the cursor records `embedded`, `total`, `model` and `neurons`, and vectors from another model id are reset first, so two vector spaces are never mixed. Errors are typed: `embedding_not_configured` and `embedding_quota_exceeded` do not retry; `embedding_unavailable` does with backoff; `embedding_auth_failed` and `embedding_bad_response` surface as failures.
+
+**Search** (`POST /api/repositories/{id}/search`, owner only, 20 per minute per user because each call embeds the query):
+- *Keyword*: Postgres full-text (`simple` configuration) over a generated `tsv` column that indexes plain words and camelCase-split words, OR-matched and ranked by `ts_rank_cd`, plus a path match and a bonus when the chunk defines a symbol named in the query.
+- *Vector*: exact cosine distance in pgvector, scoped to one snapshot. There is deliberately no ANN index; see the plan's deviations.
+- *Hybrid*: reciprocal rank fusion (k=60) of both lists.
+- The default is `vector`. If the snapshot has no embeddings yet or the embedding service fails, the response is keyword search with `warnings` explaining why; `mode_used` always says what actually ran.
+
+**Evaluation** lives in `backend/eval` and is run by hand (it needs the network): labelled questions point at symbols, not line numbers, so labels survive re-chunking; it reports Recall@k, MRR, bootstrap intervals and paired comparisons, and its benchmark mode raises instead of falling back.
 
 ## Chat workflow (LangGraph)
 
@@ -236,7 +248,7 @@ codebase-intelligence/
         impact/            # static traversal plus AI suggestion step
       providers/
         llm/               # OpenRouter client, stub
-        embeddings/        # Hugging Face client, hash embedder
+        embeddings/        # Cloudflare client, hash embedder
     alembic/               # migrations
     tests/                 # unit, integration, fixtures
     eval/                  # labeled dataset, run_eval.py, results/

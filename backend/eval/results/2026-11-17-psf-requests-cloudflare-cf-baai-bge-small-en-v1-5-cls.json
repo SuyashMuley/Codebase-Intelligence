@@ -1,0 +1,3169 @@
+{
+  "meta": {
+    "dataset": "psf/requests question set",
+    "repo": "psf/requests",
+    "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+    "date_utc": "2026-11-17T19:11:19+00:00",
+    "embedding_model": "cloudflare:@cf/baai/bge-small-en-v1.5:cls",
+    "questions": 40,
+    "question_types": {
+      "identifier": 12,
+      "concept": 16,
+      "mixed": 12
+    },
+    "chunks": 523,
+    "k": 10,
+    "indexing_seconds": 6.9,
+    "indexing_neurons": 454.71,
+    "query_embedding_usage": {
+      "requests": 257.0,
+      "neurons": 465.1500000000028
+    }
+  },
+  "results": {
+    "keyword": {
+      "recall@1": 0.45,
+      "recall@5": 0.75,
+      "recall@10": 0.775,
+      "mrr": 0.5770833333333333,
+      "mrr_ci95": [
+        0.44958333333333333,
+        0.71
+      ],
+      "recall@5_ci95": [
+        0.625,
+        0.875
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9166666666666666
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.5625,
+          "mrr": 0.2989583333333333
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.75,
+          "mrr": 0.6083333333333333
+        }
+      },
+      "latency_ms": {
+        "median": 8.7,
+        "p95": 13.9
+      }
+    },
+    "keyword (text and path only)": {
+      "recall@1": 0.25,
+      "recall@5": 0.675,
+      "recall@10": 0.725,
+      "mrr": 0.4125,
+      "mrr_ci95": [
+        0.30166666666666664,
+        0.53625
+      ],
+      "recall@5_ci95": [
+        0.525,
+        0.8
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 0.8333333333333334,
+          "mrr": 0.5597222222222222
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.5625,
+          "mrr": 0.2989583333333333
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.4166666666666667
+        }
+      },
+      "latency_ms": {
+        "median": 8.2,
+        "p95": 12.3
+      }
+    },
+    "vector": {
+      "recall@1": 0.75,
+      "recall@5": 0.95,
+      "recall@10": 0.975,
+      "mrr": 0.8258333333333333,
+      "mrr_ci95": [
+        0.7275,
+        0.9166666666666666
+      ],
+      "recall@5_ci95": [
+        0.875,
+        1.0
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9583333333333334
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.875,
+          "mrr": 0.7760416666666666
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.7597222222222222
+        }
+      },
+      "latency_ms": {
+        "median": 194.0,
+        "p95": 372.4
+      }
+    },
+    "hybrid": {
+      "recall@1": 0.625,
+      "recall@5": 0.85,
+      "recall@10": 0.9,
+      "mrr": 0.720625,
+      "mrr_ci95": [
+        0.5979166666666667,
+        0.8354166666666667
+      ],
+      "recall@5_ci95": [
+        0.725,
+        0.95
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9583333333333334
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.75,
+          "mrr": 0.5932291666666667
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.8333333333333334,
+          "mrr": 0.6527777777777778
+        }
+      },
+      "latency_ms": {
+        "median": 192.8,
+        "p95": 323.0
+      }
+    },
+    "hybrid (text and path only)": {
+      "recall@1": 0.55,
+      "recall@5": 0.8,
+      "recall@10": 0.875,
+      "mrr": 0.6620833333333334,
+      "mrr_ci95": [
+        0.5389583333333333,
+        0.7854166666666667
+      ],
+      "recall@5_ci95": [
+        0.675,
+        0.925
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 0.9166666666666666,
+          "mrr": 0.7916666666666666
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.75,
+          "mrr": 0.5932291666666667
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.75,
+          "mrr": 0.6243055555555556
+        }
+      },
+      "latency_ms": {
+        "median": 195.4,
+        "p95": 318.5
+      }
+    },
+    "hybrid (vector weight 1.5)": {
+      "recall@1": 0.65,
+      "recall@5": 0.9,
+      "recall@10": 0.9,
+      "mrr": 0.7445833333333334,
+      "mrr_ci95": [
+        0.6266666666666667,
+        0.8541666666666666
+      ],
+      "recall@5_ci95": [
+        0.8,
+        0.975
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9583333333333334
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.8125,
+          "mrr": 0.6510416666666666
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.9166666666666666,
+          "mrr": 0.6555555555555556
+        }
+      },
+      "latency_ms": {
+        "median": 182.5,
+        "p95": 317.1
+      }
+    },
+    "hybrid (vector weight 2)": {
+      "recall@1": 0.65,
+      "recall@5": 0.9,
+      "recall@10": 0.9,
+      "mrr": 0.74875,
+      "mrr_ci95": [
+        0.6320833333333333,
+        0.8583333333333333
+      ],
+      "recall@5_ci95": [
+        0.8,
+        0.975
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9583333333333334
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.8125,
+          "mrr": 0.6614583333333334
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.9166666666666666,
+          "mrr": 0.6555555555555556
+        }
+      },
+      "latency_ms": {
+        "median": 146.6,
+        "p95": 299.8
+      }
+    },
+    "hybrid (vector weight 3)": {
+      "recall@1": 0.65,
+      "recall@5": 0.9,
+      "recall@10": 0.9,
+      "mrr": 0.7529166666666667,
+      "mrr_ci95": [
+        0.6379166666666667,
+        0.8583333333333333
+      ],
+      "recall@5_ci95": [
+        0.8,
+        0.975
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 12,
+          "recall@5": 1.0,
+          "mrr": 0.9583333333333334
+        },
+        "concept": {
+          "n": 16,
+          "recall@5": 0.8125,
+          "mrr": 0.6458333333333334
+        },
+        "mixed": {
+          "n": 12,
+          "recall@5": 0.9166666666666666,
+          "mrr": 0.6902777777777778
+        }
+      },
+      "latency_ms": {
+        "median": 194.9,
+        "p95": 325.4
+      }
+    }
+  },
+  "paired": {
+    "keyword vs keyword (text and path only)": {
+      "wins": 10,
+      "losses": 0,
+      "ties": 30
+    },
+    "hybrid vs keyword": {
+      "wins": 17,
+      "losses": 2,
+      "ties": 21
+    },
+    "hybrid vs vector": {
+      "wins": 4,
+      "losses": 11,
+      "ties": 25
+    },
+    "vector vs keyword": {
+      "wins": 19,
+      "losses": 3,
+      "ties": 18
+    }
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "type": "identifier",
+      "question": "Where is `get_netrc_auth` defined and what does it do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_utils.py:156-181",
+            "tests/test_requests.py:683-716"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_utils.py:156-181",
+            "tests/test_requests.py:683-716"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:231-280",
+            "tests/test_requests.py:683-716",
+            "tests/test_utils.py:156-181"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q02",
+      "type": "identifier",
+      "question": "Show me `guess_json_utf`.",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 3,
+          "top": [
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124",
+            "src/requests/utils.py:1008-1037"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:75-105"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_utils.py:408-440",
+            "src/requests/utils.py:1008-1037",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1008-1037",
+            "tests/test_utils.py:408-440",
+            "src/requests/models.py:1091-1124"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q03",
+      "type": "identifier",
+      "question": "What does `requote_uri` do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "tests/test_requests.py:1975-1986"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "tests/test_requests.py:1975-1986"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:704-723",
+            "tests/test_utils.py:476-493",
+            "src/requests/utils.py:680-701"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q04",
+      "type": "identifier",
+      "question": "Where is `HTTPDigestAuth.build_digest_header` implemented?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/auth.py:116-134",
+            "src/requests/auth.py:157-208",
+            "src/requests/models.py:670-697"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:670-697",
+            "tests/test_requests.py:765-781",
+            "src/requests/auth.py:273-316"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:157-208",
+            "tests/test_requests.py:783-792",
+            "tests/test_requests.py:748-763"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:157-208",
+            "src/requests/auth.py:116-134",
+            "tests/test_requests.py:748-763"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:748-763",
+            "tests/test_requests.py:783-792",
+            "tests/test_requests.py:765-781"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:157-208",
+            "src/requests/auth.py:116-134",
+            "tests/test_requests.py:748-763"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:157-208",
+            "src/requests/auth.py:116-134",
+            "tests/test_requests.py:783-792"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:157-208",
+            "tests/test_requests.py:783-792",
+            "tests/test_requests.py:748-763"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q05",
+      "type": "identifier",
+      "question": "How does `resolve_redirects` work?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/sessions.py:793-829",
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/utils.py:911-939",
+            "src/requests/auth.py:268-271"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "tests/test_requests.py:450-480"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "tests/test_requests.py:450-480"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "tests/test_requests.py:450-480"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "tests/test_requests.py:450-480"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:186-227",
+            "src/requests/sessions.py:793-829",
+            "src/requests/utils.py:911-939"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q06",
+      "type": "identifier",
+      "question": "Where is `CaseInsensitiveDict.lower_items` defined?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 3,
+          "top": [
+            "tests/test_structures.py:6-51",
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86"
+          ]
+        },
+        "vector": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "src/requests/structures.py:88-93"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/structures.py:67-86",
+            "tests/test_structures.py:6-51"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q07",
+      "type": "identifier",
+      "question": "What does `merge_environment_settings` do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:511-555",
+            "src/requests/sessions.py:608-653"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:511-555",
+            "src/requests/sessions.py:608-653"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/utils.py:1-17",
+            "src/requests/sessions.py:76-105"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:108-124",
+            "tests/test_utils.py:923-953"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:108-124",
+            "tests/test_utils.py:923-953"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:108-124",
+            "src/requests/utils.py:787-807"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:108-124",
+            "src/requests/utils.py:787-807"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:108-124",
+            "src/requests/utils.py:787-807"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q08",
+      "type": "identifier",
+      "question": "Find `extract_cookies_to_jar`.",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:604-625",
+            "src/requests/models.py:699-720"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 5,
+          "top": [
+            "src/requests/cookies.py:604-625",
+            "src/requests/models.py:699-720",
+            "tests/test_requests.py:450-480"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:479-491"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:604-625",
+            "src/requests/cookies.py:479-491"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:604-625",
+            "src/requests/cookies.py:479-491"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:479-491",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:479-491",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:135-150",
+            "src/requests/cookies.py:479-491",
+            "src/requests/utils.py:500-519"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q09",
+      "type": "identifier",
+      "question": "Where is `PreparedRequest.prepare_url` implemented?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:378-405",
+            "tests/conftest.py:1-22"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 4,
+          "top": [
+            "src/requests/sessions.py:511-555",
+            "src/requests/adapters.py:565-597",
+            "src/requests/sessions.py:309-332"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:360-375",
+            "src/requests/models.py:378-405"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:378-405",
+            "src/requests/sessions.py:511-555"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/sessions.py:511-555",
+            "src/requests/adapters.py:565-597"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:378-405",
+            "src/requests/sessions.py:511-555"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:378-405",
+            "src/requests/sessions.py:511-555"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:378-405",
+            "src/requests/sessions.py:511-555"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q10",
+      "type": "identifier",
+      "question": "What does `Response.raise_for_status` do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/models.py:732-763",
+            "src/requests/adapters.py:365-401"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 10,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/exceptions.py:20-35",
+            "tests/test_requests.py:1487-1506"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/models.py:861-874",
+            "src/requests/models.py:834-845"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:732-763"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:1144-1171",
+            "src/requests/adapters.py:722-748"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1144-1171",
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:861-874"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q11",
+      "type": "identifier",
+      "question": "Show `HTTPAdapter.cert_verify`.",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:85-119"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:85-119",
+            "src/requests/adapters.py:634-677"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:455-481",
+            "src/requests/adapters.py:434-453"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:85-119",
+            "src/requests/adapters.py:403-432"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:85-119",
+            "src/requests/adapters.py:403-432"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:85-119",
+            "src/requests/adapters.py:455-481"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:85-119",
+            "src/requests/adapters.py:455-481"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:307-346",
+            "src/requests/adapters.py:455-481",
+            "src/requests/adapters.py:85-119"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q12",
+      "type": "identifier",
+      "question": "What does `dispatch_hook` do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_hooks.py:1-22"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q13",
+      "type": "concept",
+      "question": "How does the library decide whether to keep the Authorization header when a redirect goes to a different host?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "tests/test_requests.py:2286-2318",
+            "tests/test_lowlevel.py:63-78"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "tests/test_requests.py:2286-2318",
+            "tests/test_lowlevel.py:63-78"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:154-184",
+            "tests/test_requests.py:1921-1938",
+            "src/requests/sessions.py:309-332"
+          ]
+        },
+        "hybrid": {
+          "rank": 8,
+          "top": [
+            "tests/test_requests.py:1921-1938",
+            "tests/test_requests.py:2286-2318",
+            "tests/test_lowlevel.py:63-78"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 8,
+          "top": [
+            "tests/test_requests.py:1921-1938",
+            "tests/test_requests.py:2286-2318",
+            "tests/test_lowlevel.py:63-78"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:1921-1938",
+            "tests/test_lowlevel.py:169-189",
+            "src/requests/sessions.py:154-184"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:1921-1938",
+            "src/requests/sessions.py:154-184",
+            "tests/test_lowlevel.py:169-189"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:1921-1938",
+            "src/requests/sessions.py:154-184",
+            "tests/test_lowlevel.py:169-189"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q14",
+      "type": "concept",
+      "question": "How are HTTP proxies chosen for a particular URL?",
+      "modes": {
+        "keyword": {
+          "rank": 5,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/models.py:483-522",
+            "tests/test_requests.py:2761-2802"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 5,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/models.py:483-522",
+            "tests/test_requests.py:2761-2802"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:885-908",
+            "src/requests/adapters.py:565-597",
+            "src/requests/utils.py:911-939"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:565-597"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:565-597"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:565-597"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "tests/test_utils.py:542-565",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:565-597"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:565-597",
+            "src/requests/utils.py:911-939",
+            "tests/test_utils.py:542-565"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q15",
+      "type": "concept",
+      "question": "Which hosts are excluded from using a proxy according to the environment configuration?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:269-305",
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:269-305",
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:873-882",
+            "src/requests/utils.py:137-157",
+            "src/requests/utils.py:853-870"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:483-510"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:483-510"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939",
+            "src/requests/adapters.py:483-510"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:911-939",
+            "src/requests/utils.py:137-157"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:137-157",
+            "src/requests/utils.py:911-939"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q16",
+      "type": "concept",
+      "question": "How is the character encoding of a JSON response body detected from its raw bytes?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:1091-1124"
+          ]
+        },
+        "vector": {
+          "rank": 2,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/utils.py:1008-1037",
+            "src/requests/models.py:1053-1089"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:1053-1089",
+            "src/requests/models.py:576-609"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q17",
+      "type": "concept",
+      "question": "How are multipart file uploads turned into a request body?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/sessions.py:511-555",
+            "src/requests/api.py:24-47",
+            "src/requests/utils.py:1139-1155"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/sessions.py:511-555",
+            "src/requests/api.py:24-47",
+            "src/requests/utils.py:1139-1155"
+          ]
+        },
+        "vector": {
+          "rank": 4,
+          "top": [
+            "tests/test_requests.py:1886-1900",
+            "tests/test_requests.py:1134-1146",
+            "tests/test_requests.py:1116-1132"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "src/requests/api.py:24-47",
+            "src/requests/models.py:284-321",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/api.py:24-47",
+            "src/requests/models.py:284-321",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "src/requests/api.py:24-47",
+            "src/requests/models.py:284-321",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "src/requests/api.py:24-47",
+            "src/requests/models.py:284-321",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "src/requests/api.py:24-47",
+            "src/requests/models.py:284-321",
+            "src/requests/models.py:576-609"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q18",
+      "type": "concept",
+      "question": "How can a large response body be read in pieces without loading it all into memory?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "tests/test_requests.py:2025-2037",
+            "tests/test_requests.py:2007-2023"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "tests/test_requests.py:2025-2037",
+            "tests/test_requests.py:2007-2023"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:914-933",
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:1034-1051"
+          ]
+        },
+        "hybrid": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:2007-2023",
+            "tests/test_requests.py:2025-2037",
+            "src/requests/models.py:914-933"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:2007-2023",
+            "tests/test_requests.py:2025-2037",
+            "src/requests/models.py:914-933"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:2007-2023",
+            "tests/test_requests.py:2025-2037",
+            "src/requests/models.py:914-933"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:2007-2023",
+            "tests/test_requests.py:2025-2037",
+            "src/requests/models.py:914-933"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:2007-2023",
+            "src/requests/models.py:914-933",
+            "tests/test_requests.py:2025-2037"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q19",
+      "type": "concept",
+      "question": "How is a response body parsed as JSON, and what happens when it is not valid JSON?",
+      "modes": {
+        "keyword": {
+          "rank": 4,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/sessions.py:154-184",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 4,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/sessions.py:154-184",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "tests/test_requests.py:2641-2646",
+            "src/requests/models.py:576-609"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:576-609",
+            "src/requests/api.py:117-134"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:576-609",
+            "src/requests/api.py:117-134"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:576-609",
+            "src/requests/api.py:117-134"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:576-609",
+            "tests/test_requests.py:2641-2646"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1091-1124",
+            "src/requests/models.py:576-609",
+            "tests/test_requests.py:2641-2646"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q20",
+      "type": "concept",
+      "question": "How are a username and password encoded into the value of a Basic authentication header?",
+      "modes": {
+        "keyword": {
+          "rank": 3,
+          "top": [
+            "src/requests/utils.py:439-471",
+            "src/requests/utils.py:1098-1119",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 3,
+          "top": [
+            "src/requests/utils.py:439-471",
+            "src/requests/utils.py:1098-1119",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "vector": {
+          "rank": 2,
+          "top": [
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q21",
+      "type": "concept",
+      "question": "What turns a plain dictionary into a cookie jar?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:479-491"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:479-491"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "tests/test_requests.py:1387-1401",
+            "src/requests/utils.py:500-519"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "src/requests/cookies.py:604-625"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/cookies.py:579-601",
+            "src/requests/utils.py:500-519",
+            "tests/test_requests.py:1355-1385"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q22",
+      "type": "concept",
+      "question": "How does a mapping for header names ignore letter case while remembering the original spelling?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "tests/test_structures.py:6-51",
+            "src/requests/_internal_utils.py:1-23"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "tests/test_structures.py:6-51",
+            "src/requests/_internal_utils.py:1-23"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "tests/test_requests.py:1757-1768",
+            "docs/_themes/flask_theme_support.py:34-57"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/models.py:565-574",
+            "src/requests/utils.py:1098-1119"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/models.py:565-574",
+            "src/requests/utils.py:1098-1119"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "src/requests/structures.py:20-47",
+            "src/requests/models.py:565-574",
+            "src/requests/utils.py:1098-1119"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q23",
+      "type": "concept",
+      "question": "How does the library check that a header name and value are acceptable before sending them?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/utils.py:439-471",
+            "src/requests/utils.py:1098-1119",
+            "docs/_themes/flask_theme_support.py:34-57"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/utils.py:439-471",
+            "src/requests/utils.py:1098-1119",
+            "docs/_themes/flask_theme_support.py:34-57"
+          ]
+        },
+        "vector": {
+          "rank": 6,
+          "top": [
+            "tests/test_requests.py:496-502",
+            "tests/test_requests.py:1789-1799",
+            "tests/test_requests.py:2263-2273"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574",
+            "src/requests/cookies.py:80-93"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574",
+            "src/requests/cookies.py:80-93"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574",
+            "src/requests/cookies.py:80-93"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574",
+            "src/requests/cookies.py:80-93"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1098-1119",
+            "src/requests/models.py:565-574",
+            "tests/test_requests.py:1801-1815"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q24",
+      "type": "concept",
+      "question": "How is the default User-Agent string generated?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/_internal_utils.py:26-51",
+            "src/requests/utils.py:942-962",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/_internal_utils.py:26-51",
+            "src/requests/utils.py:942-962",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:942-962",
+            "tests/test_requests.py:524-537",
+            "src/requests/auth.py:34-75"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q25",
+      "type": "concept",
+      "question": "How is the pool of reusable connections configured?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:239-267",
+            "src/requests/adapters.py:158-199"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:158-199",
+            "src/requests/adapters.py:239-267"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:201-221",
+            "src/requests/adapters.py:239-267",
+            "src/requests/adapters.py:158-199"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q26",
+      "type": "concept",
+      "question": "What puts a request body back at its starting position so it can be sent again?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "src/requests/sessions.py:511-555",
+            "src/requests/sessions.py:263-301"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "src/requests/sessions.py:511-555",
+            "src/requests/sessions.py:263-301"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2039-2057",
+            "tests/test_requests.py:2082-2100"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2007-2023",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2007-2023",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2007-2023",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2007-2023",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1139-1155",
+            "tests/test_requests.py:2007-2023",
+            "src/requests/sessions.py:752-791"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q27",
+      "type": "concept",
+      "question": "How are Link headers from a response parsed into a structure?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/sessions.py:154-184",
+            "src/requests/sessions.py:229-261"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/sessions.py:154-184",
+            "src/requests/sessions.py:229-261"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1126-1142",
+            "src/requests/utils.py:965-999",
+            "src/requests/utils.py:439-471"
+          ]
+        },
+        "hybrid": {
+          "rank": 3,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/cookies.py:114-132",
+            "src/requests/models.py:1126-1142"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 3,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/cookies.py:114-132",
+            "src/requests/models.py:1126-1142"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1126-1142",
+            "src/requests/cookies.py:114-132",
+            "src/requests/adapters.py:365-401"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1126-1142",
+            "src/requests/cookies.py:114-132",
+            "src/requests/utils.py:965-999"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:1126-1142",
+            "src/requests/utils.py:965-999",
+            "src/requests/cookies.py:114-132"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q28",
+      "type": "concept",
+      "question": "How are credentials embedded in a URL extracted into a username and password?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:1070-1095",
+            "src/requests/auth.py:85-113",
+            "src/requests/auth.py:34-75"
+          ]
+        },
+        "hybrid": {
+          "rank": 5,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 5,
+          "top": [
+            "src/requests/auth.py:34-75",
+            "src/requests/auth.py:85-113",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 4,
+          "top": [
+            "src/requests/auth.py:85-113",
+            "src/requests/auth.py:34-75",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 4,
+          "top": [
+            "src/requests/auth.py:85-113",
+            "src/requests/auth.py:34-75",
+            "tests/test_utils.py:448-473"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 3,
+          "top": [
+            "src/requests/auth.py:85-113",
+            "src/requests/auth.py:34-75",
+            "src/requests/utils.py:1070-1095"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q29",
+      "type": "mixed",
+      "question": "timeout handling when the adapter sends a request",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:634-677",
+            "src/requests/sessions.py:511-555"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:634-677",
+            "src/requests/sessions.py:511-555"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:122-155",
+            "tests/test_requests.py:2568-2587"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:634-677",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:634-677",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:634-677",
+            "src/requests/adapters.py:122-155"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:122-155",
+            "src/requests/adapters.py:634-677"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "src/requests/adapters.py:122-155",
+            "src/requests/sessions.py:752-791"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q30",
+      "type": "mixed",
+      "question": "REQUESTS_CA_BUNDLE environment variable used for the verify setting",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:993-1024",
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:76-105"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:993-1024",
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:76-105"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "src/requests/sessions.py:608-653",
+            "tests/test_requests.py:993-1024"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/test_requests.py:993-1024",
+            "src/requests/adapters.py:307-346"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/test_requests.py:993-1024",
+            "src/requests/adapters.py:307-346"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/test_requests.py:993-1024",
+            "src/requests/sessions.py:608-653"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/test_requests.py:993-1024",
+            "src/requests/sessions.py:608-653"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/sessions.py:831-868",
+            "tests/test_requests.py:993-1024",
+            "src/requests/sessions.py:608-653"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q31",
+      "type": "mixed",
+      "question": "when a POST is turned into a GET after a 302 or 303 redirect",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:2286-2318",
+            "tests/test_requests.py:228-249",
+            "tests/test_requests.py:292-304"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:2286-2318",
+            "tests/test_requests.py:228-249",
+            "tests/test_requests.py:292-304"
+          ]
+        },
+        "vector": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "src/requests/sessions.py:370-392"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "tests/test_requests.py:2286-2318"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "tests/test_requests.py:2286-2318"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "tests/test_requests.py:228-249"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "tests/test_requests.py:228-249"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "tests/test_requests.py:306-318",
+            "tests/test_requests.py:292-304",
+            "tests/test_requests.py:228-249"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q32",
+      "type": "mixed",
+      "question": "TooManyRedirects raised when the redirect limit is exceeded",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/exceptions.py:91-111",
+            "tests/test_requests.py:2286-2318",
+            "src/requests/status_codes.py:58-99"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:2286-2318",
+            "src/requests/status_codes.py:58-99",
+            "src/requests/sessions.py:484-503"
+          ]
+        },
+        "vector": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "tests/test_requests.py:262-275"
+          ]
+        },
+        "hybrid": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "src/requests/exceptions.py:91-111"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "tests/test_requests.py:2286-2318"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "src/requests/exceptions.py:91-111"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "src/requests/exceptions.py:91-111"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 4,
+          "top": [
+            "tests/test_requests.py:251-260",
+            "src/requests/sessions.py:484-503",
+            "tests/test_requests.py:262-275"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q33",
+      "type": "mixed",
+      "question": "ConnectTimeout and ReadTimeout exceptions",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/exceptions.py:91-111",
+            "src/requests/adapters.py:679-720",
+            "tests/test_requests.py:2568-2587"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:679-720",
+            "tests/test_requests.py:2568-2587",
+            "src/requests/adapters.py:1-64"
+          ]
+        },
+        "vector": {
+          "rank": 4,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/exceptions.py:66-88",
+            "tests/test_requests.py:2589-2602"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/exceptions.py:91-111",
+            "src/requests/adapters.py:679-720"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 8,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/adapters.py:679-720",
+            "tests/test_requests.py:2589-2602"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/exceptions.py:91-111",
+            "src/requests/adapters.py:679-720"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/exceptions.py:91-111",
+            "tests/test_requests.py:2589-2602"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "tests/test_requests.py:2568-2587",
+            "src/requests/exceptions.py:91-111",
+            "tests/test_requests.py:2589-2602"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q34",
+      "type": "mixed",
+      "question": "what happens after a 401 response during digest authentication",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/auth.py:273-316",
+            "tests/test_lowlevel.py:127-167",
+            "tests/test_lowlevel.py:192-227"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q35",
+      "type": "mixed",
+      "question": "iter_lines splitting a streamed response on a delimiter",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "src/requests/adapters.py:365-401"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/adapters.py:365-401",
+            "src/requests/models.py:994-1032",
+            "src/requests/exceptions.py:20-35"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/utils.py:594-616",
+            "src/requests/models.py:979-993"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "tests/test_requests.py:1468-1485"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "tests/test_requests.py:1468-1485"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "tests/test_requests.py:1468-1485"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "tests/test_requests.py:1468-1485"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:994-1032",
+            "src/requests/models.py:979-993",
+            "tests/test_requests.py:1468-1485"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q36",
+      "type": "mixed",
+      "question": "IDNA encoding of a unicode host name when preparing a URL",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "docs/_themes/flask_theme_support.py:34-57",
+            "src/requests/models.py:1053-1089"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "docs/_themes/flask_theme_support.py:34-57",
+            "src/requests/models.py:1053-1089"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:473-481",
+            "src/requests/models.py:483-522"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:1053-1089"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:1053-1089"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:473-481"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:473-481"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:524-563",
+            "src/requests/models.py:483-522",
+            "src/requests/models.py:473-481"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q37",
+      "type": "mixed",
+      "question": "no_proxy entries given as CIDR network ranges",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "tests/test_utils.py:220-242",
+            "src/requests/adapters.py:269-305",
+            "src/requests/utils.py:810-851"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/requests/adapters.py:269-305",
+            "src/requests/utils.py:810-851",
+            "src/requests/adapters.py:512-553"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/utils.py:763-784",
+            "src/requests/utils.py:810-851",
+            "tests/test_utils.py:220-242"
+          ]
+        },
+        "hybrid": {
+          "rank": 3,
+          "top": [
+            "tests/test_utils.py:220-242",
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:763-784"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:763-784",
+            "src/requests/adapters.py:483-510"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 3,
+          "top": [
+            "tests/test_utils.py:220-242",
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:763-784"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 3,
+          "top": [
+            "tests/test_utils.py:220-242",
+            "src/requests/utils.py:810-851",
+            "src/requests/utils.py:763-784"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 3,
+          "top": [
+            "src/requests/utils.py:810-851",
+            "tests/test_utils.py:220-242",
+            "src/requests/utils.py:763-784"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q38",
+      "type": "mixed",
+      "question": "registering a hook callback on a request",
+      "modes": {
+        "keyword": {
+          "rank": 5,
+          "top": [
+            "src/requests/sessions.py:511-555",
+            "src/requests/hooks.py:32-48",
+            "src/requests/adapters.py:722-748"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 5,
+          "top": [
+            "src/requests/sessions.py:511-555",
+            "src/requests/hooks.py:32-48",
+            "src/requests/adapters.py:722-748"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:254-281",
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:722-729"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "src/requests/sessions.py:752-791"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_requests.py:1190-1209"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/requests/hooks.py:32-48",
+            "src/requests/models.py:254-281",
+            "tests/test_requests.py:1190-1209"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/models.py:254-281",
+            "src/requests/hooks.py:32-48",
+            "tests/test_requests.py:1190-1209"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q39",
+      "type": "mixed",
+      "question": "mounting an adapter for a URL prefix and finding the adapter for a URL",
+      "modes": {
+        "keyword": {
+          "rank": 10,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1709-1729",
+            "src/requests/models.py:483-522"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 10,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1709-1729",
+            "src/requests/models.py:483-522"
+          ]
+        },
+        "vector": {
+          "rank": 3,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "src/requests/sessions.py:888-901"
+          ]
+        },
+        "hybrid": {
+          "rank": 6,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "tests/test_requests.py:1709-1729"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 6,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "tests/test_requests.py:1709-1729"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "tests/test_requests.py:1709-1729"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "tests/test_requests.py:1709-1729"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 5,
+          "top": [
+            "tests/test_requests.py:1685-1707",
+            "tests/test_requests.py:1731-1742",
+            "tests/test_requests.py:1709-1729"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q40",
+      "type": "mixed",
+      "question": "status code names like ok and not_found mapped to numbers",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "tests/test_requests.py:228-249",
+            "src/requests/status_codes.py:109-125"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "tests/test_requests.py:228-249",
+            "src/requests/status_codes.py:109-125"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/models.py:847-859",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/status_codes.py:109-125",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/status_codes.py:109-125",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/status_codes.py:109-125",
+            "src/requests/models.py:861-874"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/models.py:861-874",
+            "src/requests/status_codes.py:109-125"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/requests/status_codes.py:1-57",
+            "src/requests/models.py:861-874",
+            "src/requests/models.py:847-859"
+          ]
+        }
+      }
+    }
+  ]
+}

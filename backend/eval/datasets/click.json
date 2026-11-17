@@ -1,0 +1,276 @@
+{
+  "name": "pallets/click question set (held out)",
+  "repo": "pallets/click",
+  "commit": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+  "notes": "Written before any retrieval result on this repository was seen. Used only to check choices made on the psf/requests set, never to tune them.",
+  "questions": [
+    {
+      "id": "c01",
+      "type": "identifier",
+      "question": "Where is `make_pass_decorator` defined?",
+      "relevant": [
+        {
+          "path": "src/click/decorators.py",
+          "symbol": "make_pass_decorator"
+        }
+      ]
+    },
+    {
+      "id": "c02",
+      "type": "identifier",
+      "question": "What does `Context.find_root` do?",
+      "relevant": [
+        {
+          "path": "src/click/core.py",
+          "symbol": "Context.find_root"
+        }
+      ]
+    },
+    {
+      "id": "c03",
+      "type": "identifier",
+      "question": "Show `split_arg_string`.",
+      "relevant": [
+        {
+          "path": "src/click/shell_completion.py",
+          "symbol": "split_arg_string"
+        }
+      ]
+    },
+    {
+      "id": "c04",
+      "type": "identifier",
+      "question": "What does `Group.resolve_command` do?",
+      "relevant": [
+        {
+          "path": "src/click/core.py",
+          "symbol": "Group.resolve_command"
+        }
+      ]
+    },
+    {
+      "id": "c05",
+      "type": "identifier",
+      "question": "Where is `CliRunner.isolation` implemented?",
+      "relevant": [
+        {
+          "path": "src/click/testing.py",
+          "symbol": "CliRunner.isolation"
+        }
+      ]
+    },
+    {
+      "id": "c06",
+      "type": "identifier",
+      "question": "What does `HelpFormatter.write_dl` do?",
+      "relevant": [
+        {
+          "path": "src/click/formatting.py",
+          "symbol": "HelpFormatter.write_dl"
+        }
+      ]
+    },
+    {
+      "id": "c07",
+      "type": "concept",
+      "question": "How does the library show long text through a pager such as less?",
+      "relevant": [
+        {
+          "path": "src/click/termui.py",
+          "symbol": "echo_via_pager"
+        },
+        {
+          "path": "src/click/_termui_impl.py",
+          "symbol": "_pipepager"
+        }
+      ]
+    },
+    {
+      "id": "c08",
+      "type": "concept",
+      "question": "How is a partially typed command line split into words for tab completion?",
+      "relevant": [
+        {
+          "path": "src/click/shell_completion.py",
+          "symbol": "split_arg_string"
+        }
+      ]
+    },
+    {
+      "id": "c09",
+      "type": "concept",
+      "question": "How is a command's output captured and its input faked when testing it?",
+      "relevant": [
+        {
+          "path": "src/click/testing.py",
+          "symbol": "CliRunner.isolation"
+        },
+        {
+          "path": "src/click/testing.py",
+          "symbol": "CliRunner.invoke"
+        }
+      ]
+    },
+    {
+      "id": "c10",
+      "type": "concept",
+      "question": "How does an option read its value from an environment variable?",
+      "relevant": [
+        {
+          "path": "src/click/core.py",
+          "symbol": "Parameter.resolve_envvar_value"
+        },
+        {
+          "path": "src/click/core.py",
+          "symbol": "Option.resolve_envvar_value"
+        },
+        {
+          "path": "src/click/core.py",
+          "symbol": "Parameter.value_from_envvar"
+        },
+        {
+          "path": "src/click/core.py",
+          "symbol": "Option.value_from_envvar"
+        }
+      ]
+    },
+    {
+      "id": "c11",
+      "type": "concept",
+      "question": "How does a command ask the user to confirm an action with yes or no?",
+      "relevant": [
+        {
+          "path": "src/click/termui.py",
+          "symbol": "confirm"
+        }
+      ]
+    },
+    {
+      "id": "c12",
+      "type": "concept",
+      "question": "How is the message built when a required option or argument is missing?",
+      "relevant": [
+        {
+          "path": "src/click/exceptions.py",
+          "symbol": "MissingParameter.format_message"
+        }
+      ]
+    },
+    {
+      "id": "c13",
+      "type": "concept",
+      "question": "How does a progress bar estimate how much time is left?",
+      "relevant": [
+        {
+          "path": "src/click/_termui_impl.py",
+          "symbol": "ProgressBar.eta"
+        },
+        {
+          "path": "src/click/_termui_impl.py",
+          "symbol": "ProgressBar.time_per_iteration"
+        }
+      ]
+    },
+    {
+      "id": "c14",
+      "type": "concept",
+      "question": "How is text wrapped to the terminal width in help output while keeping indentation?",
+      "relevant": [
+        {
+          "path": "src/click/formatting.py",
+          "symbol": "wrap_text"
+        },
+        {
+          "path": "src/click/formatting.py",
+          "symbol": "HelpFormatter.write_text"
+        }
+      ]
+    },
+    {
+      "id": "c15",
+      "type": "mixed",
+      "question": "prompting for a password without echoing what is typed",
+      "relevant": [
+        {
+          "path": "src/click/termui.py",
+          "symbol": "hidden_prompt_func"
+        },
+        {
+          "path": "src/click/termui.py",
+          "symbol": "prompt"
+        }
+      ]
+    },
+    {
+      "id": "c16",
+      "type": "mixed",
+      "question": "version_option decorator printing the installed package version",
+      "relevant": [
+        {
+          "path": "src/click/decorators.py",
+          "symbol": "version_option"
+        }
+      ]
+    },
+    {
+      "id": "c17",
+      "type": "mixed",
+      "question": "ParameterSource tells whether a value came from the command line, environment or default",
+      "relevant": [
+        {
+          "path": "src/click/core.py",
+          "symbol": "ParameterSource"
+        },
+        {
+          "path": "src/click/core.py",
+          "symbol": "Context.get_parameter_source"
+        }
+      ]
+    },
+    {
+      "id": "c18",
+      "type": "mixed",
+      "question": "bash, zsh and fish shell completion classes",
+      "relevant": [
+        {
+          "path": "src/click/shell_completion.py",
+          "symbol": "BashComplete"
+        },
+        {
+          "path": "src/click/shell_completion.py",
+          "symbol": "ZshComplete"
+        },
+        {
+          "path": "src/click/shell_completion.py",
+          "symbol": "FishComplete"
+        }
+      ]
+    },
+    {
+      "id": "c19",
+      "type": "mixed",
+      "question": "Choice type checks a value against allowed choices ignoring case",
+      "relevant": [
+        {
+          "path": "src/click/types.py",
+          "symbol": "Choice.convert"
+        },
+        {
+          "path": "src/click/types.py",
+          "symbol": "Choice.normalize_choice"
+        }
+      ]
+    },
+    {
+      "id": "c20",
+      "type": "mixed",
+      "question": "UsageError show method prints the usage line and the error",
+      "relevant": [
+        {
+          "path": "src/click/exceptions.py",
+          "symbol": "UsageError.show"
+        }
+      ]
+    }
+  ]
+}

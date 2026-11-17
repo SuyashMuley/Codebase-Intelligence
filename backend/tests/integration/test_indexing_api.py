@@ -199,12 +199,13 @@ def test_unimplemented_phase_is_left_untouched(db_client: TestClient) -> None:
     start(db_client, rid)
     tick(db_client, rid)  # fetch
     tick(db_client, rid)  # parse
-    t = tick(db_client, rid)  # embed has no handler yet
+    tick(db_client, rid)  # embed
+    t = tick(db_client, rid)  # the graph phase has no handler yet
     assert t["ran"] is False
-    assert t["reason"] == "phase_not_implemented:embed"
-    assert t["status"]["phase"] == "embed" and t["status"]["state"] == "running"
+    assert t["reason"] == "phase_not_implemented:graph"
+    assert t["status"]["phase"] == "graph" and t["status"]["state"] == "running"
     # The lease is released, so it does not look "busy" to later phases.
-    assert tick(db_client, rid)["reason"] == "phase_not_implemented:embed"
+    assert tick(db_client, rid)["reason"] == "phase_not_implemented:graph"
 
 
 # --- failure and recovery ---------------------------------------------------------------

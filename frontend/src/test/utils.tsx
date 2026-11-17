@@ -32,6 +32,7 @@ export function makeStatus(overrides: Partial<IndexStatus> = {}): IndexStatus {
     can_resume: false,
     progress: null,
     parse: null,
+    embed: null,
     updated_at: null,
     ...overrides,
   };

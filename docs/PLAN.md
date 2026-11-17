@@ -22,7 +22,7 @@ The MVP is a web app that ingests one pinned commit of a public GitHub repo, par
 | Concern | Decision |
 | --- | --- |
 | LLM | OpenRouter, OpenAI-compatible client, model ID in env, one fallback model |
-| Embeddings | Hugging Face Inference API, `bge-small-en-v1.5` (384 dims), model ID in env |
+| Embeddings | Cloudflare Workers AI, `bge-small-en-v1.5` (384 dims), model ID in env |
 | Tests and CI | Stub LLM and a deterministic hash embedder, so no network or keys |
 | Background work | None. A resumable job state machine advanced by `tick` calls |
 | Hosting | Vercel (frontend), Render free (API), Neon free (Postgres plus pgvector) |
@@ -168,14 +168,44 @@ Frontend (thin vertical slice)
 - 17 dev-tooling advisories remain, all one `picomatch` ReDoS with no patched release (4.0.7 is latest). They affect eslint, vite and vitest only and do not ship to users; CI audits production dependencies only.
 
 ### M5. Embeddings, retrieval, benchmark
-- [ ] `Embedder` interface, Hugging Face client (batching, retry, backoff), hash embedder
-- [ ] Resumable embed phase with a cursor, HNSW index after bulk insert
-- [ ] Keyword search, vector search, RRF fusion
-- [ ] Labeled dataset of 30 to 50 questions on one pinned small repo
-- [ ] `eval/run_eval.py`: keyword-only vs vector-only vs hybrid, Recall@k and MRR, results written to disk
-- [ ] Tests: embedding storage and dimension check, retrieval on a fixture, eval script runs end to end
+- [x] `Embedder` interface, Cloudflare Workers AI client (batching, retry, backoff), offline hash embedder
+- [x] Resumable embed phase with a cursor
+- [x] Keyword search (Postgres full-text), exact vector search, RRF fusion
+- [x] Labeled datasets: 40 questions on psf/requests and 20 held-out questions on pallets/click, both pinned to a commit
+- [x] `eval/run_eval.py`: keyword vs vector vs hybrid, ablations, Recall@k, MRR with bootstrap intervals, paired comparisons, results written to `backend/eval/results/`
+- [x] Tests: storage and dimension checks, stale-vector reset, fallbacks, snapshot scoping, retrieval on a fixture, eval harness end to end
+- [x] API `POST /api/repositories/{id}/search`; UI: Search tab, embed progress
 
-**Exit:** a reproducible eval report with measured numbers.
+**Exit:** a reproducible eval report with measured numbers. Met.
+
+**Measured results** (Cloudflare `bge-small-en-v1.5`, CLS pooling; MRR, 95% bootstrap interval in brackets for the headline rows)
+
+| Method | psf/requests, 40 questions, 523 chunks | pallets/click, 20 questions (held out), 1,214 chunks |
+| --- | --- | --- |
+| keyword | 0.577 (0.45 to 0.71) | 0.462 (0.28 to 0.65) |
+| keyword, text and path only (no symbol signal) | 0.412 | 0.213 |
+| vector | **0.826** (0.73 to 0.92) | **0.571** (0.38 to 0.78) |
+| hybrid, equal weights | 0.721 | 0.505 |
+| hybrid, vector weight 3 | 0.753 | 0.502 |
+
+- Vector search had the best MRR on both repositories, so it is the default. Hybrid never beat it. Against vector on click, hybrid was 5 better, 5 worse, 10 tied. Weighting the vector side up closed part of the gap on requests and none on click.
+- Keyword search is better for exact identifiers (click identifier Recall@5 1.00 vs 0.83 for vector); vector is better for concept questions (requests Recall@5 0.88 vs 0.56). Hybrid remains selectable for identifier-heavy use.
+- The click intervals are wide with 20 questions, so click alone does not prove vector is better; the evidence is the consistent direction across both sets.
+- Honesty notes: the symbol-name "jump to definition" signal was added after seeing keyword failures on requests (identifier MRR 0.56 to 0.92 there; it also helped on click, 0.21 to 0.46 overall). The fusion weights were tried on requests and then checked on click. Click's labels were fixed before it was run.
+- The bge query instruction prefix made no measurable difference (vector MRR 0.826 with, 0.822 without), so it is kept only because the model documents it.
+- Cost: about 0.9 Workers AI neurons per chunk (523 chunks used 455, 1,214 used 1,083). The free allowance is 10,000 neurons a day, so roughly 11,000 chunks a day; a repository at the 6,000-chunk cap costs about 5,200.
+- Latency (median): keyword 7 to 15 ms; vector and hybrid 150 to 270 ms, almost all of it the query-embedding request.
+
+**Deviations from the plan**
+- Cloudflare Workers AI replaced Hugging Face: HF's Inference API returned 402 (credits required). The model and its 384 dimensions are unchanged.
+- No HNSW index. Approximate indexes combined with the snapshot filter can return fewer rows than asked; an exact scan over at most 6,000 rows is correct and fast enough. Migration `0005` only rebuilds the full-text column (plain words plus camelCase-split words).
+- Default search mode is `vector`, not `hybrid` (see results). If embeddings are missing or the embedding service fails, search falls back to keyword and says so in `warnings`.
+- The embedder's own model id is stored per chunk and used for stale-vector detection, so changing the model re-embeds instead of mixing vector spaces. A missing Cloudflare credential raises `embedding_not_configured`; it never silently switches to the hash embedder.
+
+**Known limitations**
+- Two Python repositories and 60 questions: this is evidence, not a general result. The hash embedder is lexical and is for tests and demos only.
+- Not yet measured: query latency at the 6,000-chunk cap, and a pooling ablation (`--pooling mean`).
+- The local fastembed alternative was not installed (the environment denied the install); only Cloudflare and hash embedders exist.
 
 ### M6. Graph and impact analysis
 - [ ] Edge builder: imports, contains, and calls resolved through import bindings and same-module names
@@ -245,7 +275,7 @@ Needs paid hosting tiers. Numbers in the README come from measurements, not esti
 
 **Deployment**
 - **Neon:** create a project, enable `vector`, copy the pooled URL for the app and the direct URL for Alembic.
-- **Render:** one free web service from `render.yaml`, migrations on deploy, secrets in the dashboard (`DATABASE_URL`, `OPENROUTER_API_KEY`, `HF_TOKEN`, `GITHUB_TOKEN`).
+- **Render:** one free web service from `render.yaml`, migrations on deploy, secrets in the dashboard (`DATABASE_URL`, `OPENROUTER_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `GITHUB_TOKEN`).
 - **Vercel:** the `frontend` directory, with `NEXT_PUBLIC_API_URL` pointing at Render. CORS on the API allows only that origin.
 - **Indexing on free tiers:** the browser drives `tick` while the page is open. A scheduled GitHub Actions workflow can also call `tick` so a job finishes after the tab closes.
 - **Cold starts:** the frontend shows a waking state and retries `/health`. Neon connections use pre-ping and a retry on first connect.

@@ -12,7 +12,13 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.errors import JobInProgress, NoActiveJob, QuotaExceeded
 from app.db.models import IndexJob, Repository, Snapshot
-from app.schemas.indexing import FetchProgress, JobError, ParseProgress, StatusOut
+from app.schemas.indexing import (
+    EmbedProgress,
+    FetchProgress,
+    JobError,
+    ParseProgress,
+    StatusOut,
+)
 from app.services.github.client import GitHubGateway
 
 logger = logging.getLogger(__name__)
@@ -169,6 +175,18 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         if isinstance(parse, dict)
         else None
     )
+    embed = cursor.get("embed")
+    embed_progress = (
+        EmbedProgress(
+            embedded=int(embed.get("embedded", 0)),
+            total=int(embed.get("total", 0)),
+            model=str(embed.get("model", "")),
+            done=bool(embed.get("done", False)),
+            neurons=float(embed.get("neurons", 0.0)),
+        )
+        if isinstance(embed, dict)
+        else None
+    )
     error = (
         JobError(code=job.error_code or "error", message=job.error)
         if job.error and snapshot.status != "ready"
@@ -190,5 +208,6 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         can_resume=job.phase == "failed",
         progress=progress,
         parse=parse_progress,
+        embed=embed_progress,
         updated_at=job.updated_at,
     )

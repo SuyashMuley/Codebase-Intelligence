@@ -1,0 +1,499 @@
+{
+  "name": "psf/requests question set",
+  "repo": "psf/requests",
+  "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+  "notes": "Each question lists the symbols (or whole files) that answer it. A retrieved chunk counts as relevant when it overlaps one of them. Labels name symbols, not line numbers, so they survive any change to chunking.",
+  "questions": [
+    {
+      "id": "q01",
+      "type": "identifier",
+      "question": "Where is `get_netrc_auth` defined and what does it do?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "get_netrc_auth"
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "type": "identifier",
+      "question": "Show me `guess_json_utf`.",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "guess_json_utf"
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "type": "identifier",
+      "question": "What does `requote_uri` do?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "requote_uri"
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "type": "identifier",
+      "question": "Where is `HTTPDigestAuth.build_digest_header` implemented?",
+      "relevant": [
+        {
+          "path": "src/requests/auth.py",
+          "symbol": "HTTPDigestAuth.build_digest_header"
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "type": "identifier",
+      "question": "How does `resolve_redirects` work?",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "SessionRedirectMixin.resolve_redirects"
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "type": "identifier",
+      "question": "Where is `CaseInsensitiveDict.lower_items` defined?",
+      "relevant": [
+        {
+          "path": "src/requests/structures.py",
+          "symbol": "CaseInsensitiveDict.lower_items"
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "type": "identifier",
+      "question": "What does `merge_environment_settings` do?",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "Session.merge_environment_settings"
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "type": "identifier",
+      "question": "Find `extract_cookies_to_jar`.",
+      "relevant": [
+        {
+          "path": "src/requests/cookies.py",
+          "symbol": "extract_cookies_to_jar"
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "type": "identifier",
+      "question": "Where is `PreparedRequest.prepare_url` implemented?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "PreparedRequest.prepare_url"
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "type": "identifier",
+      "question": "What does `Response.raise_for_status` do?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "Response.raise_for_status"
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "type": "identifier",
+      "question": "Show `HTTPAdapter.cert_verify`.",
+      "relevant": [
+        {
+          "path": "src/requests/adapters.py",
+          "symbol": "HTTPAdapter.cert_verify"
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "type": "identifier",
+      "question": "What does `dispatch_hook` do?",
+      "relevant": [
+        {
+          "path": "src/requests/hooks.py",
+          "symbol": "dispatch_hook"
+        }
+      ]
+    },
+    {
+      "id": "q13",
+      "type": "concept",
+      "question": "How does the library decide whether to keep the Authorization header when a redirect goes to a different host?",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "SessionRedirectMixin.should_strip_auth"
+        },
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "SessionRedirectMixin.rebuild_auth"
+        }
+      ]
+    },
+    {
+      "id": "q14",
+      "type": "concept",
+      "question": "How are HTTP proxies chosen for a particular URL?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "select_proxy"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "resolve_proxies"
+        }
+      ]
+    },
+    {
+      "id": "q15",
+      "type": "concept",
+      "question": "Which hosts are excluded from using a proxy according to the environment configuration?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "should_bypass_proxies"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "get_environ_proxies"
+        }
+      ]
+    },
+    {
+      "id": "q16",
+      "type": "concept",
+      "question": "How is the character encoding of a JSON response body detected from its raw bytes?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "guess_json_utf"
+        }
+      ]
+    },
+    {
+      "id": "q17",
+      "type": "concept",
+      "question": "How are multipart file uploads turned into a request body?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "RequestEncodingMixin._encode_files"
+        }
+      ]
+    },
+    {
+      "id": "q18",
+      "type": "concept",
+      "question": "How can a large response body be read in pieces without loading it all into memory?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "Response.iter_content"
+        }
+      ]
+    },
+    {
+      "id": "q19",
+      "type": "concept",
+      "question": "How is a response body parsed as JSON, and what happens when it is not valid JSON?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "Response.json"
+        }
+      ]
+    },
+    {
+      "id": "q20",
+      "type": "concept",
+      "question": "How are a username and password encoded into the value of a Basic authentication header?",
+      "relevant": [
+        {
+          "path": "src/requests/auth.py",
+          "symbol": "_basic_auth_str"
+        }
+      ]
+    },
+    {
+      "id": "q21",
+      "type": "concept",
+      "question": "What turns a plain dictionary into a cookie jar?",
+      "relevant": [
+        {
+          "path": "src/requests/cookies.py",
+          "symbol": "cookiejar_from_dict"
+        }
+      ]
+    },
+    {
+      "id": "q22",
+      "type": "concept",
+      "question": "How does a mapping for header names ignore letter case while remembering the original spelling?",
+      "relevant": [
+        {
+          "path": "src/requests/structures.py",
+          "symbol": "CaseInsensitiveDict.__setitem__"
+        },
+        {
+          "path": "src/requests/structures.py",
+          "symbol": "CaseInsensitiveDict.__getitem__"
+        }
+      ]
+    },
+    {
+      "id": "q23",
+      "type": "concept",
+      "question": "How does the library check that a header name and value are acceptable before sending them?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "check_header_validity"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "_validate_header_part"
+        }
+      ]
+    },
+    {
+      "id": "q24",
+      "type": "concept",
+      "question": "How is the default User-Agent string generated?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "default_user_agent"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "default_headers"
+        }
+      ]
+    },
+    {
+      "id": "q25",
+      "type": "concept",
+      "question": "How is the pool of reusable connections configured?",
+      "relevant": [
+        {
+          "path": "src/requests/adapters.py",
+          "symbol": "HTTPAdapter.init_poolmanager"
+        },
+        {
+          "path": "src/requests/adapters.py",
+          "symbol": "HTTPAdapter.__init__"
+        }
+      ]
+    },
+    {
+      "id": "q26",
+      "type": "concept",
+      "question": "What puts a request body back at its starting position so it can be sent again?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "rewind_body"
+        }
+      ]
+    },
+    {
+      "id": "q27",
+      "type": "concept",
+      "question": "How are Link headers from a response parsed into a structure?",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "Response.links"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "parse_header_links"
+        }
+      ]
+    },
+    {
+      "id": "q28",
+      "type": "concept",
+      "question": "How are credentials embedded in a URL extracted into a username and password?",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "get_auth_from_url"
+        }
+      ]
+    },
+    {
+      "id": "q29",
+      "type": "mixed",
+      "question": "timeout handling when the adapter sends a request",
+      "relevant": [
+        {
+          "path": "src/requests/adapters.py",
+          "symbol": "HTTPAdapter.send"
+        }
+      ]
+    },
+    {
+      "id": "q30",
+      "type": "mixed",
+      "question": "REQUESTS_CA_BUNDLE environment variable used for the verify setting",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "Session.merge_environment_settings"
+        }
+      ]
+    },
+    {
+      "id": "q31",
+      "type": "mixed",
+      "question": "when a POST is turned into a GET after a 302 or 303 redirect",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "SessionRedirectMixin.rebuild_method"
+        }
+      ]
+    },
+    {
+      "id": "q32",
+      "type": "mixed",
+      "question": "TooManyRedirects raised when the redirect limit is exceeded",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "SessionRedirectMixin.resolve_redirects"
+        },
+        {
+          "path": "src/requests/exceptions.py",
+          "symbol": "TooManyRedirects"
+        }
+      ]
+    },
+    {
+      "id": "q33",
+      "type": "mixed",
+      "question": "ConnectTimeout and ReadTimeout exceptions",
+      "relevant": [
+        {
+          "path": "src/requests/exceptions.py",
+          "symbol": "ConnectTimeout"
+        },
+        {
+          "path": "src/requests/exceptions.py",
+          "symbol": "ReadTimeout"
+        }
+      ]
+    },
+    {
+      "id": "q34",
+      "type": "mixed",
+      "question": "what happens after a 401 response during digest authentication",
+      "relevant": [
+        {
+          "path": "src/requests/auth.py",
+          "symbol": "HTTPDigestAuth.handle_401"
+        }
+      ]
+    },
+    {
+      "id": "q35",
+      "type": "mixed",
+      "question": "iter_lines splitting a streamed response on a delimiter",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "Response.iter_lines"
+        }
+      ]
+    },
+    {
+      "id": "q36",
+      "type": "mixed",
+      "question": "IDNA encoding of a unicode host name when preparing a URL",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "PreparedRequest._get_idna_encoded_host"
+        },
+        {
+          "path": "src/requests/models.py",
+          "symbol": "PreparedRequest.prepare_url"
+        }
+      ]
+    },
+    {
+      "id": "q37",
+      "type": "mixed",
+      "question": "no_proxy entries given as CIDR network ranges",
+      "relevant": [
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "address_in_network"
+        },
+        {
+          "path": "src/requests/utils.py",
+          "symbol": "is_valid_cidr"
+        }
+      ]
+    },
+    {
+      "id": "q38",
+      "type": "mixed",
+      "question": "registering a hook callback on a request",
+      "relevant": [
+        {
+          "path": "src/requests/models.py",
+          "symbol": "RequestHooksMixin.register_hook"
+        }
+      ]
+    },
+    {
+      "id": "q39",
+      "type": "mixed",
+      "question": "mounting an adapter for a URL prefix and finding the adapter for a URL",
+      "relevant": [
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "Session.mount"
+        },
+        {
+          "path": "src/requests/sessions.py",
+          "symbol": "Session.get_adapter"
+        }
+      ]
+    },
+    {
+      "id": "q40",
+      "type": "mixed",
+      "question": "status code names like ok and not_found mapped to numbers",
+      "relevant": [
+        {
+          "path": "src/requests/status_codes.py"
+        }
+      ]
+    }
+  ]
+}

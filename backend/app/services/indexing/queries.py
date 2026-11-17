@@ -132,6 +132,11 @@ def build_stats(db: Session, snapshot: Snapshot) -> StatsOut:
             func.coalesce(func.max(func.length(Chunk.text)), 0),
         ).where(Chunk.snapshot_id == sid)
     ).one()
+    embedded_count, embedding_model = db.execute(
+        select(func.count(), func.max(Chunk.embedding_model)).where(
+            Chunk.snapshot_id == sid, Chunk.embedding.is_not(None)
+        )
+    ).one()
     ref_kinds = _grouped(db, CodeRef.kind, CodeRef.snapshot_id == sid)
     spans, redacted_files = db.execute(
         select(
@@ -162,7 +167,11 @@ def build_stats(db: Session, snapshot: Snapshot) -> StatsOut:
             total=sum(symbol_kinds.values()), by_kind=dict(sorted(symbol_kinds.items()))
         ),
         chunks=ChunkStats(
-            total=int(chunk_total), average_chars=int(chunk_avg), largest_chars=int(chunk_max)
+            total=int(chunk_total),
+            embedded=int(embedded_count),
+            embedding_model=embedding_model,
+            average_chars=int(chunk_avg),
+            largest_chars=int(chunk_max),
         ),
         refs=RefStats(imports=ref_kinds.get("import", 0), calls=ref_kinds.get("call", 0)),
         redactions=RedactionStats(spans=int(spans), files=int(redacted_files)),

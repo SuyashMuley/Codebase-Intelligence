@@ -13,6 +13,8 @@ import type {
   Me,
   Repository,
   RepositoryList,
+  SearchMode,
+  SearchResponse,
   Stats,
   TickResult,
 } from "./types";
@@ -219,4 +221,12 @@ export function useSlowFlag(pending: boolean, afterMs = 2_500): boolean {
     };
   }, [pending, afterMs]);
   return pending && slow;
+}
+
+/** One search request. A mutation, not a query: each call embeds the question (rate limited). */
+export function useSearch(repoId: string) {
+  return useMutation({
+    mutationFn: (input: { query: string; mode: SearchMode }) =>
+      post<SearchResponse>(`/api/repositories/${repoId}/search`, { ...input, limit: 10 }),
+  });
 }

@@ -12,13 +12,14 @@ import {
 } from "@/lib/hooks";
 import { formatLineRange, parseLineRange } from "@/lib/tree";
 import { FilesTab } from "./files-tab";
+import { SearchTab } from "./search-tab";
 import { ReauthNotice } from "./reauth-notice";
 import { StatsPanel } from "./stats-panel";
 import { StatusPanel } from "./status-panel";
 import { Button, EmptyState, ErrorNotice, Spinner } from "./ui";
 import type { LineRange } from "./code-viewer";
 
-type Tab = "overview" | "files";
+type Tab = "overview" | "files" | "search";
 const MAX_PATH = 500;
 
 export function RepoDetail({ id }: { id: string }) {
@@ -39,7 +40,13 @@ export function RepoDetail({ id }: { id: string }) {
   const rawFile = params.get("file");
   const file = rawFile && rawFile.length <= MAX_PATH ? rawFile : null;
   const range = parseLineRange(params.get("line"));
-  const tab: Tab = params.get("tab") === "files" || (file !== null && !params.get("tab")) ? "files" : "overview";
+  const tabParam = params.get("tab");
+  const tab: Tab =
+    tabParam === "search"
+      ? "search"
+      : tabParam === "files" || (file !== null && !tabParam)
+        ? "files"
+        : "overview";
 
   function update(changes: Record<string, string | null>) {
     const next = new URLSearchParams(params.toString());
@@ -75,6 +82,7 @@ export function RepoDetail({ id }: { id: string }) {
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "files", label: "Files" },
+    { key: "search", label: "Search" },
   ];
 
   return (
@@ -146,6 +154,14 @@ export function RepoDetail({ id }: { id: string }) {
             />
           ) : null}
           {stats.data ? <StatsPanel stats={stats.data} progress={status.data?.parse ?? null} /> : null}
+        </div>
+      ) : tab === "search" ? (
+        <div role="tabpanel" id="panel-search" aria-labelledby="tab-search">
+          <SearchTab
+            repoId={id}
+            hasSnapshot={hasSnapshot}
+            onOpen={(path, line) => update({ tab: "files", file: path, line })}
+          />
         </div>
       ) : (
         <div role="tabpanel" id="panel-files" aria-labelledby="tab-files">

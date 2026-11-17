@@ -94,6 +94,34 @@ class FileNotFound(AppError):
     code = "file_not_found"
 
 
+class EmbeddingNotConfigured(AppError):
+    status_code = 503
+    code = "embedding_not_configured"
+
+
+class EmbeddingAuthFailed(AppError):
+    status_code = 502
+    code = "embedding_auth_failed"
+
+
+class EmbeddingQuotaExceeded(AppError):
+    """The embedding provider's allowance is used up. Not retried: try again later."""
+
+    status_code = 503
+    code = "embedding_quota_exceeded"
+
+
+class EmbeddingUnavailable(AppError):
+    status_code = 502
+    code = "embedding_unavailable"
+    retryable = True
+
+
+class EmbeddingBadResponse(AppError):
+    status_code = 502
+    code = "embedding_bad_response"
+
+
 class GithubRateLimited(AppError):
     """GitHub's rate limit (upstream), not ours. Retried after the reset time."""
 

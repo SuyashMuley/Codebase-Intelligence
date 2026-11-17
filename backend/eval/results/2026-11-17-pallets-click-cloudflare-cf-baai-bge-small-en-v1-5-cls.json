@@ -1,0 +1,1749 @@
+{
+  "meta": {
+    "dataset": "pallets/click question set (held out)",
+    "repo": "pallets/click",
+    "commit": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+    "date_utc": "2026-11-17T19:12:22+00:00",
+    "embedding_model": "cloudflare:@cf/baai/bge-small-en-v1.5:cls",
+    "questions": 20,
+    "question_types": {
+      "identifier": 6,
+      "concept": 8,
+      "mixed": 6
+    },
+    "chunks": 1214,
+    "k": 10,
+    "indexing_seconds": 19.9,
+    "indexing_neurons": 1083.4,
+    "query_embedding_usage": {
+      "requests": 158.0,
+      "neurons": 1088.379999999995
+    }
+  },
+  "results": {
+    "keyword": {
+      "recall@1": 0.35,
+      "recall@5": 0.6,
+      "recall@10": 0.75,
+      "mrr": 0.4618055555555556,
+      "mrr_ci95": [
+        0.28180555555555553,
+        0.65
+      ],
+      "recall@5_ci95": [
+        0.4,
+        0.8
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 1.0,
+          "mrr": 0.7
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.25,
+          "mrr": 0.11701388888888889
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.6833333333333333
+        }
+      },
+      "latency_ms": {
+        "median": 14.9,
+        "p95": 32.7
+      }
+    },
+    "keyword (text and path only)": {
+      "recall@1": 0.1,
+      "recall@5": 0.3,
+      "recall@10": 0.55,
+      "mrr": 0.21291666666666667,
+      "mrr_ci95": [
+        0.08930555555555555,
+        0.36680555555555555
+      ],
+      "recall@5_ci95": [
+        0.1,
+        0.5
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 0.3333333333333333,
+          "mrr": 0.16666666666666666
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.25,
+          "mrr": 0.11701388888888889
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.3333333333333333,
+          "mrr": 0.387037037037037
+        }
+      },
+      "latency_ms": {
+        "median": 15.2,
+        "p95": 33.7
+      }
+    },
+    "vector": {
+      "recall@1": 0.5,
+      "recall@5": 0.65,
+      "recall@10": 0.75,
+      "mrr": 0.571031746031746,
+      "mrr_ci95": [
+        0.376984126984127,
+        0.775
+      ],
+      "recall@5_ci95": [
+        0.45,
+        0.85
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 0.8333333333333334,
+          "mrr": 0.7222222222222222
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.5,
+          "mrr": 0.4305555555555556
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.6071428571428571
+        }
+      },
+      "latency_ms": {
+        "median": 214.4,
+        "p95": 347.3
+      }
+    },
+    "hybrid": {
+      "recall@1": 0.35,
+      "recall@5": 0.65,
+      "recall@10": 0.85,
+      "mrr": 0.5052579365079365,
+      "mrr_ci95": [
+        0.33561507936507934,
+        0.6793650793650794
+      ],
+      "recall@5_ci95": [
+        0.45,
+        0.85
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 1.0,
+          "mrr": 0.6805555555555556
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.375,
+          "mrr": 0.2795138888888889
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.6309523809523809
+        }
+      },
+      "latency_ms": {
+        "median": 270.1,
+        "p95": 762.6
+      }
+    },
+    "hybrid (text and path only)": {
+      "recall@1": 0.2,
+      "recall@5": 0.45,
+      "recall@10": 0.8,
+      "mrr": 0.34831349206349205,
+      "mrr_ci95": [
+        0.19484126984126984,
+        0.5152777777777777
+      ],
+      "recall@5_ci95": [
+        0.25,
+        0.65
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 0.3333333333333333,
+          "mrr": 0.3935185185185185
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.375,
+          "mrr": 0.2795138888888889
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.3948412698412698
+        }
+      },
+      "latency_ms": {
+        "median": 258.2,
+        "p95": 453.2
+      }
+    },
+    "hybrid (vector weight 1.5)": {
+      "recall@1": 0.3,
+      "recall@5": 0.65,
+      "recall@10": 0.85,
+      "mrr": 0.4783928571428571,
+      "mrr_ci95": [
+        0.31720238095238096,
+        0.6533333333333333
+      ],
+      "recall@5_ci95": [
+        0.45,
+        0.85
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 1.0,
+          "mrr": 0.7555555555555555
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.375,
+          "mrr": 0.2833333333333333
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.46130952380952384
+        }
+      },
+      "latency_ms": {
+        "median": 262.2,
+        "p95": 390.3
+      }
+    },
+    "hybrid (vector weight 2)": {
+      "recall@1": 0.3,
+      "recall@5": 0.6,
+      "recall@10": 0.8,
+      "mrr": 0.47172619047619047,
+      "mrr_ci95": [
+        0.30714285714285716,
+        0.6488095238095238
+      ],
+      "recall@5_ci95": [
+        0.4,
+        0.8
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 0.8333333333333334,
+          "mrr": 0.75
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.375,
+          "mrr": 0.2708333333333333
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.46130952380952384
+        }
+      },
+      "latency_ms": {
+        "median": 246.9,
+        "p95": 391.4
+      }
+    },
+    "hybrid (vector weight 3)": {
+      "recall@1": 0.35,
+      "recall@5": 0.6,
+      "recall@10": 0.85,
+      "mrr": 0.5017857142857143,
+      "mrr_ci95": [
+        0.325,
+        0.6875
+      ],
+      "recall@5_ci95": [
+        0.4,
+        0.8
+      ],
+      "by_type": {
+        "identifier": {
+          "n": 6,
+          "recall@5": 0.8333333333333334,
+          "mrr": 0.7430555555555556
+        },
+        "concept": {
+          "n": 8,
+          "recall@5": 0.375,
+          "mrr": 0.35119047619047616
+        },
+        "mixed": {
+          "n": 6,
+          "recall@5": 0.6666666666666666,
+          "mrr": 0.46130952380952384
+        }
+      },
+      "latency_ms": {
+        "median": 251.7,
+        "p95": 431.1
+      }
+    }
+  },
+  "paired": {
+    "keyword vs keyword (text and path only)": {
+      "wins": 8,
+      "losses": 0,
+      "ties": 12
+    },
+    "hybrid vs keyword": {
+      "wins": 7,
+      "losses": 4,
+      "ties": 9
+    },
+    "hybrid vs vector": {
+      "wins": 5,
+      "losses": 5,
+      "ties": 10
+    },
+    "vector vs keyword": {
+      "wins": 9,
+      "losses": 5,
+      "ties": 6
+    }
+  },
+  "questions": [
+    {
+      "id": "c01",
+      "type": "identifier",
+      "question": "Where is `make_pass_decorator` defined?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "tests/test_context.py:39-82"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:39-82"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "examples/aliases/aliases.py:34-34"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:204-251"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:204-251"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:204-251"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:204-251"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:47-93",
+            "tests/test_context.py:661-695",
+            "src/click/decorators.py:204-251"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c02",
+      "type": "identifier",
+      "question": "What does `Context.find_root` do?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:236-267",
+            "src/click/core.py:760-777",
+            "tests/test_testing.py:475-515"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:475-515",
+            "src/click/core.py:675-702",
+            "src/click/core.py:1353-1388"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:760-777",
+            "src/click/core.py:236-267",
+            "tests/test_context.py:39-82"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:236-267",
+            "src/click/core.py:760-777",
+            "src/click/core.py:675-702"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 8,
+          "top": [
+            "src/click/core.py:236-267",
+            "src/click/core.py:675-702",
+            "src/click/core.py:1353-1388"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:760-777",
+            "src/click/core.py:236-267",
+            "src/click/core.py:675-702"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:760-777",
+            "src/click/core.py:236-267",
+            "src/click/core.py:675-702"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:760-777",
+            "src/click/core.py:236-267",
+            "src/click/core.py:675-702"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c03",
+      "type": "identifier",
+      "question": "Show `split_arg_string`.",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "src/click/parser.py:327-361",
+            "src/click/parser.py:503-533"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/click/parser.py:327-361",
+            "src/click/shell_completion.py:598-631",
+            "src/click/parser.py:503-533"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "tests/test_options.py:1444-1484"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "src/click/parser.py:327-361"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "src/click/parser.py:327-361"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "tests/test_defaults.py:499-531"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "tests/test_defaults.py:499-531"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:598-631",
+            "tests/test_parser.py:1-24",
+            "tests/test_defaults.py:499-531"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c04",
+      "type": "identifier",
+      "question": "What does `Group.resolve_command` do?",
+      "modes": {
+        "keyword": {
+          "rank": 5,
+          "top": [
+            "src/click/core.py:1893-1935",
+            "src/click/core.py:1694-1725",
+            "examples/aliases/aliases.py:37-73"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_custom_classes.py:84-112",
+            "src/click/core.py:1893-1935",
+            "src/click/core.py:1844-1883"
+          ]
+        },
+        "vector": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:2111-2135"
+          ]
+        },
+        "hybrid": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:2111-2135"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 9,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:1727-1751"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:2111-2135"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:2111-2135"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1694-1725",
+            "tests/typing/typing_aliased_group.py:10-28",
+            "src/click/core.py:2111-2135"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c05",
+      "type": "identifier",
+      "question": "Where is `CliRunner.isolation` implemented?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "src/click/testing.py:341-368",
+            "src/click/testing.py:427-472",
+            "tests/test_testing.py:315-381"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:315-381",
+            "tests/test_options.py:1418-1441",
+            "tests/test_testing.py:181-208"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/testing.py:427-472",
+            "tests/test_stream_lifecycle.py:377-394",
+            "tests/test_stream_lifecycle.py:397-427"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/testing.py:427-472",
+            "src/click/testing.py:341-368",
+            "tests/test_stream_lifecycle.py:397-427"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 8,
+          "top": [
+            "tests/test_stream_lifecycle.py:397-427",
+            "tests/test_testing.py:715-743",
+            "tests/test_testing.py:912-932"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/testing.py:427-472",
+            "tests/test_stream_lifecycle.py:397-427",
+            "src/click/testing.py:341-368"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/testing.py:427-472",
+            "tests/test_stream_lifecycle.py:397-427",
+            "src/click/testing.py:341-368"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/testing.py:427-472",
+            "tests/test_stream_lifecycle.py:397-427",
+            "src/click/testing.py:341-368"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c06",
+      "type": "identifier",
+      "question": "What does `HelpFormatter.write_dl` do?",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:238-280",
+            "src/click/formatting.py:119-134",
+            "tests/test_commands.py:422-462"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_commands.py:422-462",
+            "tests/test_formatting.py:253-303",
+            "src/click/core.py:1216-1248"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1282-1299",
+            "src/click/core.py:1301-1317",
+            "src/click/core.py:1319-1329"
+          ]
+        },
+        "hybrid": {
+          "rank": 4,
+          "top": [
+            "src/click/formatting.py:119-134",
+            "src/click/core.py:1282-1299",
+            "src/click/core.py:1301-1317"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1282-1299",
+            "src/click/core.py:1301-1317",
+            "tests/test_formatting.py:713-729"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 5,
+          "top": [
+            "src/click/core.py:1282-1299",
+            "src/click/formatting.py:119-134",
+            "src/click/core.py:1301-1317"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 6,
+          "top": [
+            "src/click/core.py:1282-1299",
+            "src/click/core.py:1301-1317",
+            "src/click/formatting.py:119-134"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 8,
+          "top": [
+            "src/click/core.py:1282-1299",
+            "src/click/core.py:1301-1317",
+            "src/click/formatting.py:119-134"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c07",
+      "type": "concept",
+      "question": "How does the library show long text through a pager such as less?",
+      "modes": {
+        "keyword": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/termui.py:367-399",
+            "tests/test_utils/test_echo_via_pager.py:146-190"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/termui.py:367-399",
+            "tests/test_utils/test_echo_via_pager.py:146-190"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/_termui_impl.py:546-582",
+            "src/click/_termui_impl.py:449-491",
+            "tests/test_termui.py:776-802"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/_termui_impl.py:546-582",
+            "src/click/termui.py:367-399"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/_termui_impl.py:546-582",
+            "src/click/termui.py:367-399"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/_termui_impl.py:546-582",
+            "src/click/termui.py:367-399"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "tests/test_termui.py:776-802",
+            "src/click/_termui_impl.py:546-582",
+            "src/click/termui.py:367-399"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/_termui_impl.py:546-582",
+            "tests/test_termui.py:776-802",
+            "src/click/termui.py:367-399"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c08",
+      "type": "concept",
+      "question": "How is a partially typed command line split into words for tab completion?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/click/_termui_impl.py:250-294",
+            "src/click/core.py:1844-1883",
+            "src/click/decorators.py:164-202"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/click/_termui_impl.py:250-294",
+            "src/click/core.py:1844-1883",
+            "src/click/decorators.py:164-202"
+          ]
+        },
+        "vector": {
+          "rank": 9,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/core.py:1642-1672",
+            "src/click/shell_completion.py:168-219"
+          ]
+        },
+        "hybrid": {
+          "rank": 8,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219",
+            "src/click/core.py:1439-1484"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 8,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219",
+            "src/click/core.py:1439-1484"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 6,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219",
+            "src/click/core.py:1439-1484"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 6,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219",
+            "src/click/core.py:1439-1484"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 6,
+          "top": [
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219",
+            "src/click/core.py:1439-1484"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c09",
+      "type": "concept",
+      "question": "How is a command's output captured and its input faked when testing it?",
+      "modes": {
+        "keyword": {
+          "rank": 8,
+          "top": [
+            "src/click/testing.py:41-91",
+            "tests/test_testing.py:52-89",
+            "src/click/decorators.py:164-202"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 8,
+          "top": [
+            "src/click/testing.py:41-91",
+            "tests/test_testing.py:52-89",
+            "src/click/decorators.py:164-202"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:765-779",
+            "tests/test_testing.py:782-805",
+            "tests/test_testing.py:888-909"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:808-851",
+            "tests/test_testing.py:935-968",
+            "src/click/testing.py:41-91"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:808-851",
+            "tests/test_testing.py:935-968",
+            "src/click/testing.py:41-91"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:808-851",
+            "tests/test_testing.py:935-968",
+            "tests/test_utils/test_echo.py:91-143"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:808-851",
+            "tests/test_testing.py:935-968",
+            "tests/test_utils/test_echo.py:91-143"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "tests/test_testing.py:808-851",
+            "tests/test_testing.py:935-968",
+            "tests/test_utils/test_echo.py:91-143"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c10",
+      "type": "concept",
+      "question": "How does an option read its value from an environment variable?",
+      "modes": {
+        "keyword": {
+          "rank": 9,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/parser.py:430-468",
+            "tests/test_termui.py:1349-1378"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 9,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/parser.py:430-468",
+            "tests/test_termui.py:1349-1378"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:3755-3790",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3731-3753"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3755-3790"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3755-3790"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3755-3790"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3755-3790"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:2852-2895",
+            "src/click/core.py:3755-3790"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c11",
+      "type": "concept",
+      "question": "How does a command ask the user to confirm an action with yes or no?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1844-1883",
+            "src/click/decorators.py:164-202",
+            "src/click/core.py:983-1009"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1844-1883",
+            "src/click/decorators.py:164-202",
+            "src/click/core.py:983-1009"
+          ]
+        },
+        "vector": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:3682-3716",
+            "src/click/decorators.py:376-397",
+            "src/click/termui.py:289-326"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1753-1793",
+            "tests/test_utils/test_confirm.py:4-41",
+            "examples/completion/completion.py:50-56"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/click/core.py:1753-1793",
+            "tests/test_utils/test_confirm.py:4-41",
+            "examples/completion/completion.py:50-56"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "tests/test_utils/test_confirm.py:4-41",
+            "src/click/decorators.py:376-397",
+            "src/click/core.py:1753-1793"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "src/click/decorators.py:376-397",
+            "tests/test_utils/test_confirm.py:4-41",
+            "examples/completion/completion.py:50-56"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 7,
+          "top": [
+            "src/click/decorators.py:376-397",
+            "tests/test_utils/test_confirm.py:4-41",
+            "examples/completion/completion.py:50-56"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c12",
+      "type": "concept",
+      "question": "How is the message built when a required option or argument is missing?",
+      "modes": {
+        "keyword": {
+          "rank": 5,
+          "top": [
+            "src/click/__init__.py:1-39",
+            "src/click/core.py:1216-1248",
+            "tests/test_deprecations.py:112-166"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 5,
+          "top": [
+            "src/click/__init__.py:1-39",
+            "src/click/core.py:1216-1248",
+            "tests/test_deprecations.py:112-166"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "src/click/types.py:426-434",
+            "tests/test_options.py:229-241",
+            "tests/test_options.py:1136-1157"
+          ]
+        },
+        "hybrid": {
+          "rank": 9,
+          "top": [
+            "tests/test_arguments.py:609-645",
+            "tests/test_options.py:1103-1133",
+            "tests/test_termui.py:1548-1577"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 9,
+          "top": [
+            "tests/test_arguments.py:609-645",
+            "tests/test_options.py:1103-1133",
+            "tests/test_termui.py:1548-1577"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 10,
+          "top": [
+            "tests/test_arguments.py:609-645",
+            "tests/test_options.py:1103-1133",
+            "tests/test_options.py:1136-1157"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "tests/test_arguments.py:609-645",
+            "tests/test_options.py:1136-1157",
+            "tests/test_options.py:1103-1133"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "tests/test_arguments.py:609-645",
+            "tests/test_options.py:1136-1157",
+            "tests/test_options.py:1103-1133"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c13",
+      "type": "concept",
+      "question": "How does a progress bar estimate how much time is left?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "tests/test_options.py:2077-2120",
+            "src/click/termui.py:443-479",
+            "tests/test_options.py:2023-2076"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_options.py:2077-2120",
+            "src/click/termui.py:443-479",
+            "tests/test_options.py:2023-2076"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "tests/test_termui.py:112-140",
+            "src/click/_termui_impl.py:142-154"
+          ]
+        },
+        "hybrid": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "src/click/termui.py:481-512",
+            "src/click/termui.py:514-541"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "src/click/termui.py:481-512",
+            "src/click/termui.py:514-541"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "src/click/termui.py:481-512",
+            "tests/test_termui.py:112-140"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "src/click/termui.py:481-512",
+            "tests/test_termui.py:112-140"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": null,
+          "top": [
+            "src/click/termui.py:443-479",
+            "src/click/termui.py:481-512",
+            "tests/test_termui.py:112-140"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c14",
+      "type": "concept",
+      "question": "How is text wrapped to the terminal width in help output while keeping indentation?",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "tests/test_commands.py:422-462",
+            "tests/test_formatting.py:253-303",
+            "src/click/_termui_impl.py:250-294"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_commands.py:422-462",
+            "tests/test_formatting.py:253-303",
+            "src/click/_termui_impl.py:250-294"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/formatting.py:119-134",
+            "tests/test_formatting.py:366-402"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/core.py:1301-1317",
+            "tests/test_testing.py:518-538"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/core.py:1301-1317",
+            "tests/test_testing.py:518-538"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/core.py:1301-1317",
+            "tests/test_testing.py:518-538"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/core.py:1301-1317",
+            "tests/test_testing.py:518-538"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/formatting.py:31-67",
+            "src/click/core.py:1301-1317",
+            "tests/test_formatting.py:366-402"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c15",
+      "type": "mixed",
+      "question": "prompting for a password without echoing what is typed",
+      "modes": {
+        "keyword": {
+          "rank": 10,
+          "top": [
+            "tests/test_termui.py:1381-1407",
+            "examples/repo/repo.py:100-113",
+            "src/click/decorators.py:400-414"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 10,
+          "top": [
+            "tests/test_termui.py:1381-1407",
+            "examples/repo/repo.py:100-113",
+            "src/click/decorators.py:400-414"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/termui.py:168-203",
+            "tests/test_utils/test_prompt.py:34-57",
+            "tests/typing/typing_password_option.py:1-13"
+          ]
+        },
+        "hybrid": {
+          "rank": 7,
+          "top": [
+            "tests/test_termui.py:1381-1407",
+            "src/click/decorators.py:400-414",
+            "tests/typing/typing_password_option.py:1-13"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 7,
+          "top": [
+            "tests/test_termui.py:1381-1407",
+            "src/click/decorators.py:400-414",
+            "tests/typing/typing_password_option.py:1-13"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 7,
+          "top": [
+            "tests/typing/typing_password_option.py:1-13",
+            "src/click/decorators.py:400-414",
+            "tests/test_termui.py:1381-1407"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 7,
+          "top": [
+            "tests/typing/typing_password_option.py:1-13",
+            "src/click/decorators.py:400-414",
+            "tests/test_termui.py:1381-1407"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 7,
+          "top": [
+            "tests/typing/typing_password_option.py:1-13",
+            "tests/test_utils/test_prompt.py:34-57",
+            "src/click/decorators.py:400-414"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c16",
+      "type": "mixed",
+      "question": "version_option decorator printing the installed package version",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:509-545"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:509-545",
+            "src/click/__init__.py:1-39"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:555-594",
+            "src/click/decorators.py:447-484"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:555-594"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:555-594",
+            "src/click/decorators.py:417-445"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:555-594"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:447-484",
+            "src/click/decorators.py:555-594"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 1,
+          "top": [
+            "src/click/decorators.py:417-445",
+            "src/click/decorators.py:555-594",
+            "src/click/decorators.py:447-484"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c17",
+      "type": "mixed",
+      "question": "ParameterSource tells whether a value came from the command line, environment or default",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:197-233",
+            "src/click/core.py:2668-2706",
+            "tests/test_defaults.py:237-271"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 9,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "tests/test_defaults.py:237-271",
+            "tests/test_options.py:1889-1912"
+          ]
+        },
+        "vector": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:964-980",
+            "src/click/core.py:2708-2714",
+            "src/click/core.py:2668-2706"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/core.py:197-233",
+            "src/click/core.py:2668-2706",
+            "tests/test_defaults.py:237-271"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 4,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "tests/test_defaults.py:237-271",
+            "tests/test_defaults.py:274-311"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:197-233",
+            "tests/test_defaults.py:237-271"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:197-233",
+            "tests/test_defaults.py:237-271"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:2668-2706",
+            "src/click/core.py:197-233",
+            "tests/test_defaults.py:237-271"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c18",
+      "type": "mixed",
+      "question": "bash, zsh and fish shell completion classes",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:388-444",
+            "src/click/shell_completion.py:580-595",
+            "tests/test_shell_completion.py:1-21"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 1,
+          "top": [
+            "src/click/shell_completion.py:388-444",
+            "src/click/shell_completion.py:580-595",
+            "tests/test_shell_completion.py:1-21"
+          ]
+        },
+        "vector": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:479-513",
+            "src/click/shell_completion.py:168-219"
+          ]
+        },
+        "hybrid": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:388-444",
+            "src/click/shell_completion.py:447-476"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:388-444",
+            "src/click/shell_completion.py:447-476"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:447-476",
+            "src/click/shell_completion.py:388-444"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:447-476",
+            "src/click/shell_completion.py:388-444"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/click/shell_completion.py:580-595",
+            "src/click/shell_completion.py:447-476",
+            "src/click/shell_completion.py:479-513"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c19",
+      "type": "mixed",
+      "question": "Choice type checks a value against allowed choices ignoring case",
+      "modes": {
+        "keyword": {
+          "rank": null,
+          "top": [
+            "tests/test_options.py:1860-1888",
+            "tests/test_options.py:1889-1912",
+            "tests/test_options.py:2524-2558"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": null,
+          "top": [
+            "tests/test_options.py:1860-1888",
+            "tests/test_options.py:1889-1912",
+            "tests/test_options.py:2524-2558"
+          ]
+        },
+        "vector": {
+          "rank": null,
+          "top": [
+            "src/click/types.py:324-355",
+            "src/click/termui.py:204-252",
+            "src/click/types.py:319-321"
+          ]
+        },
+        "hybrid": {
+          "rank": 7,
+          "top": [
+            "src/click/types.py:324-355",
+            "tests/test_options.py:1828-1859",
+            "tests/test_options.py:1889-1912"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 7,
+          "top": [
+            "src/click/types.py:324-355",
+            "tests/test_options.py:1828-1859",
+            "tests/test_options.py:1889-1912"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 8,
+          "top": [
+            "src/click/types.py:324-355",
+            "tests/test_options.py:1828-1859",
+            "tests/test_options.py:1889-1912"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 8,
+          "top": [
+            "src/click/types.py:324-355",
+            "tests/test_options.py:1828-1859",
+            "src/click/termui.py:204-252"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 8,
+          "top": [
+            "src/click/types.py:324-355",
+            "src/click/termui.py:204-252",
+            "tests/test_options.py:1828-1859"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c20",
+      "type": "mixed",
+      "question": "UsageError show method prints the usage line and the error",
+      "modes": {
+        "keyword": {
+          "rank": 1,
+          "top": [
+            "src/click/exceptions.py:68-111",
+            "src/click/_termui_impl.py:250-294",
+            "src/click/formatting.py:167-211"
+          ]
+        },
+        "keyword (text and path only)": {
+          "rank": 9,
+          "top": [
+            "src/click/_termui_impl.py:250-294",
+            "src/click/formatting.py:167-211",
+            "tests/test_arguments.py:1019-1057"
+          ]
+        },
+        "vector": {
+          "rank": 7,
+          "top": [
+            "src/click/exceptions.py:323-339",
+            "src/click/core.py:1182-1199",
+            "tests/test_formatting.py:705-710"
+          ]
+        },
+        "hybrid": {
+          "rank": 1,
+          "top": [
+            "src/click/exceptions.py:68-111",
+            "src/click/core.py:1182-1199",
+            "src/click/formatting.py:167-211"
+          ]
+        },
+        "hybrid (text and path only)": {
+          "rank": 3,
+          "top": [
+            "src/click/core.py:1182-1199",
+            "src/click/formatting.py:167-211",
+            "src/click/exceptions.py:68-111"
+          ]
+        },
+        "hybrid (vector weight 1.5)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:1182-1199",
+            "src/click/exceptions.py:68-111",
+            "tests/test_formatting.py:202-234"
+          ]
+        },
+        "hybrid (vector weight 2)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:1182-1199",
+            "src/click/exceptions.py:68-111",
+            "tests/test_formatting.py:202-234"
+          ]
+        },
+        "hybrid (vector weight 3)": {
+          "rank": 2,
+          "top": [
+            "src/click/core.py:1182-1199",
+            "src/click/exceptions.py:68-111",
+            "tests/test_formatting.py:202-234"
+          ]
+        }
+      }
+    }
+  ]
+}

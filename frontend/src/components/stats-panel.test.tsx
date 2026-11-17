@@ -15,7 +15,7 @@ function stats(over: Partial<Stats> = {}): Stats {
       skipped: { unsupported: 35, vendored: 2 },
     },
     symbols: { total: 140, by_kind: { function: 90, class: 20, method: 30 } },
-    chunks: { total: 96, average_chars: 640, largest_chars: 1790 },
+    chunks: { total: 96, average_chars: 640, largest_chars: 1790, embedded: 96, embedding_model: "test" },
     refs: { imports: 40, calls: 760 },
     redactions: { spans: 0, files: 0 },
     syntax_error_files: 0,
@@ -97,7 +97,7 @@ describe("StatsPanel", () => {
         stats={stats({
           files: { stored: 0, parsed: 0, bytes: 0, by_language: {}, skipped: {} },
           symbols: { total: 0, by_kind: {} },
-          chunks: { total: 0, average_chars: 0, largest_chars: 0 },
+          chunks: { total: 0, average_chars: 0, largest_chars: 0, embedded: 0, embedding_model: null },
           refs: { imports: 0, calls: 0 },
         })}
         progress={null}
