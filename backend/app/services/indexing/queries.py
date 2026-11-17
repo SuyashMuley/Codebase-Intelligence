@@ -15,6 +15,7 @@ from app.schemas.files import (
     FileEntry,
     FileList,
     FileStats,
+    GraphStats,
     RedactionStats,
     RefStats,
     SnapshotRef,
@@ -119,6 +120,7 @@ def build_stats(db: Session, snapshot: Snapshot) -> StatsOut:
     cursor: dict[str, Any] = (job.cursor if job else None) or {}
     fetch = cursor.get("fetch") or {}
     parse = cursor.get("parse") or {}
+    graph = cursor.get("graph")
 
     kept = (File.snapshot_id == sid, File.content.is_not(None))
     by_language = _grouped(db, File.language, *kept, File.language.is_not(None))
@@ -174,6 +176,17 @@ def build_stats(db: Session, snapshot: Snapshot) -> StatsOut:
             largest_chars=int(chunk_max),
         ),
         refs=RefStats(imports=ref_kinds.get("import", 0), calls=ref_kinds.get("call", 0)),
+        graph=(
+            GraphStats(
+                static_imports=int(graph.get("static_imports", 0)),
+                unresolved_imports=int(graph.get("unresolved_imports", 0)),
+                static_calls=int(graph.get("static_calls", 0)),
+                unresolved_calls=int(graph.get("unresolved_calls", 0)),
+                truncated=bool(graph.get("truncated", False)),
+            )
+            if isinstance(graph, dict) and graph.get("done")
+            else None
+        ),
         redactions=RedactionStats(spans=int(spans), files=int(redacted_files)),
         syntax_error_files=int(syntax_error_files),
     )

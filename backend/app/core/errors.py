@@ -84,6 +84,21 @@ class SnapshotNotReady(AppError):
     code = "snapshot_not_ready"
 
 
+class MissingTarget(AppError):
+    status_code = 422
+    code = "missing_target"
+
+
+class GraphNotReady(AppError):
+    status_code = 409
+    code = "graph_not_ready"
+
+
+class SymbolNotFound(AppError):
+    status_code = 404
+    code = "symbol_not_found"
+
+
 class SnapshotNotFound(AppError):
     status_code = 404
     code = "snapshot_not_found"
@@ -115,6 +130,33 @@ class EmbeddingUnavailable(AppError):
     status_code = 502
     code = "embedding_unavailable"
     retryable = True
+
+
+class LlmNotConfigured(AppError):
+    status_code = 503
+    code = "llm_not_configured"
+
+
+class LlmAuthFailed(AppError):
+    status_code = 502
+    code = "llm_auth_failed"
+
+
+class LlmRateLimited(AppError):
+    status_code = 503
+    code = "llm_rate_limited"
+    retryable = True
+
+
+class LlmUnavailable(AppError):
+    status_code = 502
+    code = "llm_unavailable"
+    retryable = True
+
+
+class LlmBadResponse(AppError):
+    status_code = 502
+    code = "llm_bad_response"
 
 
 class EmbeddingBadResponse(AppError):

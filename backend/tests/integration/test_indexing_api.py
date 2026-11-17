@@ -194,18 +194,34 @@ def test_tick_fetches_source_and_reaches_parse(
         assert conn.execute(text("SELECT file_count FROM snapshots")).scalar() == len(DEFAULT_KEPT)
 
 
-def test_unimplemented_phase_is_left_untouched(db_client: TestClient) -> None:
+def test_unimplemented_phase_is_left_untouched(
+    db_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services.indexing.runner import HANDLERS
+
+    monkeypatch.delitem(HANDLERS, "graph")  # simulate a phase that has no handler
     rid = register(db_client)
     start(db_client, rid)
     tick(db_client, rid)  # fetch
     tick(db_client, rid)  # parse
     tick(db_client, rid)  # embed
-    t = tick(db_client, rid)  # the graph phase has no handler yet
+    t = tick(db_client, rid)
     assert t["ran"] is False
     assert t["reason"] == "phase_not_implemented:graph"
     assert t["status"]["phase"] == "graph" and t["status"]["state"] == "running"
     # The lease is released, so it does not look "busy" to later phases.
     assert tick(db_client, rid)["reason"] == "phase_not_implemented:graph"
+
+
+def test_the_graph_phase_finishes_the_job(db_client: TestClient) -> None:
+    rid = register(db_client)
+    start(db_client, rid)
+    for _ in range(3):
+        tick(db_client, rid)  # fetch, parse, embed
+    t = tick(db_client, rid)  # graph
+    assert t["ran"] is True
+    assert t["status"]["state"] == "ready" and t["status"]["phase"] == "done"
+    assert t["status"]["graph"]["done"] is True
 
 
 # --- failure and recovery ---------------------------------------------------------------

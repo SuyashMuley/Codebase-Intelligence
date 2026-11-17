@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, files, health, indexing, repositories, search
+from app.api import auth, files, graph, health, indexing, repositories, search
 from app.api import github as github_api
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(indexing.router)
     app.include_router(files.router)
     app.include_router(search.router)
+    app.include_router(graph.router)
     return app
 
 

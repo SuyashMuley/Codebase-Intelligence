@@ -19,6 +19,8 @@ TEST_ENV = {
     "EMBEDDING_PROVIDER": "hash",
     "CLOUDFLARE_ACCOUNT_ID": "",
     "CLOUDFLARE_API_TOKEN": "",
+    # Nor a real language model: tests that need one inject a fake.
+    "OPENROUTER_API_KEY": "",
     "GITHUB_APP_CLIENT_ID": "test-client-id",
     "GITHUB_APP_CLIENT_SECRET": "test-client-secret-value",
     "SESSION_SECRET": "test-session-secret-0123456789abcdef",

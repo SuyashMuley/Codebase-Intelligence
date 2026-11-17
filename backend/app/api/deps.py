@@ -24,6 +24,8 @@ from app.db.models import Repository, User, UserRepository
 from app.db.session import get_db
 from app.providers.embeddings.base import Embedder
 from app.providers.embeddings.factory import get_embedder as _build_embedder
+from app.providers.llm.factory import get_llm as _build_llm
+from app.providers.llm.openrouter import OpenRouterClient
 from app.services.auth import credentials, sessions
 from app.services.auth.crypto import StateSealer, TokenCipher
 from app.services.auth.oauth import GitHubOAuth, GitHubOAuthGateway
@@ -224,6 +226,13 @@ auth_ip_limit = ip_limit("auth", lambda s: s.auth_rate_limit_per_minute)
 user_general_limit = user_limit("general", lambda s: s.rate_limit_per_minute)
 user_index_limit = user_limit("index", lambda s: s.index_rate_limit_per_minute)
 user_search_limit = user_limit("search", lambda s: s.search_rate_limit_per_minute)
+user_ai_limit = user_limit("ai", lambda s: s.ai_rate_limit_per_minute)
+
+
+def get_llm(settings: AppSettings) -> OpenRouterClient:
+    """The configured chat model; raises LlmNotConfigured (HTTP 503) with the fix. Tests
+    override this."""
+    return _build_llm(settings)
 
 
 def get_embedder(settings: AppSettings) -> Embedder | None:

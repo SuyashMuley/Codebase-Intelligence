@@ -57,7 +57,7 @@ def indexed_snapshot(
     Yields (session, snapshot id, the job's final cursor). `through` is the last phase to run:
     'parse' stops before embedding, 'embed' runs it. The temporary rows are removed on exit.
     """
-    stop_at = {"parse": "embed", "embed": "graph"}[through]
+    stop_at = {"parse": "embed", "embed": "graph", "graph": "done"}[through]
     db = Session(get_engine(), expire_on_commit=False)
     repo = Repository(
         owner=f"eval-{owner}"[:39],

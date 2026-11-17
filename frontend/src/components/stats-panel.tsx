@@ -87,6 +87,15 @@ export function StatsPanel({
         />
       </dl>
 
+      {stats.graph ? (
+        <p className="text-xs text-zinc-400" aria-label="Dependency graph summary">
+          Dependency graph: {stats.graph.static_imports} imports and {stats.graph.static_calls}{" "}
+          calls linked between files and symbols;{" "}
+          {stats.graph.unresolved_calls + stats.graph.unresolved_imports} references could not be
+          resolved (standard library, packages, calls on variables).
+        </p>
+      ) : null}
+
       <div className="grid gap-6 sm:grid-cols-3">
         <Breakdown title="Languages" rows={stats.files.by_language} label={formatLanguage} />
         <Breakdown title="Symbol kinds" rows={stats.symbols.by_kind} label={(k) => k} />

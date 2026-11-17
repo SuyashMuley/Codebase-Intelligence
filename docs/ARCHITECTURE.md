@@ -91,6 +91,33 @@ A symbol's line range includes its decorators or `export` keyword and the commen
 
 **Evaluation** lives in `backend/eval` and is run by hand (it needs the network): labelled questions point at symbols, not line numbers, so labels survive re-chunking; it reports Recall@k, MRR, bootstrap intervals and paired comparisons, and its benchmark mode raises instead of falling back.
 
+## Dependency graph and change impact (M6)
+
+The `graph` phase runs after `embed` and finishes the job. It is a pure function of the snapshot (files, symbols, references): it deletes the snapshot's edges and writes them again, so a restarted phase is safe.
+
+**Edges** (`graph_edges`): `imports` (file to file) and `calls` (symbol to symbol, or file to symbol for top-level code), each `static` or `unresolved`. An edge is `static` only when the code proves it: an import naming a file in this repository, or a call whose name is bound by such an import (including through re-exports, followed up to six hops), defined in the same module, reached through `self`/`this` inside the enclosing class, or declared in the same Go package. Anything that needs type information is `unresolved`, with `target_name` (what the code said) and a `reason`. The builder never matches by name alone across files, and a name defined twice, or both defined and imported, is ambiguous and left unresolved.
+
+| Language | Import resolution |
+| --- | --- |
+| Python | absolute and relative imports against package roots; `from pkg import sub` may be a submodule; `__init__` re-exports are followed |
+| JavaScript and TypeScript | relative specifiers with extensions, `index` files and the TypeScript `.js` for `.ts` convention; named, default, namespace, `require` and re-export bindings; bare specifiers and aliases are unresolved |
+| Go | imports under `github.com/<owner>/<repo>` (from the repository URL) map to a directory's non-test files; the package name comes from the `package` clause |
+
+JavaScript property assignments are recorded as symbols; `exports.x = ...` is importable but not a name in scope, and `obj.x = ...` is neither, so a bare `x()` never resolves to it.
+
+**Impact** is a breadth-first walk over reversed static edges from the changed file or symbol, to a depth of at most six. Each dependent comes with the edge path from the change. A file's dependents use import edges plus file pairs joined by resolved calls (same-package Go); a symbol's dependents are its callers. Cycles are handled by visiting each node once at its shortest depth.
+
+The response keeps three kinds of answer apart:
+- `dependents`: static facts only.
+- `suggested_tests`: test files that statically depend on the change (`static_dependency`, high confidence when direct), and test files named after a changed file (`naming_convention`, low confidence, `heuristic: true`).
+- `unverified_callers`: unresolved calls whose last name segment equals a changed name. Matched by name only, shown as leads, never as dependents.
+
+`limitations` is always returned.
+
+**AI review** (`POST .../impact/review`) sends the static result and a code excerpt (the symbol's own lines, or a file's top-level declarations) to the language model between `<<<DATA`/`DATA>>>` markers, with a system prompt that says the data is never instructions. The answer is parsed against a schema and validated: every cited file must be one the analysis surfaced, suggested tests must exist and be test files, a risk can be `high` confidence only if it cites a proven dependent (otherwise capped at `medium`, or `low` if it cites nothing), and wrong shapes are dropped and counted. The database connection is released before the model call. The client has a 28 second whole-call budget, fallback included, because the browser reaches the API through a proxy that gives up after about 30 seconds. The result is returned in its own object, labelled unverified, never merged into `dependents`.
+
+**Views.** `GET .../graph` returns the files linked by imports (and resolved calls), capped at the 60 most connected files for the whole repository and at 300 for a neighbourhood (`path` and `depth` up to 3); with `level=symbol&path=...` it returns one file's symbols with their static callers and callees, plus unresolved calls as dashed edges to nodes named after what the code said (at most 40).
+
 ## Chat workflow (LangGraph)
 
 ```mermaid
@@ -204,12 +231,13 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 | `POST /api/repositories/{id}/index` | optional `{ref}` (branch, tag or SHA) | 202 `{created: true, status}` for a new commit. 200 `{created: false, status}` if that commit already has a snapshot (a failed one is restarted). 409 `job_in_progress` if a different commit is still being indexed. |
 | `POST /api/repositories/{id}/index/tick` | none | `{ran, reason, status}` after one bounded step. Safe to call repeatedly or concurrently. 409 `no_active_job` if nothing is pending. |
 | `GET /api/repositories/{id}/status` | none | `{state, snapshot_id, commit_sha, phase, progress{files_kept, bytes_kept, skipped}, error{code, message}, attempts, max_attempts, retry_at, can_resume}`. `state` is `not_indexed`, `pending`, `running`, `ready` or `failed`. |
-| `GET /api/repositories/{id}/graph` | `level` (file or symbol), `focus`, `depth` | nodes and edges, each edge tagged `static` or `unresolved` |
+| `GET /api/repositories/{id}/graph` | `level` (file or symbol), `path`, `depth` (1 to 3), `snapshot` | nodes and edges, each edge tagged `static` or `unresolved`; `truncated`, `total_nodes` and a `note` when files are left out (M6). 409 `graph_not_ready` until indexing finishes. |
 | `GET /api/repositories/{id}/files` | `snapshot` (optional) | Every stored file of the snapshot: `{path, language, size_bytes, skipped_reason, redactions, parse_status, symbol_count}`, sorted bytewise. Parsed source plus notable skips (M4). |
 | `GET /api/repositories/{id}/files/{path}` | `snapshot` (optional) | One file: text (secrets redacted, null if skipped), language, line count, and its symbols with parent links. Paths are looked up in the database only; unknown or hostile paths are a plain 404 (M4). |
 | `GET /api/repositories/{id}/stats` | `snapshot` (optional) | Files by language and skip reason, symbols by kind, chunk sizes, import and call counts, redaction counts, syntax-error files, and whether parsing is done (M4). |
 | `POST /api/repositories/{id}/chat` | `{question, history?}` | answer, citations `[{path, start_line, end_line, chunk_id}]`, `confidence`, `insufficient_evidence` |
-| `POST /api/repositories/{id}/impact` | `{target: {file or symbol}}` | direct dependents, transitive dependents, affected modules, suggested tests, confidence, limitations |
+| `GET /api/repositories/{id}/impact` | `file` or `symbol` (id), `depth` (1 to 6), `snapshot` | `{target, dependents[{path, symbol, depth, hops}], direct, transitive, files_affected, unverified_callers, suggested_tests[{path, basis, confidence, heuristic}], limitations}` (M6) |
+| `POST /api/repositories/{id}/impact/review` | `{file or symbol, depth}` | An AI reading of the impact result: `{notice, model, summary, risks, tests_to_consider, open_questions, dropped}`. Labelled unverified; 5 per minute per user (M6). |
 | `GET /health`, `GET /ready` | none | liveness, and readiness (DB reachable, migrations at head) |
 
 **Error envelope** (every non-2xx):
@@ -218,11 +246,11 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 {"error": {"code": "invalid_github_url", "message": "...", "details": {}, "request_id": "..."}}
 ```
 
-Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M4: `snapshot_not_ready` (nothing indexed yet), `snapshot_not_found` (not a snapshot of this repository), `file_not_found`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Reserved for later milestones: `llm_unavailable`.
+Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M4: `snapshot_not_ready` (nothing indexed yet), `snapshot_not_found` (not a snapshot of this repository), `file_not_found`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Added in M5: `embedding_not_configured`, `embedding_auth_failed`, `embedding_quota_exceeded`, `embedding_unavailable`, `embedding_bad_response`. Added in M6: `graph_not_ready`, `symbol_not_found`, `missing_target`, `llm_not_configured`, `llm_auth_failed`, `llm_rate_limited`, `llm_unavailable`, `llm_bad_response`.
 
 **Result shapes that matter**
 - A citation always comes from a retrieved chunk. The server maps chunk IDs to path and lines.
-- The impact response splits `static` (from graph edges, with the edge path) and `ai_suggestions` (labeled, no edges invented). `limitations` names unresolved calls near the target.
+- The impact response returns static `dependents` (with the edge path), `suggested_tests` (each marked static or heuristic) and `unverified_callers`; the AI review is a separate endpoint and object. `limitations` is always present.
 - Rate limits are in-process (single instance), returned as `429` with `Retry-After`. Per signed-in user: 120 requests/minute on repository routes and 10/minute on `POST .../index`. Per IP: 600/minute as a backstop on every `/api` route and 30/minute on the sign-in endpoints. Chat and impact get their own tighter limit in M7. IPs are hashed with a salt before they are used as limiter keys; raw IPs are not stored.
 
 ## Repository structure

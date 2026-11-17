@@ -77,6 +77,14 @@ class RefStats(BaseModel):
     calls: int
 
 
+class GraphStats(BaseModel):
+    static_imports: int
+    unresolved_imports: int
+    static_calls: int
+    unresolved_calls: int
+    truncated: bool
+
+
 class RedactionStats(BaseModel):
     spans: int
     files: int
@@ -89,5 +97,6 @@ class StatsOut(BaseModel):
     symbols: Counts
     chunks: ChunkStats
     refs: RefStats
+    graph: GraphStats | None  # None until the graph phase has run
     redactions: RedactionStats
     syntax_error_files: int

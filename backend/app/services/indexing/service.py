@@ -15,6 +15,7 @@ from app.db.models import IndexJob, Repository, Snapshot
 from app.schemas.indexing import (
     EmbedProgress,
     FetchProgress,
+    GraphProgress,
     JobError,
     ParseProgress,
     StatusOut,
@@ -187,6 +188,21 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         if isinstance(embed, dict)
         else None
     )
+    graph = cursor.get("graph")
+    graph_progress = (
+        GraphProgress(
+            files=int(graph.get("files", 0)),
+            symbols=int(graph.get("symbols", 0)),
+            static_imports=int(graph.get("static_imports", 0)),
+            unresolved_imports=int(graph.get("unresolved_imports", 0)),
+            static_calls=int(graph.get("static_calls", 0)),
+            unresolved_calls=int(graph.get("unresolved_calls", 0)),
+            truncated=bool(graph.get("truncated", False)),
+            done=bool(graph.get("done", False)),
+        )
+        if isinstance(graph, dict)
+        else None
+    )
     error = (
         JobError(code=job.error_code or "error", message=job.error)
         if job.error and snapshot.status != "ready"
@@ -209,5 +225,6 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         progress=progress,
         parse=parse_progress,
         embed=embed_progress,
+        graph=graph_progress,
         updated_at=job.updated_at,
     )

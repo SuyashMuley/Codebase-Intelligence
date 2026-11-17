@@ -154,6 +154,30 @@ export function StatusPanel({
         </div>
       ) : null}
 
+      {status.graph ? (
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs text-zinc-500">Imports linked</dt>
+            <dd className="text-lg font-medium">{status.graph.static_imports}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-zinc-500">Calls linked</dt>
+            <dd className="text-lg font-medium">{status.graph.static_calls}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-zinc-500">Could not be resolved</dt>
+            <dd className="text-sm text-zinc-300">
+              {status.graph.unresolved_calls} calls · {status.graph.unresolved_imports} imports
+            </dd>
+          </div>
+        </dl>
+      ) : null}
+      {status.graph?.truncated ? (
+        <p role="note" className="rounded bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+          The graph was too large to store completely. Unresolved calls were dropped first.
+        </p>
+      ) : null}
+
       {progress && progress.secrets_redacted > 0 ? (
         <p role="note" className="rounded bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
           {progress.secrets_redacted} secret-looking value

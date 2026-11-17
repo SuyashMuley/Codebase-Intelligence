@@ -47,6 +47,17 @@ class EmbedProgress(BaseModel):
     neurons: float = 0.0  # provider usage so far (Cloudflare "neurons"), for cost visibility
 
 
+class GraphProgress(BaseModel):
+    files: int
+    symbols: int
+    static_imports: int
+    unresolved_imports: int
+    static_calls: int
+    unresolved_calls: int
+    truncated: bool
+    done: bool
+
+
 class JobError(BaseModel):
     code: str
     message: str
@@ -69,6 +80,7 @@ class StatusOut(BaseModel):
     progress: FetchProgress | None = None
     parse: ParseProgress | None = None
     embed: EmbedProgress | None = None
+    graph: GraphProgress | None = None
     updated_at: datetime | None = None
 
 

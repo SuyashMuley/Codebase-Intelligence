@@ -65,6 +65,17 @@ export interface EmbedProgress {
   neurons: number;
 }
 
+export interface GraphProgress {
+  files: number;
+  symbols: number;
+  static_imports: number;
+  unresolved_imports: number;
+  static_calls: number;
+  unresolved_calls: number;
+  truncated: boolean;
+  done: boolean;
+}
+
 export interface JobError {
   code: string;
   message: string;
@@ -83,6 +94,7 @@ export interface IndexStatus {
   progress: FetchProgress | null;
   parse: ParseProgress | null;
   embed: EmbedProgress | null;
+  graph: GraphProgress | null;
   updated_at: string | null;
 }
 
@@ -171,6 +183,13 @@ export interface Stats {
     embedding_model: string | null;
   };
   refs: { imports: number; calls: number };
+  graph: {
+    static_imports: number;
+    unresolved_imports: number;
+    static_calls: number;
+    unresolved_calls: number;
+    truncated: boolean;
+  } | null;
   redactions: { spans: number; files: number };
   syntax_error_files: number;
 }
@@ -193,4 +212,91 @@ export interface SearchResponse {
   mode_used: SearchMode;
   warnings: string[];
   hits: SearchHit[];
+}
+
+export interface GraphNodeData {
+  id: string;
+  kind: "file" | "symbol" | "external";
+  label: string;
+  path: string | null;
+  language: string | null;
+  symbol_kind: string | null;
+  start_line: number | null;
+  in_degree: number;
+  out_degree: number;
+  focus: boolean;
+}
+
+export interface GraphEdgeData {
+  source: string;
+  target: string;
+  kind: "imports" | "calls";
+  resolution: "static" | "unresolved";
+  count: number;
+  line: number | null;
+  reason: string | null;
+}
+
+export interface GraphData {
+  snapshot: SnapshotRef;
+  level: "file" | "symbol";
+  nodes: GraphNodeData[];
+  edges: GraphEdgeData[];
+  truncated: boolean;
+  total_nodes: number;
+  note: string | null;
+}
+
+export interface ImpactHop {
+  source: string;
+  target: string;
+  kind: "imports" | "calls";
+}
+
+export interface ImpactDependent {
+  path: string;
+  symbol: string | null;
+  depth: number;
+  hops: ImpactHop[];
+}
+
+export interface UnverifiedCaller {
+  path: string;
+  symbol: string | null;
+  line: number | null;
+  called_as: string;
+  reason: string | null;
+}
+
+export interface SuggestedTest {
+  path: string;
+  basis: "static_dependency" | "naming_convention";
+  confidence: "high" | "medium" | "low";
+  reason: string;
+  heuristic: boolean;
+}
+
+export interface Impact {
+  snapshot: SnapshotRef;
+  target: { type: "file" | "symbol"; path: string; symbol: string | null; symbol_id: number | null };
+  max_depth: number;
+  dependents: ImpactDependent[];
+  direct: number;
+  transitive: number;
+  files_affected: number;
+  truncated: boolean;
+  unverified_callers: UnverifiedCaller[];
+  suggested_tests: SuggestedTest[];
+  limitations: string[];
+}
+
+export interface AiReview {
+  notice: string;
+  model: string | null;
+  summary: string;
+  risks: { description: string; confidence: "low" | "medium" | "high"; paths: string[] }[];
+  tests_to_consider: { path: string; reason: string }[];
+  open_questions: string[];
+  dropped: number;
+  static_dependents_considered: number;
 }

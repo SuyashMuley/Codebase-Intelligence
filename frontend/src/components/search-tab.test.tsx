@@ -17,7 +17,7 @@ const hit = {
 };
 
 function setup(response: Response, hasSnapshot = true) {
-  const fetchMock = vi.fn().mockResolvedValue(response);
+  const fetchMock = vi.fn<typeof fetch>(async () => response.clone());
   vi.stubGlobal("fetch", fetchMock);
   const onOpen = vi.fn();
   renderWithClient(<SearchTab repoId="r1" hasSnapshot={hasSnapshot} onOpen={onOpen} />);
@@ -50,8 +50,8 @@ describe("SearchTab", () => {
     await ask("  where are sessions made  ");
     const button = await screen.findByRole("button", { name: "src/auth.py:10-24" });
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/repositories/r1/search");
-    expect(JSON.parse(init.body)).toEqual({
+    expect(String(url)).toBe("/api/repositories/r1/search");
+    expect(JSON.parse(String(init?.body))).toEqual({
       query: "where are sessions made",
       mode: "keyword",
       limit: 10,

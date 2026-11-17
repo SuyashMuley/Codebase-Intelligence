@@ -204,19 +204,52 @@ Frontend (thin vertical slice)
 
 **Known limitations**
 - Two Python repositories and 60 questions: this is evidence, not a general result. The hash embedder is lexical and is for tests and demos only.
-- Not yet measured: query latency at the 6,000-chunk cap, and a pooling ablation (`--pooling mean`).
+- Measured since: exact vector search over 6,000 random 384-dimension rows takes 1.8 ms median locally (random vectors, so a rough figure), which is why there is no HNSW index. Not measured: a pooling ablation (`--pooling mean`).
 - The local fastembed alternative was not installed (the environment denied the install); only Cloudflare and hash embedders exist.
 
 ### M6. Graph and impact analysis
-- [ ] Edge builder: imports, contains, and calls resolved through import bindings and same-module names
-- [ ] Unresolved calls stored with `resolution = unresolved`, excluded from facts
-- [ ] Graph and file endpoints; BFS for direct and transitive dependents
-- [ ] Suggested tests by naming and import proximity, labeled as heuristic
-- [ ] AI suggestion step, kept separate from static results, plus confidence and limitations
-- [ ] Tests: graph construction on fixtures, no invented edges for dynamic calls, transitive depth, impact response shape
-- [ ] UI: React Flow graph (file and symbol levels, static vs unresolved styling) and the impact panel
+- [x] Edge builder: imports resolved to files; calls resolved through import bindings, re-exports, `self`/`this`, same-module names and Go package scope
+- [x] Unresolved calls and imports stored with `resolution = unresolved` and a reason, never used as facts
+- [x] Graph and impact endpoints; BFS for direct and transitive dependents with the edge path to each
+- [x] Suggested tests: static dependents plus a naming heuristic, each labelled
+- [x] AI review step, kept separate from static results, with validated citations, calibrated confidence and limitations
+- [x] Tests: graph construction on fixtures, no invented edges, transitive depth, impact response shape, ownership, snapshot scoping
+- [x] UI: React Flow graph (files and symbols, static vs unresolved), impact panel, file finder, AI review
 
-**Exit:** the impact endpoint returns static dependents with edge paths and clearly labeled suggestions.
+**Exit:** the impact endpoint returns static dependents with edge paths and clearly labeled suggestions. Met.
+
+**Status: built and verified.**
+- Backend 1,334 tests, frontend 218; ruff, mypy strict, lint, typecheck, build and `alembic check` pass; `npm audit --omit=dev` finds nothing.
+- The rule that shapes the builder: an edge is `static` only when the code proves it. `obj.method()` on a variable, inherited methods, dynamic imports, path aliases and name collisions are `unresolved` with a reason (`dynamic_receiver`, `inherited_or_dynamic`, `not_found`, `external_or_unresolved`, `package_or_alias`, `external_package`). The builder never matches by name across files.
+- Python imports resolve against package roots (the first ancestor directory without `__init__.py`), so `src/` layouts work; a name that matches two roots is left unresolved. JS and TS resolve relative specifiers with extensions and index files. Go resolves imports under `github.com/<owner>/<repo>` (taken from the repository URL) to the package's non-test files.
+- Checks on real repositories (psf/requests, pallets/click, sindresorhus/ky, gorilla/mux, expressjs/express): no static call edge whose target name differs from the callee name; every cross-file static call in requests, click and ky is backed by a chain of static imports (the direct import edge is sometimes to a re-exporting `__init__`).
+- **Manual audit** (by reading the call-site line next to the target's definition, not an independent tool; installing `jedi` as an oracle was denied by the environment): click 40 of 40 correct, ky 20 of 20, mux 20 of 20, requests 12 of 12 in an earlier sample. express 18 of 20: two were wrong (below), and after the fix all 56 remaining express edges were read and are correct. The audit is by one reader on samples, so it is evidence, not a guarantee.
+- How much resolves (static calls out of all call sites): requests 29%, click 30%, mux 19%, ky 13%, express 3%. Most call sites are method calls on variables, builtins and library calls, which cannot be resolved without type information. Precision was the goal; recall is limited and shown honestly (unresolved edges are drawn dashed, counted, and listed as unverified callers in impact).
+- 12 safeguards were mutation-tested. Nine were caught at once; three gaps (ambiguous duplicate definitions, `self` scoping, import folding) got new tests and are now caught; two other survivors are equivalent mutants (a removed filter that another guard makes redundant).
+- In a real browser against the real backend (only GitHub faked) on this project's own source: the tick driver indexed through the graph phase to ready; the file graph rendered; selecting a file narrowed the graph to its neighbourhood and showed the impact panel; the symbol view, URL state, reload restore, phone width (no horizontal scroll) and the AI review all worked, with no page errors and no external hosts beyond localhost, the fake provider and the avatar host.
+
+**Bugs found by dogfooding and fixed in this milestone**
+- A JavaScript member assignment such as `req.accepts = function () {...}` is recorded as a symbol, and bare-name lookup treated it as a name in scope, so `accepts(this)` (the npm package) linked to it. 12 of express's 68 static call edges were wrong. Declarations are now lexical, `exports.x = ...` is exported but not in scope, and other member assignments are neither.
+- `import '../..'` (the repository root's index file) was not found because `normpath` returns `.`.
+- The whole-repository graph (114 files) and the symbol graph (75 nodes, 95 of 141 edges unresolved) were unreadable. The overview now draws only the 60 most connected files, selecting a file shows its neighbourhood by default, unresolved calls are hidden in the symbol view until asked for, and a file finder reaches any file.
+- A model call could outlast the frontend proxy's roughly 30 second limit and surface as a dropped connection. The LLM client now has a whole-call time budget (28 s, fallback included) and reports a retryable "took too long".
+- The test environment inherited the real `OPENROUTER_API_KEY`, so a "not configured" test would have made a real model call. Tests now blank it.
+- The impact card had an `aria-label` but no landmark role.
+- The model's own summary once said "7 direct dependents" when the proven number was 9, which is why the AI review is labelled unverified and kept out of the static list.
+
+**Deviations from the plan**
+- `contains` edges are not stored: containment is `symbols.parent_id`, so a copy would only add rows. `graph_edges` gained `target_name`, `reason`, `line` and `count` (migration `0006`).
+- Imports are file to file; a file's repeated imports of one file fold into one edge with a count and the first line.
+- The default chat model is OpenRouter's `openrouter/free` router, with `inclusionai/ling-3.2-flash:free` as the fallback, because individual free models are often rate limited upstream (both Gemma free models returned 429 when tested) and the free list changes. The answer reports which model replied. Set `OPENROUTER_MODEL` to choose.
+- The AI review is `POST .../impact/review` (5 per minute per user). No daily model budget yet; that comes with chat in M7. The database connection is released before the model call.
+
+**Known limitations**
+- Not resolved: inheritance (a subclass calling an inherited method), type-based method calls, TypeScript `paths` aliases and package workspaces, Go vanity import paths (anything not under `github.com/<owner>/<repo>`) and Go methods, dynamic imports with computed specifiers, `export default` targets (the file is linked, the symbol is not guessed).
+- A symbol's impact follows its callers only; code that imports it without calling it appears in the file-level view. A call at the top level of a file is attributed to the file.
+- Two definitions of one name in a file (conditional definitions) are treated as ambiguous and left unresolved.
+- Impact loads the snapshot's edges for each request. That is fine at the edge cap (150,000, with unresolved edges dropped first) but is not built for much larger graphs.
+- The overview graph is capped at 60 files and a neighbourhood at 300; a very large repository needs the finder.
+- The AI review depends on a free model, so it can be slow, busy or wrong; it can only cite files the analysis surfaced.
 
 ### M7. Question answering
 - [ ] OpenRouter client with timeout, retry, fallback model, and a stub

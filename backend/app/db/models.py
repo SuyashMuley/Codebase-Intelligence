@@ -261,12 +261,18 @@ class GraphEdge(Base):
     dst_file_id: Mapped[int | None] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
     kind: Mapped[str] = mapped_column(String(20))  # imports | calls | contains
     resolution: Mapped[str] = mapped_column(String(20))  # static | unresolved
+    # What the code said (e.g. "client.charge"), kept for unresolved edges so they can be shown.
+    target_name: Mapped[str | None] = mapped_column(Text)
+    reason: Mapped[str | None] = mapped_column(String(30))  # why an edge is unresolved
+    line: Mapped[int | None] = mapped_column(Integer)
+    count: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
 
     __table_args__ = (
         Index("ix_graph_edges_snapshot_id_src_symbol_id", "snapshot_id", "src_symbol_id"),
         Index("ix_graph_edges_snapshot_id_dst_symbol_id", "snapshot_id", "dst_symbol_id"),
         Index("ix_graph_edges_snapshot_id_src_file_id", "snapshot_id", "src_file_id"),
         Index("ix_graph_edges_snapshot_id_dst_file_id", "snapshot_id", "dst_file_id"),
+        Index("ix_graph_edges_snapshot_id_kind_resolution", "snapshot_id", "kind", "resolution"),
     )
 
 

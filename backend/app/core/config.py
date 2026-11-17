@@ -63,6 +63,17 @@ class Settings(BaseSettings):
     embedding_timeout_seconds: float = 30.0
     embedding_budget_seconds: float = 20.0  # one tick embeds for at most this long
 
+    # --- Chat model (OpenRouter). Free models change often: set OPENROUTER_MODEL to pick one ---
+    openrouter_api_key: SecretStr | None = None
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_model: str = "openrouter/free"
+    # "openrouter/free" picks whichever free model is answering, which matters because individual
+    # free models are often rate limited upstream. The fallback is tried once if it fails.
+    openrouter_fallback_model: str | None = "inclusionai/ling-3.2-flash:free"
+    llm_timeout_seconds: float = 25.0  # one model attempt
+    llm_budget_seconds: float = 28.0  # a whole call including the fallback; see OpenRouterClient
+    ai_rate_limit_per_minute: int = 5  # per user; each call is a model request
+
     # --- Parsing and chunking ---
     chunk_max_chars: int = 1800  # about 450 tokens: fits small embedding models
     chunk_merge_below: int = 500  # neighbouring chunks smaller than this are merged
@@ -111,6 +122,8 @@ class Settings(BaseSettings):
         "alembic_database_url",
         "cloudflare_account_id",
         "cloudflare_api_token",
+        "openrouter_api_key",
+        "openrouter_fallback_model",
         mode="before",
     )
     @classmethod

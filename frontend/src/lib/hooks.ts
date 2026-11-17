@@ -6,9 +6,12 @@ import { api, ApiError, post } from "./api";
 import { decideNext, type StopReason } from "./tick-policy";
 import type {
   FileDetail,
+  AiReview,
   FileList,
+  GraphData,
   GithubRepoList,
   IndexStartResult,
+  Impact,
   IndexStatus,
   Me,
   Repository,
@@ -228,5 +231,53 @@ export function useSearch(repoId: string) {
   return useMutation({
     mutationFn: (input: { query: string; mode: SearchMode }) =>
       post<SearchResponse>(`/api/repositories/${repoId}/search`, { ...input, limit: 10 }),
+  });
+}
+
+export interface GraphQuery {
+  level: "file" | "symbol";
+  path: string | null;
+  depth: number;
+}
+
+/** The dependency graph: whole-repository files, a file's neighbourhood, or a file's symbols. */
+export function useGraph(id: string, q: GraphQuery, enabled: boolean) {
+  const params = new URLSearchParams({ level: q.level, depth: String(q.depth) });
+  if (q.path) params.set("path", q.path);
+  return useQuery({
+    queryKey: ["graph", id, q.level, q.path, q.depth] as const,
+    queryFn: () => api<GraphData>(`/api/repositories/${id}/graph?${params}`),
+    enabled,
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export interface ImpactTargetQuery {
+  file: string | null;
+  symbol: number | null;
+}
+
+export function useImpact(id: string, target: ImpactTargetQuery, depth: number, enabled: boolean) {
+  const params = new URLSearchParams({ depth: String(depth) });
+  if (target.symbol !== null) params.set("symbol", String(target.symbol));
+  else if (target.file) params.set("file", target.file);
+  return useQuery({
+    queryKey: ["impact", id, target.file, target.symbol, depth] as const,
+    queryFn: () => api<Impact>(`/api/repositories/${id}/impact?${params}`),
+    enabled: enabled && (target.symbol !== null || !!target.file),
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+/** An AI reading of the static impact result. A mutation: it is slow and uses a model request. */
+export function useAiReview(repoId: string) {
+  return useMutation({
+    mutationFn: (input: { file: string | null; symbol: number | null; depth: number }) =>
+      post<AiReview>(`/api/repositories/${repoId}/impact/review`, {
+        ...(input.symbol !== null ? { symbol: input.symbol } : { file: input.file }),
+        depth: input.depth,
+      }),
   });
 }

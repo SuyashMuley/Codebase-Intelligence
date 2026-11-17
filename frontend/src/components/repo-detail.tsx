@@ -12,6 +12,7 @@ import {
 } from "@/lib/hooks";
 import { formatLineRange, parseLineRange } from "@/lib/tree";
 import { FilesTab } from "./files-tab";
+import { GraphTab, type GraphSelection } from "./graph-tab";
 import { SearchTab } from "./search-tab";
 import { ReauthNotice } from "./reauth-notice";
 import { StatsPanel } from "./stats-panel";
@@ -19,8 +20,14 @@ import { StatusPanel } from "./status-panel";
 import { Button, EmptyState, ErrorNotice, Spinner } from "./ui";
 import type { LineRange } from "./code-viewer";
 
-type Tab = "overview" | "files" | "search";
+type Tab = "overview" | "files" | "search" | "graph";
 const MAX_PATH = 500;
+
+function parseSymbolId(raw: string | null): number | null {
+  if (raw === null || !/^\d{1,12}$/.test(raw)) return null;
+  const n = Number(raw);
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
+}
 
 export function RepoDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -44,7 +51,9 @@ export function RepoDetail({ id }: { id: string }) {
   const tab: Tab =
     tabParam === "search"
       ? "search"
-      : tabParam === "files" || (file !== null && !tabParam)
+      : tabParam === "graph"
+        ? "graph"
+        : tabParam === "files" || (file !== null && !tabParam)
         ? "files"
         : "overview";
 
@@ -83,6 +92,7 @@ export function RepoDetail({ id }: { id: string }) {
     { key: "overview", label: "Overview" },
     { key: "files", label: "Files" },
     { key: "search", label: "Search" },
+    { key: "graph", label: "Graph" },
   ];
 
   return (
@@ -154,6 +164,30 @@ export function RepoDetail({ id }: { id: string }) {
             />
           ) : null}
           {stats.data ? <StatsPanel stats={stats.data} progress={status.data?.parse ?? null} /> : null}
+        </div>
+      ) : tab === "graph" ? (
+        <div role="tabpanel" id="panel-graph" aria-labelledby="tab-graph">
+          <GraphTab
+            repoId={id}
+            hasSnapshot={hasSnapshot}
+            ready={status.data?.state === "ready"}
+            file={file}
+            view={params.get("view") === "symbols" ? "symbols" : "files"}
+            symbol={parseSymbolId(params.get("sym"))}
+            onChange={(next: GraphSelection) =>
+              update({
+                tab: "graph",
+                ...(next.file !== undefined ? { file: next.file, line: null } : {}),
+                ...(next.view !== undefined
+                  ? { view: next.view === "symbols" ? "symbols" : null }
+                  : {}),
+                ...(next.sym !== undefined ? { sym: next.sym === null ? null : String(next.sym) } : {}),
+              })
+            }
+            onOpenInFiles={(path) =>
+              update({ tab: "files", file: path, line: null, view: null, sym: null })
+            }
+          />
         </div>
       ) : tab === "search" ? (
         <div role="tabpanel" id="panel-search" aria-labelledby="tab-search">

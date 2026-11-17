@@ -144,4 +144,44 @@ describe("StatusPanel", () => {
     setup(makeStatus({ phase: "graph" }), { stopped: "not_implemented" });
     expect(screen.getByText(/so you can search it/i)).toBeInTheDocument();
   });
+
+  it("shows what the graph linked and what it could not resolve", () => {
+    setup(
+      makeStatus({
+        phase: "done",
+        state: "ready",
+        graph: {
+          files: 10,
+          symbols: 40,
+          static_imports: 12,
+          unresolved_imports: 30,
+          static_calls: 55,
+          unresolved_calls: 210,
+          truncated: false,
+          done: true,
+        },
+      }),
+    );
+    expect(screen.getByText("Imports linked").nextSibling).toHaveTextContent("12");
+    expect(screen.getByText("Calls linked").nextSibling).toHaveTextContent("55");
+    expect(screen.getByText(/210 calls · 30 imports/)).toBeInTheDocument();
+  });
+
+  it("warns when the graph hit its size cap", () => {
+    setup(
+      makeStatus({
+        graph: {
+          files: 1,
+          symbols: 1,
+          static_imports: 1,
+          unresolved_imports: 0,
+          static_calls: 1,
+          unresolved_calls: 0,
+          truncated: true,
+          done: true,
+        },
+      }),
+    );
+    expect(screen.getByRole("note")).toHaveTextContent(/too large to store completely/i);
+  });
 });
