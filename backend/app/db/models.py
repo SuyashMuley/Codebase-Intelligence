@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+from typing import Any
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -63,6 +64,8 @@ class Snapshot(Base):
     file_count: Mapped[int] = mapped_column(Integer, default=0)
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text)
+    # Hashed client IP that requested this snapshot; drives the daily ingestion quota.
+    client_key: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -71,6 +74,7 @@ class Snapshot(Base):
         UniqueConstraint(
             "repository_id", "commit_sha", name="uq_snapshots_repository_id_commit_sha"
         ),
+        Index("ix_snapshots_client_key_created_at", "client_key", "created_at"),
     )
 
 
@@ -82,10 +86,11 @@ class IndexJob(Base):
         ForeignKey("snapshots.id", ondelete="CASCADE"), unique=True
     )
     phase: Mapped[str] = mapped_column(String(20), default="fetch")
-    cursor: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    cursor: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text)
+    error_code: Mapped[str | None] = mapped_column(String(40))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

@@ -17,6 +17,8 @@ class AppError(Exception):
 
     status_code = 400
     code = "bad_request"
+    # Retryable errors are transient: the indexing job backs off and tries again.
+    retryable = False
 
     def __init__(
         self,
@@ -25,12 +27,14 @@ class AppError(Exception):
         code: str | None = None,
         status_code: int | None = None,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.message = message
         self.code = code or self.code
         self.status_code = status_code or self.status_code
         self.details = details or {}
+        self.headers = headers or {}
 
 
 class InvalidGithubUrl(AppError):
@@ -46,6 +50,61 @@ class RepoNotFound(AppError):
 class NotReady(AppError):
     status_code = 503
     code = "not_ready"
+
+
+class TooManyRequests(AppError):
+    """This API's own per-client rate limit."""
+
+    status_code = 429
+    code = "rate_limited"
+
+
+class QuotaExceeded(AppError):
+    status_code = 429
+    code = "quota_exceeded"
+
+
+class RepoTooLarge(AppError):
+    status_code = 422
+    code = "repo_too_large"
+
+
+class JobInProgress(AppError):
+    status_code = 409
+    code = "job_in_progress"
+
+
+class NoActiveJob(AppError):
+    status_code = 409
+    code = "no_active_job"
+
+
+class GithubRateLimited(AppError):
+    """GitHub's rate limit (upstream), not ours. Retried after the reset time."""
+
+    status_code = 503
+    code = "github_rate_limited"
+    retryable = True
+
+
+class GithubUnavailable(AppError):
+    status_code = 502
+    code = "github_unavailable"
+    retryable = True
+
+
+class InternalError(AppError):
+    """Unexpected failure inside a job step. Retried (bounded), since many are transient."""
+
+    status_code = 500
+    code = "internal_error"
+    retryable = True
+
+
+class FetchTimeout(AppError):
+    status_code = 504
+    code = "fetch_timeout"
+    retryable = True
 
 
 def error_response(
@@ -69,7 +128,7 @@ def error_response(
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return error_response(exc.status_code, exc.code, exc.message, exc.details)
+        return error_response(exc.status_code, exc.code, exc.message, exc.details, exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

@@ -1,0 +1,195 @@
+"""Minimal GitHub REST client: resolve a commit and download its tarball.
+
+Security notes:
+- The token is sent only to the API host. The tarball redirect is followed manually, must
+  point at codeload.github.com over https, and is fetched without credentials.
+- Downloads are streamed and capped; nothing is written to disk and nothing is executed.
+"""
+
+import re
+import time
+from collections.abc import Iterator
+from contextlib import AbstractContextManager, contextmanager
+from dataclasses import dataclass
+from typing import Protocol
+from urllib.parse import quote, urlsplit
+
+import httpx
+
+from app.core.errors import (
+    GithubRateLimited,
+    GithubUnavailable,
+    RepoNotFound,
+    RepoTooLarge,
+)
+
+_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_CODELOAD_HOST = "codeload.github.com"
+_MAX_RATE_LIMIT_WAIT = 3600
+_USER_AGENT = "codebase-intelligence"
+
+
+@dataclass(frozen=True)
+class CommitInfo:
+    sha: str
+    default_branch: str
+
+
+class ByteSource(Protocol):
+    """Anything tarfile can stream from."""
+
+    def read(self, size: int = -1) -> bytes: ...
+
+
+class GitHubGateway(Protocol):
+    """What the indexing code needs from GitHub. Tests substitute a fake."""
+
+    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo: ...
+
+    def open_tarball(
+        self, owner: str, name: str, sha: str, max_bytes: int
+    ) -> AbstractContextManager[ByteSource]: ...
+
+
+class _CappedReader:
+    """File-like view over a streamed (compressed) body that enforces a byte cap."""
+
+    def __init__(self, chunks: Iterator[bytes], max_bytes: int) -> None:
+        self._chunks = chunks
+        self._max = max_bytes
+        self._total = 0
+        self._buf = b""
+
+    def read(self, size: int = -1) -> bytes:
+        try:
+            while size < 0 or len(self._buf) < size:
+                chunk = next(self._chunks)
+                self._total += len(chunk)
+                if self._total > self._max:
+                    raise RepoTooLarge(f"Repository archive exceeds the {_human(self._max)} limit.")
+                self._buf += chunk
+        except StopIteration:
+            pass
+        except httpx.HTTPError:
+            raise GithubUnavailable("Connection to GitHub was interrupted.") from None
+        if size < 0:
+            out, self._buf = self._buf, b""
+        else:
+            out, self._buf = self._buf[:size], self._buf[size:]
+        return out
+
+
+class GitHubClient:
+    def __init__(
+        self,
+        token: str | None,
+        api_base: str = "https://api.github.com",
+        timeout: float = 15.0,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": _USER_AGENT,
+        }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        self._api = httpx.Client(
+            base_url=api_base,
+            headers=headers,
+            timeout=timeout,
+            transport=transport,
+            follow_redirects=False,
+        )
+        # Separate client: never carries the token.
+        self._download = httpx.Client(
+            headers={"User-Agent": _USER_AGENT},
+            timeout=timeout,
+            transport=transport,
+            follow_redirects=False,
+        )
+
+    def close(self) -> None:
+        self._api.close()
+        self._download.close()
+
+    # --- errors -------------------------------------------------------------------------
+
+    @staticmethod
+    def _raise_for_response(resp: httpx.Response) -> None:
+        status = resp.status_code
+        if status < 400:
+            return
+        remaining = resp.headers.get("x-ratelimit-remaining")
+        if status in (403, 429) and (remaining == "0" or "retry-after" in resp.headers):
+            raise GithubRateLimited(
+                "GitHub API rate limit reached.",
+                details={"retry_after_seconds": _retry_after(resp)},
+            )
+        if status in (403, 404, 409, 410, 422, 451):
+            raise RepoNotFound(
+                "Repository or ref was not found, is empty, or is not publicly accessible."
+            )
+        raise GithubUnavailable(f"GitHub returned an unexpected error (HTTP {status}).")
+
+    def _get(self, path: str, headers: dict[str, str] | None = None) -> httpx.Response:
+        try:
+            resp = self._api.get(path, headers=headers)
+        except httpx.HTTPError:
+            raise GithubUnavailable("Could not reach GitHub.") from None
+        if resp.status_code != 302:
+            self._raise_for_response(resp)
+        return resp
+
+    # --- API ----------------------------------------------------------------------------
+
+    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo:
+        repo = self._get(f"/repos/{owner}/{name}").json()
+        if repo.get("private"):
+            raise RepoNotFound("Repository was not found or is not public.")
+        default_branch = str(repo["default_branch"])
+        target = quote(ref or default_branch, safe="/")
+        resp = self._get(
+            f"/repos/{owner}/{name}/commits/{target}",
+            headers={"Accept": "application/vnd.github.sha"},
+        )
+        sha = resp.text.strip()
+        if not _SHA_RE.match(sha):
+            raise GithubUnavailable("GitHub returned an unexpected commit identifier.")
+        return CommitInfo(sha=sha, default_branch=default_branch)
+
+    @contextmanager
+    def open_tarball(self, owner: str, name: str, sha: str, max_bytes: int) -> Iterator[ByteSource]:
+        if not _SHA_RE.match(sha):
+            raise ValueError("sha must be a full 40-character commit hash")
+        resp = self._get(f"/repos/{owner}/{name}/tarball/{sha}")
+        if resp.status_code != 302:
+            raise GithubUnavailable("GitHub did not redirect to the archive.")
+        location = urlsplit(resp.headers.get("location", ""))
+        if location.scheme != "https" or location.hostname != _CODELOAD_HOST:
+            raise GithubUnavailable("GitHub redirected to an unexpected host.")
+        try:
+            with self._download.stream("GET", location.geturl()) as body:
+                self._raise_for_response(body)
+                if body.status_code != 200:
+                    raise GithubUnavailable("GitHub returned an unexpected archive response.")
+                declared = body.headers.get("content-length")
+                if declared and declared.isdigit() and int(declared) > max_bytes:
+                    raise RepoTooLarge(f"Repository archive exceeds the {_human(max_bytes)} limit.")
+                yield _CappedReader(body.iter_raw(), max_bytes)
+        except httpx.HTTPError:
+            raise GithubUnavailable("Connection to GitHub was interrupted.") from None
+
+
+def _human(n: int) -> str:
+    return f"{n // (1024 * 1024)} MB" if n >= 1024 * 1024 else f"{max(1, n // 1024)} KB"
+
+
+def _retry_after(resp: httpx.Response) -> int:
+    header = resp.headers.get("retry-after")
+    if header and header.isdigit():
+        return min(int(header), _MAX_RATE_LIMIT_WAIT)
+    reset = resp.headers.get("x-ratelimit-reset")
+    if reset and reset.isdigit():
+        return max(1, min(int(reset) - int(time.time()), _MAX_RATE_LIMIT_WAIT))
+    return 60

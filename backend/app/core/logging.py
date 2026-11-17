@@ -38,3 +38,5 @@ def configure_logging(level: str = "INFO") -> None:
     root.setLevel(level.upper())
     # Uvicorn's own access log duplicates ours; keep its errors only.
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    # httpx logs every outbound request URL at INFO; keep that out of our logs.
+    logging.getLogger("httpx").setLevel(logging.WARNING)

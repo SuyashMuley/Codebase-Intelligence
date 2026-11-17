@@ -6,13 +6,16 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api.deps import general_limit
 from app.core.errors import RepoNotFound
 from app.db.models import Repository
 from app.db.session import get_db
 from app.schemas.repository import ErrorEnvelope, RepositoryCreate, RepositoryList, RepositoryOut
 from app.services.github.url import parse_github_url
 
-router = APIRouter(prefix="/api/repositories", tags=["repositories"])
+router = APIRouter(
+    prefix="/api/repositories", tags=["repositories"], dependencies=[Depends(general_limit)]
+)
 
 DbSession = Annotated[Session, Depends(get_db)]
 

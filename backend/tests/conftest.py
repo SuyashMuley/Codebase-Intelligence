@@ -15,7 +15,9 @@ from sqlalchemy import Engine, create_engine, text  # noqa: E402
 from sqlalchemy.exc import OperationalError  # noqa: E402
 
 from alembic import command  # noqa: E402
+from app.api.deps import get_github  # noqa: E402
 from app.main import create_app  # noqa: E402
+from tests.helpers import FakeGitHub  # noqa: E402
 
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -56,8 +58,15 @@ def db_clean(db_engine: Engine) -> Engine:
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
-    with TestClient(create_app(), raise_server_exceptions=False) as c:
+def fake_gh() -> FakeGitHub:
+    return FakeGitHub()
+
+
+@pytest.fixture
+def client(fake_gh: FakeGitHub) -> Iterator[TestClient]:
+    app = create_app()  # fresh app = fresh in-process rate limiter
+    app.dependency_overrides[get_github] = lambda: fake_gh
+    with TestClient(app, raise_server_exceptions=False) as c:
         yield c
 
 

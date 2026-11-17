@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, repositories
+from app.api import health, indexing, repositories
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
+from app.core.ratelimit import SlidingWindowLimiter
 
 
 def create_app() -> FastAPI:
@@ -17,6 +18,8 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="Ingest public GitHub repositories, explore them, and ask questions.",
     )
+
+    app.state.limiter = SlidingWindowLimiter()
 
     # Added last = outermost, so the request ID and error envelope also cover CORS responses.
     app.add_middleware(
@@ -32,6 +35,7 @@ def create_app() -> FastAPI:
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(repositories.router)
+    app.include_router(indexing.router)
     return app
 
 

@@ -22,6 +22,9 @@ services:
       DATABASE_URL: postgresql+psycopg://cip:cip@db:5432/cip
       CORS_ORIGINS: http://localhost:3000
       LOG_LEVEL: INFO
+      # Optional. Read from your shell or a root-level .env file (gitignored).
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      CLIENT_KEY_SALT: ${CLIENT_KEY_SALT:-dev-salt-change-me}
     ports:
       - "8000:8000"
     depends_on:
