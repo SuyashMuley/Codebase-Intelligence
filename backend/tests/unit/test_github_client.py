@@ -225,3 +225,103 @@ def test_user_token_never_goes_to_codeload() -> None:
         assert src.read() == b"data"
     assert seen[0].headers["authorization"] == "Bearer user-token"
     assert "authorization" not in seen[1].headers
+
+
+# --- listing a user's public repositories ---------------------------------------------------
+
+
+def repo_item(name: str = "hello", owner: str = "octo", **over: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "name": name,
+        "owner": {"login": owner},
+        "private": False,
+        "fork": False,
+        "archived": False,
+        "description": "A repo",
+        "language": "Python",
+        "stargazers_count": 7,
+        "pushed_at": "2026-01-02T03:04:05Z",
+    }
+    base.update(over)
+    return base
+
+
+def list_client(payload: object, seen: list[httpx.Request] | None = None, status: int = 200):  # type: ignore[no-untyped-def]
+    def handler(request: httpx.Request) -> httpx.Response:
+        if seen is not None:
+            seen.append(request)
+        return httpx.Response(status, json=payload)
+
+    return make_client(handler)
+
+
+def test_list_public_repos_parses_fields_and_sends_the_users_token() -> None:
+    seen: list[httpx.Request] = []
+    items = list_client([repo_item("a"), repo_item("b", fork=True, archived=True)], seen)
+    repos = items.bind("user-token").list_public_repos("octo")
+    assert [(r.owner, r.name, r.fork, r.archived) for r in repos] == [
+        ("octo", "a", False, False),
+        ("octo", "b", True, True),
+    ]
+    assert repos[0].language == "Python" and repos[0].stars == 7
+    assert repos[0].pushed_at == "2026-01-02T03:04:05Z"
+    request = seen[0]
+    assert request.url.path == "/users/octo/repos"
+    assert dict(request.url.params) == {
+        "type": "owner",
+        "sort": "pushed",
+        "direction": "desc",
+        "per_page": "100",
+    }
+    assert request.headers["authorization"] == "Bearer user-token"
+
+
+def test_list_public_repos_never_returns_private_or_odd_entries() -> None:
+    payload = [
+        repo_item("ok"),
+        repo_item("secret", private=True),
+        repo_item("bad name!"),
+        repo_item("../escape"),
+        repo_item("fine", owner="bad owner"),
+        {"name": "no-owner"},
+        "not-a-dict",
+        repo_item("also-ok"),
+    ]
+    repos = list_client(payload).list_public_repos("octo")
+    assert [r.name for r in repos] == ["ok", "also-ok"]
+
+
+def test_list_public_repos_tolerates_missing_and_oversized_fields() -> None:
+    repos = list_client(
+        [
+            repo_item(
+                "x",
+                description="d" * 1000,
+                language=None,
+                stargazers_count="many",
+                pushed_at=None,
+            )
+        ]
+    ).list_public_repos("octo")
+    assert len(repos[0].description or "") == 200
+    assert repos[0].language is None and repos[0].stars == 0 and repos[0].pushed_at is None
+
+
+def test_list_public_repos_clamps_page_size_and_validates_login() -> None:
+    seen: list[httpx.Request] = []
+    list_client([], seen).list_public_repos("octo", limit=5000)
+    assert seen[0].url.params["per_page"] == "100"
+    for bad in ["", "a b", "../x", "x/y", "a" * 40, "-lead", "x?y=1"]:
+        with pytest.raises(ValueError):
+            list_client([]).list_public_repos(bad)
+
+
+def test_list_public_repos_error_paths() -> None:
+    with pytest.raises(GithubUnavailable):
+        list_client({"unexpected": "object"}).list_public_repos("octo")
+    with pytest.raises(GithubRateLimited):
+        make_client(
+            lambda r: httpx.Response(403, headers={"x-ratelimit-remaining": "0"})
+        ).list_public_repos("octo")
+    with pytest.raises(ReauthRequired):
+        make_client(lambda r: httpx.Response(401)).bind("t").list_public_repos("octo")

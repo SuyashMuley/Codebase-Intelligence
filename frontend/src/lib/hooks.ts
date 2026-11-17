@@ -5,11 +5,15 @@ import { useEffect, useState } from "react";
 import { api, ApiError, post } from "./api";
 import { decideNext, type StopReason } from "./tick-policy";
 import type {
+  FileDetail,
+  FileList,
+  GithubRepoList,
   IndexStartResult,
   IndexStatus,
   Me,
   Repository,
   RepositoryList,
+  Stats,
   TickResult,
 } from "./types";
 
@@ -18,6 +22,10 @@ export const keys = {
   repos: ["repos"] as const,
   repo: (id: string) => ["repo", id] as const,
   status: (id: string) => ["status", id] as const,
+  githubRepos: ["github-repos"] as const,
+  files: (id: string) => ["files", id] as const,
+  file: (id: string, path: string) => ["file", id, path] as const,
+  stats: (id: string) => ["stats", id] as const,
 };
 
 export function useMe() {
@@ -36,6 +44,16 @@ export function useRepos() {
   });
 }
 
+/** The signed-in user's own public GitHub repositories, for the "pick one" list. */
+export function useGithubRepos() {
+  return useQuery({
+    queryKey: keys.githubRepos,
+    queryFn: () => api<GithubRepoList>("/api/github/repos"),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+}
+
 export function useRepo(id: string) {
   return useQuery({
     queryKey: keys.repo(id),
@@ -50,6 +68,42 @@ export function useStatus(id: string) {
     queryFn: () => api<IndexStatus>(`/api/repositories/${id}/status`),
     retry: false,
   });
+}
+
+/** Files of the newest snapshot. Refreshes while indexing is still running. */
+export function useFiles(id: string, enabled: boolean, refreshing: boolean) {
+  return useQuery({
+    queryKey: keys.files(id),
+    queryFn: () => api<FileList>(`/api/repositories/${id}/files`),
+    enabled,
+    retry: false,
+    refetchInterval: refreshing ? 5_000 : false,
+  });
+}
+
+export function useFile(id: string, path: string | null) {
+  return useQuery({
+    queryKey: keys.file(id, path ?? ""),
+    queryFn: () => api<FileDetail>(`/api/repositories/${id}/files/${encodeFilePath(path ?? "")}`),
+    enabled: path !== null,
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useStats(id: string, enabled: boolean, refreshing: boolean) {
+  return useQuery({
+    queryKey: keys.stats(id),
+    queryFn: () => api<Stats>(`/api/repositories/${id}/stats`),
+    enabled,
+    retry: false,
+    refetchInterval: refreshing ? 5_000 : false,
+  });
+}
+
+/** A repository path as a URL path: each segment encoded, the slashes kept. */
+export function encodeFilePath(path: string): string {
+  return path.split("/").map(encodeURIComponent).join("/");
 }
 
 export function useConnectRepo() {
@@ -94,6 +148,7 @@ export function useIndexDriver(repoId: string, active: boolean) {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let consecutiveErrors = 0;
+    let lastPhase: string | null = null;
 
     const step = async () => {
       try {
@@ -103,6 +158,13 @@ export function useIndexDriver(repoId: string, active: boolean) {
         setLastError(null);
         qc.setQueryData(keys.status(repoId), result.status);
         const next = decideNext(result);
+        // What was indexed changes when a phase finishes, so refresh the explorer and statistics
+        // at those moments (and when the driver stops) rather than waiting for a timer.
+        if (next.action === "stop" || result.status.phase !== lastPhase) {
+          qc.invalidateQueries({ queryKey: keys.stats(repoId) });
+          qc.invalidateQueries({ queryKey: keys.files(repoId) });
+        }
+        lastPhase = result.status.phase;
         if (next.action === "stop") {
           setStopped(next.reason);
           return;

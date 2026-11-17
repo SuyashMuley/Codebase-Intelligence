@@ -79,6 +79,21 @@ class NoActiveJob(AppError):
     code = "no_active_job"
 
 
+class SnapshotNotReady(AppError):
+    status_code = 409
+    code = "snapshot_not_ready"
+
+
+class SnapshotNotFound(AppError):
+    status_code = 404
+    code = "snapshot_not_found"
+
+
+class FileNotFound(AppError):
+    status_code = 404
+    code = "file_not_found"
+
+
 class GithubRateLimited(AppError):
     """GitHub's rate limit (upstream), not ours. Retried after the reset time."""
 

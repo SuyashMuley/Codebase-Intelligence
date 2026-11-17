@@ -19,6 +19,15 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* Highlighted lines in the code viewer (see code-editor.tsx). */
+.cip-highlight {
+  background: rgba(16, 185, 129, 0.16);
+}
+.cip-highlight-gutter {
+  border-left: 3px solid #10b981;
+  margin-left: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

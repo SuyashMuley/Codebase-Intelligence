@@ -26,6 +26,8 @@ from app.core.errors import (
 )
 
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_LOGIN_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
+_REPO_NAME_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 _CODELOAD_HOST = "codeload.github.com"
 _MAX_RATE_LIMIT_WAIT = 3600
 _USER_AGENT = "codebase-intelligence"
@@ -35,6 +37,20 @@ _USER_AGENT = "codebase-intelligence"
 class CommitInfo:
     sha: str
     default_branch: str
+
+
+@dataclass(frozen=True)
+class GithubRepoInfo:
+    """A public repository as shown in the picker."""
+
+    owner: str
+    name: str
+    description: str | None
+    language: str | None
+    stars: int
+    pushed_at: str | None
+    fork: bool
+    archived: bool
 
 
 class ByteSource(Protocol):
@@ -47,6 +63,8 @@ class GitHubGateway(Protocol):
     """What the indexing code needs from GitHub. Tests substitute a fake."""
 
     def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo: ...
+
+    def list_public_repos(self, login: str, limit: int = 100) -> list[GithubRepoInfo]: ...
 
     def open_tarball(
         self, owner: str, name: str, sha: str, max_bytes: int
@@ -176,6 +194,53 @@ class GitHubClient:
         if not _SHA_RE.match(sha):
             raise GithubUnavailable("GitHub returned an unexpected commit identifier.")
         return CommitInfo(sha=sha, default_branch=default_branch)
+
+    def list_public_repos(self, login: str, limit: int = 100) -> list[GithubRepoInfo]:
+        """A user's public repositories they own, most recently pushed first.
+
+        Uses the public listing endpoint, so it needs no repository permissions and can never
+        return a private repository. Entries that do not look like normal owner/name pairs are
+        dropped rather than passed on to the browser.
+        """
+        if not _LOGIN_RE.match(login):
+            raise ValueError("not a valid GitHub login")
+        per_page = max(1, min(limit, 100))
+        data = self._get(
+            f"/users/{login}/repos?type=owner&sort=pushed&direction=desc&per_page={per_page}"
+        ).json()
+        if not isinstance(data, list):
+            raise GithubUnavailable("GitHub returned an unexpected repository list.")
+
+        repos: list[GithubRepoInfo] = []
+        for item in data:
+            if not isinstance(item, dict) or item.get("private") is True:
+                continue
+            owner = (item.get("owner") or {}).get("login")
+            name = item.get("name")
+            if not (
+                isinstance(owner, str)
+                and isinstance(name, str)
+                and _LOGIN_RE.match(owner)
+                and _REPO_NAME_RE.match(name)
+            ):
+                continue
+            description = item.get("description")
+            language = item.get("language")
+            stars = item.get("stargazers_count")
+            pushed = item.get("pushed_at")
+            repos.append(
+                GithubRepoInfo(
+                    owner=owner,
+                    name=name,
+                    description=description[:200] if isinstance(description, str) else None,
+                    language=language[:40] if isinstance(language, str) else None,
+                    stars=stars if isinstance(stars, int) else 0,
+                    pushed_at=pushed if isinstance(pushed, str) else None,
+                    fork=item.get("fork") is True,
+                    archived=item.get("archived") is True,
+                )
+            )
+        return repos
 
     @contextmanager
     def open_tarball(self, owner: str, name: str, sha: str, max_bytes: int) -> Iterator[ByteSource]:

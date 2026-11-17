@@ -1,16 +1,28 @@
 import { AuthGate } from "@/components/auth-gate";
 import { ConnectForm } from "@/components/connect-form";
+import { GithubRepoPicker } from "@/components/github-repo-picker";
 import { RepoList } from "@/components/repo-list";
 
 export default function ReposPage() {
   return (
     <AuthGate>
-      <div className="space-y-8">
+      <div className="space-y-10">
         <section>
           <h1 className="mb-4 text-xl font-semibold tracking-tight">Your repositories</h1>
           <ConnectForm />
         </section>
-        <RepoList />
+        <section aria-labelledby="connected-heading" className="space-y-3">
+          <h2 id="connected-heading" className="text-sm font-medium text-zinc-300">
+            Connected
+          </h2>
+          <RepoList />
+        </section>
+        <section aria-labelledby="github-heading" className="space-y-3">
+          <h2 id="github-heading" className="text-sm font-medium text-zinc-300">
+            From your GitHub account
+          </h2>
+          <GithubRepoPicker />
+        </section>
       </div>
     </AuthGate>
   );

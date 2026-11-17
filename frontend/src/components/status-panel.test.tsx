@@ -32,7 +32,13 @@ describe("StatusPanel", () => {
     setup(
       makeStatus({
         phase: "parse",
-        progress: { files_kept: 12, bytes_kept: 29182, skipped: { unsupported: 35, vendored: 2 } },
+        progress: {
+          files_kept: 12,
+          bytes_kept: 29182,
+          skipped: { unsupported: 35, vendored: 2 },
+          secrets_redacted: 0,
+          files_redacted: 0,
+        },
       }),
     );
     expect(screen.getByText("12")).toBeInTheDocument();
@@ -80,9 +86,38 @@ describe("StatusPanel", () => {
     expect(onIndex).toHaveBeenCalled();
   });
 
-  it("is honest that later steps are not built yet", () => {
-    setup(makeStatus({ phase: "parse" }), { stopped: "not_implemented" });
-    expect(screen.getByText(/parsing, search and the dependency graph/i)).toBeInTheDocument();
+  it("is honest that the steps after parsing are not built yet", () => {
+    setup(makeStatus({ phase: "embed" }), { stopped: "not_implemented" });
+    expect(screen.getByText(/fetched, parsed and split into chunks/i)).toBeInTheDocument();
+    expect(screen.getByText(/not available yet/i)).toBeInTheDocument();
+  });
+
+  it("shows parse progress and says when secrets were redacted", () => {
+    setup(
+      makeStatus({
+        phase: "embed",
+        parse: {
+          files: 12,
+          symbols: 140,
+          chunks: 96,
+          refs: 800,
+          syntax_error_files: 0,
+          truncated_files: 0,
+          done: true,
+        },
+        progress: {
+          files_kept: 12,
+          bytes_kept: 100,
+          skipped: {},
+          secrets_redacted: 3,
+          files_redacted: 2,
+        },
+      }),
+    );
+    expect(screen.getByText("Files parsed").nextSibling).toHaveTextContent("12");
+    expect(screen.getByText("Symbols found").nextSibling).toHaveTextContent("140");
+    expect(screen.getByText("Chunks created").nextSibling).toHaveTextContent("96");
+    expect(screen.getByRole("note")).toHaveTextContent(/3 secret-looking values were replaced/i);
   });
 
   it("reports lost contact with the server", () => {

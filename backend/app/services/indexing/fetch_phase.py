@@ -24,6 +24,7 @@ def _row(snapshot_id: object, f: ExtractedFile) -> dict[str, object]:
         "sha256": f.sha256,
         "content": f.content,
         "skipped_reason": f.skipped_reason,
+        "redactions": f.redactions,
     }
 
 

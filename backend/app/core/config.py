@@ -1,15 +1,22 @@
 from functools import lru_cache
+from pathlib import Path
 
 from cryptography.fernet import Fernet
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Look for .env in both the repo root and backend/, independent of the directory the API is
+# started from. Later files win, so backend/.env overrides the root one. Real environment
+# variables override both.
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+ENV_FILES = (_BACKEND_DIR.parent / ".env", _BACKEND_DIR / ".env")
 
 
 class Settings(BaseSettings):
     """Runtime configuration, read from environment variables (and .env locally)."""
 
     # hide_input_in_errors: a bad secret must never be echoed in a startup traceback.
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
+    model_config = SettingsConfigDict(env_file=ENV_FILES, extra="ignore", hide_input_in_errors=True)
 
     environment: str = "development"
     log_level: str = "INFO"
@@ -37,6 +44,13 @@ class Settings(BaseSettings):
     max_files: int = 2_000  # kept source files
     max_total_source_bytes: int = 5 * 1024 * 1024  # kept source text
     fetch_timeout_seconds: float = 40.0
+
+    # --- Parsing and chunking ---
+    chunk_max_chars: int = 1800  # about 450 tokens: fits small embedding models
+    chunk_merge_below: int = 500  # neighbouring chunks smaller than this are merged
+    max_chunks: int = 6_000  # per snapshot; bounds embedding cost and database size
+    parse_batch_files: int = 20  # files read from the database at a time
+    parse_budget_seconds: float = 15.0  # one tick parses files for at most this long
 
     # --- Job execution ---
     lease_seconds: int = 90  # must exceed fetch_timeout_seconds

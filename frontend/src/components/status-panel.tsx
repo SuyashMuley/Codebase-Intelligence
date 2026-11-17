@@ -120,6 +120,31 @@ export function StatusPanel({
         </dl>
       ) : null}
 
+      {status.parse ? (
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs text-zinc-500">Files parsed</dt>
+            <dd className="text-lg font-medium">{status.parse.files}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-zinc-500">Symbols found</dt>
+            <dd className="text-lg font-medium">{status.parse.symbols}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-zinc-500">Chunks created</dt>
+            <dd className="text-lg font-medium">{status.parse.chunks}</dd>
+          </div>
+        </dl>
+      ) : null}
+
+      {progress && progress.secrets_redacted > 0 ? (
+        <p role="note" className="rounded bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+          {progress.secrets_redacted} secret-looking value
+          {progress.secrets_redacted === 1 ? " was" : "s were"} replaced with{" "}
+          <code>[REDACTED:…]</code> before anything was stored.
+        </p>
+      ) : null}
+
       {status.error ? (
         <ErrorNotice
           title={
@@ -145,8 +170,9 @@ export function StatusPanel({
 
       {stopped === "not_implemented" ? (
         <p className="text-sm text-zinc-400">
-          Source files are fetched and stored. Parsing, search and the dependency graph are the
-          next steps and are not available yet.
+          {status.phase === "embed"
+            ? "The source is fetched, parsed and split into chunks. Search, question answering and the dependency graph come next and are not available yet."
+            : "Source files are fetched and stored. The remaining steps are not available yet."}
         </p>
       ) : null}
       {stopped === "error" && !driverError ? (

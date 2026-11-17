@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.errors import JobInProgress, NoActiveJob, QuotaExceeded
 from app.db.models import IndexJob, Repository, Snapshot
-from app.schemas.indexing import FetchProgress, JobError, StatusOut
+from app.schemas.indexing import FetchProgress, JobError, ParseProgress, StatusOut
 from app.services.github.client import GitHubGateway
 
 logger = logging.getLogger(__name__)
@@ -149,8 +149,24 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
             files_kept=int(fetch.get("files_kept", 0)),
             bytes_kept=int(fetch.get("bytes_kept", 0)),
             skipped={str(k): int(v) for k, v in fetch.get("skipped", {}).items()},
+            secrets_redacted=int(fetch.get("secrets_redacted", 0)),
+            files_redacted=int(fetch.get("files_redacted", 0)),
         )
         if isinstance(fetch, dict)
+        else None
+    )
+    parse = cursor.get("parse")
+    parse_progress = (
+        ParseProgress(
+            files=int(parse.get("files", 0)),
+            symbols=int(parse.get("symbols", 0)),
+            chunks=int(parse.get("chunks", 0)),
+            refs=int(parse.get("refs", 0)),
+            syntax_error_files=int(parse.get("syntax_error_files", 0)),
+            truncated_files=int(parse.get("truncated_files", 0)),
+            done=bool(parse.get("done", False)),
+        )
+        if isinstance(parse, dict)
         else None
     )
     error = (
@@ -173,5 +189,6 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         retry_at=retry_at,
         can_resume=job.phase == "failed",
         progress=progress,
+        parse=parse_progress,
         updated_at=job.updated_at,
     )

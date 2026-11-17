@@ -29,9 +29,13 @@ _GENERATED_NAME_SUFFIXES = (
     "_generated.go", ".generated.ts", ".generated.js", ".d.ts",
 )  # fmt: skip
 
+# Names that usually hold credentials. `credentials` and `secrets` only count when they are data
+# files or have no extension: a source file called credentials.py or secrets.go is just code about
+# credentials, and skipping it would hide real code from the index.
 _SECRET_NAME_RE = re.compile(
     r"^(\.env(\..*)?|id_(rsa|dsa|ecdsa|ed25519)(\.pub)?|\.npmrc|\.pypirc|\.netrc|\.htpasswd"
-    r"|credentials(\..*)?|secrets?\.(json|ya?ml|toml)|.*\.(pem|key|p12|pfx|jks|keystore|tfstate))$",
+    r"|(credentials|secrets?)(\.(json|ya?ml|toml|ini|cfg|conf|txt|csv|xml|env))?"
+    r"|.*\.(pem|key|p12|pfx|jks|keystore|tfstate))$",
     re.IGNORECASE,
 )
 

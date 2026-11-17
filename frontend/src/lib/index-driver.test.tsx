@@ -145,4 +145,30 @@ describe("useIndexDriver", () => {
     await advance(30_000);
     expect(ticks()).toBe(before);
   });
+
+  it("refreshes the statistics and file list when a phase finishes and when it stops", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(makeTick({ phase: "fetch" })))
+      .mockResolvedValueOnce(jsonResponse(makeTick({ phase: "fetch" })))
+      .mockResolvedValueOnce(jsonResponse(makeTick({ phase: "parse" })))
+      .mockResolvedValueOnce(
+        jsonResponse(makeTick({ phase: "embed" }, false, "phase_not_implemented:embed")),
+      );
+    const { client } = renderWithClient(<Harness />);
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    const refreshed = () =>
+      invalidate.mock.calls.filter(([f]) => (f as { queryKey: string[] }).queryKey[0] === "stats").length;
+
+    await advance(0);
+    expect(refreshed()).toBe(1); // the first tick reports a phase
+    await advance(300);
+    expect(refreshed()).toBe(1); // same phase again: no extra refresh
+    await advance(300);
+    expect(refreshed()).toBe(2); // fetch -> parse
+    await advance(300);
+    expect(refreshed()).toBe(3); // parse -> embed, and the driver stops
+    const keysTouched = invalidate.mock.calls.map(([f]) => (f as { queryKey: string[] }).queryKey.join("/"));
+    expect(keysTouched).toContain("stats/repo-1");
+    expect(keysTouched).toContain("files/repo-1");
+  });
 });

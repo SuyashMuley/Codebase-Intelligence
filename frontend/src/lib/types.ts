@@ -6,6 +6,21 @@ export interface Me {
   avatar_url: string | null;
 }
 
+export interface GithubRepo {
+  owner: string;
+  name: string;
+  description: string | null;
+  language: string | null;
+  stars: number;
+  pushed_at: string | null;
+  fork: boolean;
+  archived: boolean;
+}
+
+export interface GithubRepoList {
+  items: GithubRepo[];
+}
+
 export interface Repository {
   id: string;
   owner: string;
@@ -28,6 +43,18 @@ export interface FetchProgress {
   files_kept: number;
   bytes_kept: number;
   skipped: Record<string, number>;
+  secrets_redacted: number;
+  files_redacted: number;
+}
+
+export interface ParseProgress {
+  files: number;
+  symbols: number;
+  chunks: number;
+  refs: number;
+  syntax_error_files: number;
+  truncated_files: number;
+  done: boolean;
 }
 
 export interface JobError {
@@ -46,6 +73,7 @@ export interface IndexStatus {
   retry_at: string | null;
   can_resume: boolean;
   progress: FetchProgress | null;
+  parse: ParseProgress | null;
   updated_at: string | null;
 }
 
@@ -67,4 +95,67 @@ export interface ApiErrorBody {
     details: Record<string, unknown>;
     request_id: string | null;
   };
+}
+
+export interface SnapshotRef {
+  id: string;
+  commit_sha: string;
+  state: string;
+}
+
+export interface FileEntry {
+  path: string;
+  language: string | null;
+  size_bytes: number;
+  skipped_reason: string | null;
+  redactions: number;
+  parse_status: string | null;
+  symbol_count: number;
+}
+
+export interface FileList {
+  snapshot: SnapshotRef;
+  items: FileEntry[];
+  truncated: boolean;
+}
+
+export interface SymbolInfo {
+  id: number;
+  kind: string;
+  name: string;
+  qualified_name: string;
+  start_line: number;
+  end_line: number;
+  parent_id: number | null;
+  signature: string | null;
+}
+
+export interface FileDetail {
+  snapshot: SnapshotRef;
+  path: string;
+  language: string | null;
+  size_bytes: number;
+  skipped_reason: string | null;
+  redactions: number;
+  parse_status: string | null;
+  line_count: number;
+  content: string | null;
+  symbols: SymbolInfo[];
+}
+
+export interface Stats {
+  snapshot: SnapshotRef;
+  parsing_done: boolean;
+  files: {
+    stored: number;
+    parsed: number;
+    bytes: number;
+    by_language: Record<string, number>;
+    skipped: Record<string, number>;
+  };
+  symbols: { total: number; by_kind: Record<string, number> };
+  chunks: { total: number; average_chars: number; largest_chars: number };
+  refs: { imports: number; calls: number };
+  redactions: { spans: number; files: number };
+  syntax_error_files: number;
 }

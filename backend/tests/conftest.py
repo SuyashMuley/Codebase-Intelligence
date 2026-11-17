@@ -24,8 +24,10 @@ TEST_ENV = {
     "COOKIE_SECURE": "false",
     "FORWARDED_FOR_HOPS": "0",
 }
+# An empty value in the real environment beats any .env file, so a developer's own
+# ALEMBIC_DATABASE_URL (e.g. a hosted database) can never be used by the tests.
 os.environ.update(TEST_ENV)
-os.environ.pop("ALEMBIC_DATABASE_URL", None)
+os.environ["ALEMBIC_DATABASE_URL"] = ""
 
 import pytest  # noqa: E402
 from alembic.config import Config  # noqa: E402

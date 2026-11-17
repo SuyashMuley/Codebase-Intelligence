@@ -22,7 +22,7 @@ export function RepoList() {
   if (repos.data.items.length === 0) {
     return (
       <EmptyState title="No repositories yet">
-        Paste a public GitHub URL above to connect your first repository.
+        Paste a public GitHub URL above, or pick one of your own repositories below.
       </EmptyState>
     );
   }

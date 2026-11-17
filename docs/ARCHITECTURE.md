@@ -59,6 +59,26 @@ Each tick claims the job with a compare-and-set on `lease_until` (an `UPDATE ...
 
 **Fetch phase.** Streams the tarball (never to disk) and stores source files for the supported languages. The redirect to `codeload.github.com` is followed manually and the token is never sent there. Limits, all configurable: 25 MB compressed, 150 MB uncompressed (declared member sizes), 60,000 entries, 256 KB per file, 2,000 kept files, 5 MB kept source, 40 s deadline. Skipped files are counted by reason (`unsupported`, `vendored`, `generated`, `binary`, `too_large`, `secret_file`, `unsafe_path`).
 
+## Parsing and chunking (M4)
+
+The `parse` phase turns each stored source file into symbols, references and chunks. It is resumable like every phase: files are handled in id order, each tick parses for at most 15 seconds, the last finished file id is kept in the job cursor, and a file's old rows are deleted before it is parsed again, so a restarted phase never duplicates anything.
+
+**Extraction** uses Tree-sitter (Python, JavaScript with JSX, TypeScript and TSX, Go). The files are untrusted input: they are only parsed, never executed, parsing is time-limited, and every walk is iterative or depth-capped.
+
+| Language | Symbols | Imports and calls |
+| --- | --- | --- |
+| Python | functions, methods, classes (decorators and leading comments included); definitions inside `if`/`try`/`with` blocks | `import`, `from ... import` (relative levels, aliases, `*`); calls with receiver |
+| JavaScript and TypeScript | functions, classes, methods, arrow functions assigned to names, class fields holding functions, CommonJS `exports.x =` and `X.prototype.y =`; TypeScript interfaces, types, enums, namespaces | ES imports and re-exports, `require()`, dynamic `import()`, type-only imports; calls and `new` |
+| Go | functions, methods (qualified by receiver), structs, interfaces, types | imports with alias, blank and dot forms; calls with receiver |
+
+A symbol's line range includes its decorators or `export` keyword and the comment lines directly above it. Calls are de-duplicated per enclosing symbol with a count and are recorded by callee name and receiver only. Nothing is resolved to a target until the graph milestone, and dynamic calls are never guessed.
+
+**Chunking** produces ranges of whole lines with these guarantees, all tested: every non-blank line of a file is in exactly one chunk; chunk text is the exact source lines; chunks start and end on code; and a chunk is at most 1,800 characters unless a single line is longer. A symbol becomes one chunk; one too big is split into its members (a class becomes a header chunk plus one chunk per method); a big symbol with no members is cut into windows at blank lines; code between symbols becomes its own chunks; and neighbouring tiny chunks are merged. Because a chunk is exactly the cited lines, a citation (path, start line, end line) points at the text that was embedded and shown to the model.
+
+**Secret redaction** runs in the fetch step, before any text is stored, so a raw credential never reaches the database, the index, the API or a log. Matched values are replaced by `[REDACTED:<kind>]` placeholders on the same line (a private key block keeps its line count), so line numbers stay valid. Rules cover well-known token formats (cloud, source-host, chat, payment, AI-provider and JWT), passwords inside URLs, private key blocks, and quoted high-entropy values next to names like `password` or `api_key`. Generic matches require a random-looking value, so words, slugs, paths, URLs and placeholders are left alone. Findings record the kind and line, never the value. The parse phase redacts again for rows stored by older versions.
+
+**Limits** (configurable): 6,000 chunks per snapshot (over the cap the job fails with `repo_too_large`), 20 files read per batch, 15 seconds of parsing per tick, 400,000 syntax nodes and 5,000 distinct calls per file.
+
 ## Chat workflow (LangGraph)
 
 ```mermaid
@@ -128,9 +148,10 @@ File contents live in Postgres because Render's disk is ephemeral and a resumed 
 | `repositories` | id, owner, name, url, default_branch, created_at | One row per GitHub repo. Unique on (owner, name). |
 | `snapshots` | id, repo_id, commit_sha, status, file_count, chunk_count, error, indexed_at | One per pinned commit. Unique on (repo_id, commit_sha), which blocks duplicate ingestion. |
 | `index_jobs` | id, snapshot_id, phase, cursor (jsonb), lease_until, attempts, error | Resumable state machine. Phases: fetch, parse, embed, graph, done, failed. |
-| `files` | id, snapshot_id, path, language, size_bytes, sha256, content, skipped_reason | Source text, capped per file. Secrets redacted before insert. |
-| `symbols` | id, snapshot_id, file_id, kind, name, qualified_name, start_line, end_line | Functions, classes, methods, modules. |
-| `chunks` | id, snapshot_id, file_id, symbol_id, start_line, end_line, text, tsv, embedding vector(384), embedding_model | Syntax-aware chunks. `tsv` is a generated tsvector. |
+| `files` | id, snapshot_id, path, language, size_bytes, sha256, content, skipped_reason, redactions, parse_status | Source text, capped per file. Secrets redacted before insert; `redactions` counts them. `parse_status` is `ok`, `syntax_errors` or `truncated`. |
+| `symbols` | id, snapshot_id, file_id, kind, name, qualified_name, start_line, end_line, parent_id, signature | Functions, methods, classes, interfaces, types, enums, structs, namespaces (M4). `qualified_name` is `path::Outer.name`; `parent_id` links a member to its class. |
+| `code_refs` | id, snapshot_id, file_id, symbol_id, kind, name, line, detail (jsonb) | Imports and calls found in a file (M4), de-duplicated per enclosing symbol. The graph milestone resolves imports to files and calls to symbols where it can. |
+| `chunks` | id, snapshot_id, file_id, symbol_id, start_line, end_line, text, tsv, embedding vector(384), embedding_model | Syntax-aware chunks (M4). `text` is exactly lines `start_line` to `end_line`. `symbol_id` is the chunk's primary (first) symbol. `tsv` is a generated tsvector. |
 | `graph_edges` | id, snapshot_id, src_symbol_id, dst_symbol_id, src_file_id, dst_file_id, kind, resolution | kind: imports, calls, contains. resolution: static or unresolved. Unresolved calls are stored but never drawn as facts. |
 | `chat_usage` | id, repo_id, client_key, day, count | Per-client quotas for chat and impact calls. |
 | `users` | id, github_id (unique), login, avatar_url, created_at | One row per GitHub account (M3). |
@@ -164,6 +185,7 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 | `GET /api/auth/github/callback` | `code`, `state` | sets the session cookie, 302 to the frontend (M3) |
 | `POST /api/auth/logout` | none | 204, session deleted (M3) |
 | `GET /api/me` | none | `{id, login, avatar_url}` or 401 (M3) |
+| `GET /api/github/repos` | none | The signed-in user's own public GitHub repositories, most recently pushed first: `{items: [{owner, name, description, language, stars, pushed_at, fork, archived}]}`. Suggestions for the connect step; nothing is stored. The login always comes from the session, never from a request parameter. (M3) |
 | `POST /api/repositories` | `{url}` | 201 new repository, or 200 with the existing one (idempotent, case-insensitive). Validates and stores only; no fetch. |
 | `GET /api/repositories` | paging params | list of repositories with latest snapshot summary |
 | `GET /api/repositories/{id}` | none | repository (M1). Snapshots and stats are added in M2 and later. |
@@ -171,7 +193,9 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 | `POST /api/repositories/{id}/index/tick` | none | `{ran, reason, status}` after one bounded step. Safe to call repeatedly or concurrently. 409 `no_active_job` if nothing is pending. |
 | `GET /api/repositories/{id}/status` | none | `{state, snapshot_id, commit_sha, phase, progress{files_kept, bytes_kept, skipped}, error{code, message}, attempts, max_attempts, retry_at, can_resume}`. `state` is `not_indexed`, `pending`, `running`, `ready` or `failed`. |
 | `GET /api/repositories/{id}/graph` | `level` (file or symbol), `focus`, `depth` | nodes and edges, each edge tagged `static` or `unresolved` |
-| `GET /api/repositories/{id}/files/{path}` | `snapshot` | file content, language, symbols (for Monaco and the explorer) |
+| `GET /api/repositories/{id}/files` | `snapshot` (optional) | Every stored file of the snapshot: `{path, language, size_bytes, skipped_reason, redactions, parse_status, symbol_count}`, sorted bytewise. Parsed source plus notable skips (M4). |
+| `GET /api/repositories/{id}/files/{path}` | `snapshot` (optional) | One file: text (secrets redacted, null if skipped), language, line count, and its symbols with parent links. Paths are looked up in the database only; unknown or hostile paths are a plain 404 (M4). |
+| `GET /api/repositories/{id}/stats` | `snapshot` (optional) | Files by language and skip reason, symbols by kind, chunk sizes, import and call counts, redaction counts, syntax-error files, and whether parsing is done (M4). |
 | `POST /api/repositories/{id}/chat` | `{question, history?}` | answer, citations `[{path, start_line, end_line, chunk_id}]`, `confidence`, `insufficient_evidence` |
 | `POST /api/repositories/{id}/impact` | `{target: {file or symbol}}` | direct dependents, transitive dependents, affected modules, suggested tests, confidence, limitations |
 | `GET /health`, `GET /ready` | none | liveness, and readiness (DB reachable, migrations at head) |
@@ -182,7 +206,7 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 {"error": {"code": "invalid_github_url", "message": "...", "details": {}, "request_id": "..."}}
 ```
 
-Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Reserved for later milestones: `snapshot_not_ready`, `llm_unavailable`.
+Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M4: `snapshot_not_ready` (nothing indexed yet), `snapshot_not_found` (not a snapshot of this repository), `file_not_found`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Reserved for later milestones: `llm_unavailable`.
 
 **Result shapes that matter**
 - A citation always comes from a retrieved chunk. The server maps chunk IDs to path and lines.

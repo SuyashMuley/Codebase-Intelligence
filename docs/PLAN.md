@@ -114,6 +114,7 @@ Frontend (thin vertical slice)
 - Rate limits are per user for repository routes, with a per-IP backstop on every `/api` route and a stricter per-IP limit on the sign-in endpoints.
 - Logout deletes the user's stored GitHub tokens as well as the session, so the server holds no tokens for signed-out users.
 - Added a "Sign in again" notice for the case where GitHub revokes a token while the session is still valid.
+- Added a GitHub repository picker (`GET /api/github/repos` and a "From your GitHub account" list with one-click Connect). It lists only public repositories the user owns, using the public listing endpoint, so it needs no extra permissions and cannot return private repositories. Organization repositories are not listed; they can still be connected by URL.
 - Sessions, GitHub tokens and ownership are enforced as planned; the `__Host-` cookie prefix is used whenever cookies are Secure.
 
 **Known limitations**
@@ -123,15 +124,48 @@ Frontend (thin vertical slice)
 
 **Still to verify with a real login:** that a GitHub App user token with no extra permissions can read public repositories and download their tarballs. I expect it can but have not confirmed it.
 
-### M4. Parsing, chunking, secret handling
-- [ ] Tree-sitter adapters for Python, JS, TS, Go: symbols, imports, call sites
-- [ ] Syntax-aware chunker with a size fallback and line ranges
-- [ ] Secret scanner and redaction applied before storage
-- [ ] Fixture repos per language
-- [ ] Tests: AST extraction, import extraction, chunk boundaries and line numbers, secret redaction
-- [ ] UI: file explorer with a Monaco viewer, and an indexing-stats panel (files, symbols, languages, skips)
+### M4. Parsing, chunking, secret handling, and the file explorer
+- [x] Tree-sitter extractors for Python, JS, TS (and TSX/JSX) and Go: symbols, imports, call sites
+- [x] Syntax-aware chunker with a size fallback and exact line ranges
+- [x] Secret scanner; secrets are redacted before anything is stored
+- [x] Resumable `parse` phase (bounded per tick, idempotent), chunk-count quota
+- [x] Fixture repos per language, plus this project's own source as a real-code fixture
+- [x] Tests: AST extraction, import extraction, chunk boundaries and line numbers, secret redaction, resumability
+- [x] API: file list, file detail with symbols, indexing statistics
+- [x] UI: file explorer, Monaco viewer with symbol outline and line highlighting, statistics panel
 
 **Exit:** a snapshot has files, symbols and chunks with correct line ranges.
+
+**Status: built and verified.**
+- Backend: 922 tests; frontend: 167 tests; ruff, mypy strict, lint, typecheck and production builds pass; the Docker image builds and parses all four languages on Linux.
+- Chunking guarantees are property-tested on 300 random inputs and on real code: every non-blank line is in exactly one chunk, chunk text is the exact cited lines, chunks start and end on code, and sizes are bounded.
+- Python symbols are cross-checked against the standard library's `ast` for every Python file in this repository and in four public repositories (the only difference: Tree-sitter keeps an indented trailing comment inside the function it follows).
+- Run on 8 public repositories (551 files; Python: click, requests, flask, httpx; JavaScript: express; TypeScript: ky; Go: uuid, mux) with zero violations of the guarantees, no syntax errors on valid code, and parsing at roughly 400 to 1,400 files per second.
+- 12 safeguards were mutation-tested (each broken in turn and caught by a test), including redaction at fetch, redaction of legacy rows, chunk-text exactness, idempotent re-parse, parent links, the chunk cap, snapshot scoping and the ownership check.
+- In a real browser against the real backend (only the GitHub network layer faked), indexing this project's own source (105 files, 430 symbols, 409 chunks, 2,241 references): the tick driver finished the job, statistics were fresh immediately, Monaco rendered with syntax highlighting, outline clicks highlighted the right lines and wrote them into the URL, a reload restored the highlight, redaction, skipped-file and syntax-error panels showed, Tab reached the explorer, and the page has no horizontal scroll at 390 px. The browser contacted only localhost, the fake provider and the avatar host, so nothing is loaded from a CDN.
+
+**Bugs found by testing real code and fixed in this milestone**
+- A bulk update linking child symbols to their parents was rejected by SQLAlchemy (hidden until a fixture had nested symbols).
+- File listings used the database's locale ordering, which differs between machines; they now sort bytewise.
+- The generic secret rule redacted test fixtures like `token: 'invalid-token'` (31 false positives across five repositories); it now requires random-looking values and ignores words and slugs. URL passwords like `user:pass@host` are ignored too.
+- Files named `credentials.py` or `secrets.ts` were skipped as "secret files"; only data files (`credentials.json`, `secrets.yaml`, `.env`, keys) are now.
+- The statistics panel showed zeros for up to five seconds after indexing finished; it now refreshes when a phase ends. It and the status panel also disagreed on the file count.
+- Monaco 0.57 hard-pins a DOMPurify with critical XSS advisories; an npm override pins the patched release.
+
+**Deviations from the plan**
+- Added a `code_refs` table (imports and calls, resolved in M6), `symbols.parent_id` and `signature`, `files.redactions` and `parse_status` (migration `0004`).
+- Redaction happens in the fetch step, so a raw secret is never written to the database; the parse phase redacts again as a safety net for rows stored by older versions. Line endings are normalized to LF and a leading BOM is dropped (line numbers are unchanged).
+- Neighbouring small chunks are merged (up to 1,800 characters) so files full of tiny functions do not explode the chunk count. A merged chunk's `symbol_id` is its first symbol, not all of them.
+- The HNSW vector index is still deferred to M5.
+- The URL carries the open tab, file and highlighted lines (`?tab=files&file=...&line=12-20`). M7 citations will link through it.
+
+**Known limitations**
+- Calls are recorded by callee name and receiver only. Nothing is resolved to a target until M6, and dynamic calls are never guessed.
+- Secret scanning is pattern based. It will miss unusual formats, and it still redacts a few harmless values: odd fake URL passwords (`p%40ssword`), the RFC 2617 example password, and this project's own default dev database URL. Redaction is judged the safer error for a privacy tool.
+- After a syntax error Tree-sitter may swallow later declarations in that file, so a broken file can have an incomplete symbol list (flagged in the UI).
+- Not symbols: Go constants and variables, Python nested functions (their calls are credited to the enclosing function), object-literal methods in JavaScript. `.d.ts` files are treated as generated and skipped.
+- The browser run is a manual script, not part of CI. The Monaco bundle is large but loads only when a file is opened.
+- 17 dev-tooling advisories remain, all one `picomatch` ReDoS with no patched release (4.0.7 is latest). They affect eslint, vite and vitest only and do not ship to users; CI audits production dependencies only.
 
 ### M5. Embeddings, retrieval, benchmark
 - [ ] `Embedder` interface, Hugging Face client (batching, retry, backoff), hash embedder

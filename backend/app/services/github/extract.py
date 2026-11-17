@@ -22,6 +22,7 @@ from app.services.github.filters import (
     looks_binary,
     normalize_member_path,
 )
+from app.services.security.secrets import redact
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,8 @@ class FetchStats:
     files_kept: int = 0
     bytes_kept: int = 0
     members: int = 0
+    secrets_redacted: int = 0  # secret-looking values replaced before storage
+    files_redacted: int = 0
     skipped: dict[str, int] = field(default_factory=dict)
 
     def skip(self, reason: str) -> None:
@@ -47,6 +50,8 @@ class FetchStats:
         return {
             "files_kept": self.files_kept,
             "bytes_kept": self.bytes_kept,
+            "secrets_redacted": self.secrets_redacted,
+            "files_redacted": self.files_redacted,
             "skipped": dict(sorted(self.skipped.items())),
         }
 
@@ -59,6 +64,7 @@ class ExtractedFile:
     sha256: str
     content: str | None  # None when skipped
     skipped_reason: str | None
+    redactions: int = 0  # secret-looking values replaced in `content`
 
     @property
     def stored(self) -> bool:
@@ -106,6 +112,12 @@ def extract_files(
                 data = handle.read() if handle else b""
                 digest = hashlib.sha256(data).hexdigest()
                 text, reason = _decode(data)
+                redactions = 0
+                if text is not None:
+                    # Secrets are replaced before anything is stored or yielded, so a raw
+                    # credential never reaches the database, the index, or a log.
+                    redacted = redact(text)
+                    text, redactions = redacted.text, redacted.count
                 if reason is not None:
                     stats.skip(reason)
                     skipped = ExtractedFile(path, language, len(data), digest, None, reason)
@@ -115,13 +127,16 @@ def extract_files(
 
                 stats.files_kept += 1
                 stats.bytes_kept += len(data)
+                if redactions:
+                    stats.secrets_redacted += redactions
+                    stats.files_redacted += 1
                 if stats.files_kept > limits.max_files:
                     raise RepoTooLarge(f"Repository has more than {limits.max_files} source files.")
                 if stats.bytes_kept > limits.max_total_bytes:
                     raise RepoTooLarge(
                         f"Repository source exceeds {limits.max_total_bytes // (1024 * 1024)} MB."
                     )
-                yield ExtractedFile(path, language, len(data), digest, text, None)
+                yield ExtractedFile(path, language, len(data), digest, text, None, redactions)
     except (tarfile.TarError, EOFError, zlib.error, OSError):
         raise GithubUnavailable("The repository archive could not be read.") from None
 
@@ -130,9 +145,11 @@ def _decode(data: bytes) -> tuple[str | None, str | None]:
     if looks_binary(data):
         return None, "binary"
     try:
-        text = data.decode("utf-8")
+        text = data.decode("utf-8-sig")  # also drops a leading byte order mark
     except UnicodeDecodeError:
         return None, "binary"
+    # One line ending everywhere: line numbers are unchanged, but chunks and the viewer agree.
+    text = text.replace("\r\n", "\n")
     if has_generated_header(text):
         return None, "generated"
     return text, None

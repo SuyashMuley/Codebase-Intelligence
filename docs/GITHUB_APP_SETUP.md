@@ -44,7 +44,7 @@ APP_BASE_URL=http://localhost:3000
 COOKIE_SECURE=false
 ```
 
-Use `backend/.env` when you run the API directly, and the repo-root `.env` when you use `docker compose`. `.env.example` lists every name; M3 is the first milestone that reads them. If you rotate `TOKEN_ENCRYPTION_KEY`, users have to sign in again.
+Put them in the repo-root `.env` (docker compose reads that one too) or in `backend/.env`; the API reads both, and `backend/.env` wins if a name is in both. Restart the API after editing. `.env.example` lists every name. If you rotate `TOKEN_ENCRYPTION_KEY`, users have to sign in again.
 
 ## 5. Run it locally
 Three terminals (the frontend is not in `docker-compose.yml` yet):

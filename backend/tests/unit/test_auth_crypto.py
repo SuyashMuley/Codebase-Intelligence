@@ -128,3 +128,33 @@ def test_production_requires_secure_configuration() -> None:
 def test_allowed_origins_normalize_trailing_slashes() -> None:
     s = Settings(app_base_url="https://app.example.com/", cors_origins="http://localhost:3000/")
     assert s.allowed_origins == {"https://app.example.com", "http://localhost:3000"}
+
+
+def test_env_files_are_found_regardless_of_working_directory(
+    tmp_path: pytest.TempPathFactory,
+) -> None:
+    from app.core.config import ENV_FILES
+
+    names = [(p.parent.name, p.name) for p in ENV_FILES]
+    assert names[0][1] == ".env" and names[1] == ("backend", ".env")
+    assert all(p.is_absolute() for p in ENV_FILES)  # not relative to wherever uvicorn was started
+
+
+def test_backend_env_overrides_the_root_env(tmp_path: pytest.TempPathFactory) -> None:
+    from pathlib import Path
+
+    root = Path(str(tmp_path)) / "root.env"
+    backend = Path(str(tmp_path)) / "backend.env"
+    root.write_text("GITHUB_APP_CLIENT_ID=from-root\nAPP_BASE_URL=http://root.example\n")
+    backend.write_text("APP_BASE_URL=http://backend.example\n")
+    # Process env vars (set by the test config) would win over both files, so look at the files
+    # in isolation by clearing those two names for this construction.
+    import os
+
+    saved = {k: os.environ.pop(k) for k in ("GITHUB_APP_CLIENT_ID", "APP_BASE_URL")}
+    try:
+        s = Settings(_env_file=(root, backend))
+    finally:
+        os.environ.update(saved)
+    assert s.github_app_client_id == "from-root"  # only in the root file: still found
+    assert s.app_base_url == "http://backend.example"  # in both: backend/.env wins

@@ -170,6 +170,10 @@ class File(Base):
     # NULL when the file was skipped (see skipped_reason) or dropped by secret handling.
     content: Mapped[str | None] = mapped_column(Text)
     skipped_reason: Mapped[str | None] = mapped_column(String(40))
+    # How many secret-looking values were replaced before this text was stored.
+    redactions: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    # ok | syntax_errors | truncated, set by the parse phase.
+    parse_status: Mapped[str | None] = mapped_column(String(16))
 
     __table_args__ = (UniqueConstraint("snapshot_id", "path", name="uq_files_snapshot_id_path"),)
 
@@ -185,8 +189,31 @@ class Symbol(Base):
     qualified_name: Mapped[str] = mapped_column(Text)
     start_line: Mapped[int] = mapped_column(Integer)
     end_line: Mapped[int] = mapped_column(Integer)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("symbols.id", ondelete="CASCADE"))
+    signature: Mapped[str | None] = mapped_column(Text)
 
     __table_args__ = (Index("ix_symbols_snapshot_id_file_id", "snapshot_id", "file_id"),)
+
+
+class CodeRef(Base):
+    """An import or call found in a file. Calls are recorded by name and receiver only; the
+    graph milestone resolves what it can and leaves the rest unresolved."""
+
+    __tablename__ = "code_refs"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("snapshots.id", ondelete="CASCADE"))
+    file_id: Mapped[int] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
+    symbol_id: Mapped[int | None] = mapped_column(ForeignKey("symbols.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(10))  # import | call
+    name: Mapped[str] = mapped_column(Text)
+    line: Mapped[int] = mapped_column(Integer)
+    detail: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+    __table_args__ = (
+        Index("ix_code_refs_snapshot_id_file_id", "snapshot_id", "file_id"),
+        Index("ix_code_refs_snapshot_id_kind_name", "snapshot_id", "kind", "name"),
+    )
 
 
 class Chunk(Base):

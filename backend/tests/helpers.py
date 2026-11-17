@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 
 from app.core.errors import AppError, GithubAuthFailed, GithubUnavailable
 from app.services.auth.oauth import GitHubProfile, TokenSet
-from app.services.github.client import ByteSource, CommitInfo
+from app.services.github.client import ByteSource, CommitInfo, GithubRepoInfo
 
 PREFIX = "owner-repo-abc123/"
 
@@ -77,6 +77,9 @@ class FakeGitHub:
         self.resolve_error: AppError | None = None
         self.fail_next: list[AppError] = []
         self.fail_after_fraction: float | None = None
+        self.public_repos: dict[str, list[GithubRepoInfo]] = {}
+        self.repo_list_error: AppError | None = None
+        self.repo_list_logins: list[str] = []
 
     def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo:
         self.resolve_calls += 1
@@ -84,6 +87,12 @@ class FakeGitHub:
         if self.resolve_error:
             raise self.resolve_error
         return CommitInfo(sha=self.sha, default_branch=self.default_branch)
+
+    def list_public_repos(self, login: str, limit: int = 100) -> list[GithubRepoInfo]:
+        self.repo_list_logins.append(login)
+        if self.repo_list_error:
+            raise self.repo_list_error
+        return list(self.public_repos.get(login, []))
 
     @contextmanager
     def open_tarball(self, owner: str, name: str, sha: str, max_bytes: int) -> Iterator[ByteSource]:

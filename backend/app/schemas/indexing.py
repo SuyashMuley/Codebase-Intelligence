@@ -25,6 +25,18 @@ class FetchProgress(BaseModel):
     files_kept: int
     bytes_kept: int
     skipped: dict[str, int]
+    secrets_redacted: int = 0
+    files_redacted: int = 0
+
+
+class ParseProgress(BaseModel):
+    files: int
+    symbols: int
+    chunks: int
+    refs: int
+    syntax_error_files: int
+    truncated_files: int
+    done: bool
 
 
 class JobError(BaseModel):
@@ -47,6 +59,7 @@ class StatusOut(BaseModel):
         default=False, description="True when the job failed; POST /index restarts it."
     )
     progress: FetchProgress | None = None
+    parse: ParseProgress | None = None
     updated_at: datetime | None = None
 
 
