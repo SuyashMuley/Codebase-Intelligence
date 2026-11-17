@@ -1,0 +1,184 @@
+import uuid
+from datetime import date, datetime
+
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import (
+    BigInteger,
+    Computed,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    MetaData,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+EMBEDDING_DIM = 384
+
+# Stable constraint names keep Alembic migrations deterministic.
+NAMING_CONVENTION = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+
+class Base(DeclarativeBase):
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+class Repository(Base):
+    __tablename__ = "repositories"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner: Mapped[str] = mapped_column(String(39))
+    name: Mapped[str] = mapped_column(String(100))
+    url: Mapped[str] = mapped_column(String(200))
+    default_branch: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # GitHub names are case-insensitive, so uniqueness is enforced on the lowercased pair.
+    __table_args__ = (
+        Index("uq_repositories_owner_name_lower", func.lower(owner), func.lower(name), unique=True),
+    )
+
+
+class Snapshot(Base):
+    __tablename__ = "snapshots"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    repository_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("repositories.id", ondelete="CASCADE"), index=True
+    )
+    commit_sha: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    file_count: Mapped[int] = mapped_column(Integer, default=0)
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # One snapshot per (repo, commit) is what blocks duplicate ingestion.
+    __table_args__ = (
+        UniqueConstraint(
+            "repository_id", "commit_sha", name="uq_snapshots_repository_id_commit_sha"
+        ),
+    )
+
+
+class IndexJob(Base):
+    __tablename__ = "index_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("snapshots.id", ondelete="CASCADE"), unique=True
+    )
+    phase: Mapped[str] = mapped_column(String(20), default="fetch")
+    cursor: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class File(Base):
+    __tablename__ = "files"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("snapshots.id", ondelete="CASCADE"))
+    path: Mapped[str] = mapped_column(Text)
+    language: Mapped[str | None] = mapped_column(String(20))
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    sha256: Mapped[str] = mapped_column(String(64))
+    # NULL when the file was skipped (see skipped_reason) or dropped by secret handling.
+    content: Mapped[str | None] = mapped_column(Text)
+    skipped_reason: Mapped[str | None] = mapped_column(String(40))
+
+    __table_args__ = (UniqueConstraint("snapshot_id", "path", name="uq_files_snapshot_id_path"),)
+
+
+class Symbol(Base):
+    __tablename__ = "symbols"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("snapshots.id", ondelete="CASCADE"))
+    file_id: Mapped[int] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(20))
+    name: Mapped[str] = mapped_column(Text)
+    qualified_name: Mapped[str] = mapped_column(Text)
+    start_line: Mapped[int] = mapped_column(Integer)
+    end_line: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (Index("ix_symbols_snapshot_id_file_id", "snapshot_id", "file_id"),)
+
+
+class Chunk(Base):
+    __tablename__ = "chunks"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("snapshots.id", ondelete="CASCADE"))
+    file_id: Mapped[int] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
+    symbol_id: Mapped[int | None] = mapped_column(ForeignKey("symbols.id", ondelete="SET NULL"))
+    start_line: Mapped[int] = mapped_column(Integer)
+    end_line: Mapped[int] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text)
+    # 'simple' config: no stemming or stop words, which suits identifiers in code.
+    tsv: Mapped[str] = mapped_column(
+        TSVECTOR, Computed("to_tsvector('simple', text)", persisted=True)
+    )
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
+    embedding_model: Mapped[str | None] = mapped_column(String(100))
+
+    __table_args__ = (
+        Index("ix_chunks_snapshot_id_file_id", "snapshot_id", "file_id"),
+        Index("ix_chunks_tsv", "tsv", postgresql_using="gin"),
+        # The HNSW vector index is added in the retrieval milestone, after bulk inserts exist.
+    )
+
+
+class GraphEdge(Base):
+    __tablename__ = "graph_edges"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("snapshots.id", ondelete="CASCADE"))
+    src_symbol_id: Mapped[int | None] = mapped_column(ForeignKey("symbols.id", ondelete="CASCADE"))
+    dst_symbol_id: Mapped[int | None] = mapped_column(ForeignKey("symbols.id", ondelete="CASCADE"))
+    src_file_id: Mapped[int | None] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
+    dst_file_id: Mapped[int | None] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(20))  # imports | calls | contains
+    resolution: Mapped[str] = mapped_column(String(20))  # static | unresolved
+
+    __table_args__ = (
+        Index("ix_graph_edges_snapshot_id_src_symbol_id", "snapshot_id", "src_symbol_id"),
+        Index("ix_graph_edges_snapshot_id_dst_symbol_id", "snapshot_id", "dst_symbol_id"),
+        Index("ix_graph_edges_snapshot_id_src_file_id", "snapshot_id", "src_file_id"),
+        Index("ix_graph_edges_snapshot_id_dst_file_id", "snapshot_id", "dst_file_id"),
+    )
+
+
+class ChatUsage(Base):
+    __tablename__ = "chat_usage"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    repository_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("repositories.id", ondelete="CASCADE")
+    )
+    client_key: Mapped[str] = mapped_column(String(64))
+    day: Mapped[date] = mapped_column(Date)
+    count: Mapped[int] = mapped_column(Integer, default=0)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "repository_id", "client_key", "day", name="uq_chat_usage_repository_id_client_key_day"
+        ),
+    )
