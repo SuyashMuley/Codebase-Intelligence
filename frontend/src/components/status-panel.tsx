@@ -5,7 +5,7 @@ import type { DriverStop } from "@/lib/hooks";
 import { formatBytes, shortSha, SKIP_LABELS } from "@/lib/format";
 import type { ApiError } from "@/lib/api";
 import type { IndexStatus } from "@/lib/types";
-import { Badge, Button, Card, EmptyState, ErrorNotice } from "./ui";
+import { Badge, Button, Card, ConfirmButton, EmptyState, ErrorNotice } from "./ui";
 
 const PHASES = [
   { key: "fetch", label: "Fetch source" },
@@ -59,12 +59,14 @@ export function StatusPanel({
   driverError,
   starting,
   onIndex,
+  onReindex,
 }: {
   status: IndexStatus;
   stopped: DriverStop | null;
   driverError: ApiError | null;
   starting: boolean;
   onIndex: () => void;
+  onReindex?: () => void;
 }) {
   if (status.state === "not_indexed") {
     return (
@@ -92,9 +94,20 @@ export function StatusPanel({
             </span>
           ) : null}
         </div>
-        <Button variant="secondary" onClick={onIndex} disabled={starting}>
-          {status.state === "failed" ? "Try again" : "Check latest commit"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" onClick={onIndex} disabled={starting}>
+            {status.state === "failed" ? "Try again" : "Check latest commit"}
+          </Button>
+          {onReindex && (status.state === "ready" || status.state === "failed") ? (
+            <ConfirmButton
+              label="Re-index"
+              confirmLabel="Re-index now"
+              warning="Delete this snapshot and index the commit again? It counts toward your daily indexing limit."
+              onConfirm={onReindex}
+              disabled={starting}
+            />
+          ) : null}
+        </div>
       </div>
 
       <Stepper status={status} />

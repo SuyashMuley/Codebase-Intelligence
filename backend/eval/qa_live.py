@@ -37,7 +37,21 @@ def sample(questions: list[dict[str, Any]], per_type: int) -> list[dict[str, Any
     return out
 
 
-def evaluate(dataset: dict[str, Any], settings: Settings, per_type: int) -> dict[str, Any]:
+def unanswerable_questions(repo: str) -> list[dict[str, Any]]:
+    """Questions whose right answer is "cannot determine" (written before any measuring)."""
+    data = json.loads((HERE / "datasets" / "unanswerable.json").read_text())
+    texts = list(data["off_topic"])
+    for texts_for_repo in data.get(repo, {}).values():
+        texts += texts_for_repo
+    return [
+        {"id": f"u{i:02d}", "type": "unanswerable", "question": t, "relevant": []}
+        for i, t in enumerate(texts, 1)
+    ]
+
+
+def evaluate(
+    dataset: dict[str, Any], settings: Settings, per_type: int, unanswerable: bool = False
+) -> dict[str, Any]:
     owner, name = dataset["repo"].split("/")
     llm = get_llm(settings)
     rows: list[dict[str, Any]] = []
@@ -59,7 +73,12 @@ def evaluate(dataset: dict[str, Any], settings: Settings, per_type: int) -> dict
             refund_quota=lambda: None,
         )
         assert _has_embeddings(db, sid)
-        for q in sample(dataset["questions"], per_type):
+        questions = (
+            unanswerable_questions(dataset["repo"])
+            if unanswerable
+            else sample(dataset["questions"], per_type)
+        )
+        for q in questions:
             targets = resolve(db, sid, q["relevant"])
             started = time.monotonic()
             try:
@@ -135,10 +154,11 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--dataset", required=True)
     p.add_argument("--per-type", type=int, default=4)
+    p.add_argument("--unanswerable", action="store_true", help="ask the unanswerable set instead")
     p.add_argument("--out", default=str(HERE / "results"))
     args = p.parse_args(argv)
     dataset = json.loads(Path(args.dataset).read_text())
-    result = evaluate(dataset, get_settings(), args.per_type)
+    result = evaluate(dataset, get_settings(), args.per_type, args.unanswerable)
     out = Path(args.out)
     out.mkdir(exist_ok=True)
     path = out / f"qa_live_{dataset['repo'].replace('/', '_')}.json"

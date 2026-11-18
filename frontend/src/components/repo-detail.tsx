@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ApiError } from "@/lib/api";
 import {
+  useDisconnectRepo,
   useIndexDriver,
   useRepo,
   useStartIndex,
@@ -18,7 +19,7 @@ import { SearchTab } from "./search-tab";
 import { ReauthNotice } from "./reauth-notice";
 import { StatsPanel } from "./stats-panel";
 import { StatusPanel } from "./status-panel";
-import { Button, EmptyState, ErrorNotice, Spinner } from "./ui";
+import { Button, ConfirmButton, EmptyState, ErrorNotice, Spinner } from "./ui";
 import type { LineRange } from "./code-viewer";
 
 type Tab = "overview" | "files" | "search" | "graph" | "ask";
@@ -38,6 +39,7 @@ export function RepoDetail({ id }: { id: string }) {
   const repo = useRepo(id);
   const status = useStatus(id);
   const start = useStartIndex(id);
+  const disconnect = useDisconnectRepo(id);
 
   const hasSnapshot = !!status.data && status.data.state !== "not_indexed";
   const active = status.data?.state === "pending" || status.data?.state === "running";
@@ -102,9 +104,26 @@ export function RepoDetail({ id }: { id: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/repos" className="text-sm text-zinc-400 hover:text-zinc-200">
-          ← All repositories
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/repos" className="text-sm text-zinc-400 hover:text-zinc-200">
+            ← All repositories
+          </Link>
+          <ConfirmButton
+            variant="ghost"
+            label="Disconnect"
+            confirmLabel="Disconnect and delete"
+            warning="Remove this repository and its indexed data? This cannot be undone."
+            disabled={disconnect.isPending}
+            onConfirm={() =>
+              disconnect.mutate(undefined, { onSuccess: () => router.replace("/repos") })
+            }
+          />
+        </div>
+        {disconnect.isError ? (
+          <div className="mt-2">
+            <ErrorNotice title="Could not disconnect">{disconnect.error.message}</ErrorNotice>
+          </div>
+        ) : null}
         <h1 className="mt-2 text-xl font-semibold tracking-tight">
           {repo.data.owner}/{repo.data.name}
         </h1>
@@ -164,7 +183,8 @@ export function RepoDetail({ id }: { id: string }) {
               stopped={driver.stopped}
               driverError={driver.lastError}
               starting={start.isPending}
-              onIndex={() => start.mutate()}
+              onIndex={() => start.mutate(false)}
+              onReindex={() => start.mutate(true)}
             />
           ) : null}
           {stats.data ? <StatsPanel stats={stats.data} progress={status.data?.parse ?? null} /> : null}

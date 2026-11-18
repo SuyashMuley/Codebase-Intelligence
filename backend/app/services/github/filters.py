@@ -65,11 +65,18 @@ def detect_language(path: str) -> str | None:
     return LANGUAGE_BY_EXT.get(PurePosixPath(path).suffix.lower())
 
 
+_README_NAMES = frozenset({"readme", "readme.md", "readme.markdown", "readme.rst", "readme.txt"})
+
+
 def classify_path(path: str) -> tuple[str | None, str | None]:
     """Return (language, skip_reason) using only the path. skip_reason None means keep going."""
     parts = path.split("/")
     base = parts[-1]
     language = detect_language(path)
+    # READMEs are the one kind of prose that is kept: they answer "what is this project?". They
+    # are chunked as plain text (no symbols) and never take part in the graph.
+    if language is None and base.lower() in _README_NAMES:
+        language = "markdown"
     if _SECRET_NAME_RE.match(base):
         return language, "secret_file"
     if any(p in VENDORED_DIRS for p in parts[:-1]):

@@ -39,7 +39,7 @@ def test_keeps_supported_source_and_records_informative_skips() -> None:
     # Vendored, unsupported and secret files are counted but never yielded.
     assert "node_modules/lib/index.js" not in by_path
     assert ".env" not in by_path
-    assert "README.md" not in by_path
+    assert "NOTES.md" not in by_path
     assert stats.files_kept == len(DEFAULT_KEPT)
     assert stats.skipped == {
         "unsupported": 2,

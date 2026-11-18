@@ -13,6 +13,11 @@ class IndexRequest(BaseModel):
         description="Branch, tag or commit SHA. Defaults to the repository's default branch.",
     )
 
+    force: bool = Field(
+        default=False,
+        description="Index this commit again from scratch, replacing its existing snapshot.",
+    )
+
     @field_validator("ref")
     @classmethod
     def _no_traversal(cls, v: str | None) -> str | None:

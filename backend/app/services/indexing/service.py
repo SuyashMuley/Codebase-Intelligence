@@ -65,19 +65,28 @@ def start_indexing(
     requested_by: UUID,
     gh: GitHubGateway,
     settings: Settings,
+    force: bool = False,
 ) -> tuple[Snapshot, IndexJob, bool]:
-    """Pin a commit and create (or reuse) its snapshot and job. Returns (snapshot, job, created)."""
+    """Pin a commit and create (or reuse) its snapshot and job. Returns (snapshot, job, created).
+
+    With `force`, a finished or failed snapshot of the same commit is deleted and indexed again
+    (for example after the indexer learned to keep more kinds of file). It counts as a new
+    snapshot against the daily quota. One that is still running is simply returned."""
     info = gh.resolve_commit(repo.owner, repo.name, ref)
     if repo.default_branch != info.default_branch:
         repo.default_branch = info.default_branch
         db.commit()
 
     existing = _snapshot_with_job(db, repo.id, info.sha)
+    replace: Snapshot | None = None
     if existing:
         snapshot, job = existing
-        if job.phase == "failed":
-            restart_failed(db, snapshot, job)
-        return snapshot, job, False
+        if force and snapshot.status not in ACTIVE_STATUSES:
+            replace = snapshot  # deleted below, once nothing can refuse the new one
+        else:
+            if job.phase == "failed":
+                restart_failed(db, snapshot, job)
+            return snapshot, job, False
 
     in_progress = db.scalar(
         select(func.count())
@@ -105,6 +114,9 @@ def start_indexing(
             details={"limit": settings.ingestions_per_client_per_day},
         )
 
+    if replace is not None:
+        db.delete(replace)  # files, chunks, symbols, edges and the job go with it
+        db.flush()
     snapshot = Snapshot(repository_id=repo.id, commit_sha=info.sha, requested_by=requested_by)
     db.add(snapshot)
     try:

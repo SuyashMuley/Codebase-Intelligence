@@ -10,6 +10,7 @@ runs. The decision rule, in one place:
 """
 
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from sqlalchemy import func, select
@@ -17,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.errors import AppError
-from app.db.models import Symbol
+from app.db.models import Chunk, File, Symbol
 from app.providers.embeddings.base import Embedder
 from app.services.retrieval.fusion import reciprocal_rank_fusion
 from app.services.retrieval.search import Hit, keyword_search, load_hits, vector_search_scored
@@ -32,6 +33,7 @@ class Retrieval:
     symbol_hit: bool = False
     mode: str = "keyword"
     reason: str = ""  # why retrieval could not be trusted, if it could not
+    overview: bool = False  # the README and manifests were added for a whole-project question
 
 
 def retrieve(
@@ -42,6 +44,7 @@ def retrieve(
     search_query: str,
     names: list[str],
     k: int,
+    overview: bool = False,
 ) -> Retrieval:
     sims: dict[int, float] = {}
     vector_ids: list[int] = []
@@ -63,6 +66,10 @@ def retrieve(
     )
     ranked = reciprocal_rank_fusion({"vector": vector_ids, "keyword": keyword_ids})
     hits = load_hits(db, ranked[:k])
+    if overview:
+        first = load_hits(db, [(i, 1.0, {}) for i in overview_chunk_ids(db, snapshot_id)])
+        seen = {h.chunk_id for h in first}
+        hits = first + [h for h in hits if h.chunk_id not in seen]
     symbol_hit = bool(names) and bool(
         db.scalar(
             select(Symbol.id)
@@ -80,12 +87,45 @@ def retrieve(
         symbol_hit=symbol_hit,
         mode=mode,
         reason=reason,
+        overview=overview and bool(hits),
+    )
+
+
+_MANIFESTS = ("pyproject.toml", "package.json", "go.mod", "cargo.toml", "setup.py", "pom.xml")
+OVERVIEW_README_CHUNKS = 2
+OVERVIEW_MANIFEST_CHUNKS = 1
+
+
+def overview_chunk_ids(db: Session, snapshot_id: uuid.UUID) -> list[int]:
+    """Chunks that describe the whole project: the README (shallowest first) then a manifest."""
+    files = db.execute(select(File.id, File.path).where(File.snapshot_id == snapshot_id)).all()
+
+    def pick(match: Callable[[str], bool], limit: int) -> list[int]:
+        ranked = sorted(
+            (f for f in files if match(f.path.rsplit("/", 1)[-1].lower())),
+            key=lambda f: (f.path.count("/"), f.path),
+        )
+        out: list[int] = []
+        for f in ranked[:1]:
+            out += list(
+                db.scalars(
+                    select(Chunk.id)
+                    .where(Chunk.file_id == f.id)
+                    .order_by(Chunk.start_line)
+                    .limit(limit)
+                )
+            )
+        return out
+
+    return pick(lambda n: n.startswith("readme"), OVERVIEW_README_CHUNKS) + pick(
+        lambda n: n in _MANIFESTS, OVERVIEW_MANIFEST_CHUNKS
     )
 
 
 def is_sufficient(r: Retrieval, settings: Settings) -> bool:
     return bool(r.hits) and (
         r.symbol_hit
+        or r.overview
         or (r.top_similarity is not None and r.top_similarity >= settings.qa_min_similarity)
     )
 

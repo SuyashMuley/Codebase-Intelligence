@@ -55,6 +55,12 @@ def parse_source(
     """Never raises on bad input: unparseable or pathological files yield partial results with
     `syntax_errors` or `truncated` set, and are still chunked by plain line windows."""
     lines = content.split("\n")
+    if language == "markdown":  # prose: no grammar, plain line-window chunks
+        return ParsedSource(
+            parsed=ParsedFile(),
+            chunks=build_chunks(lines, [], max_chars, merge_below),
+            line_count=len(lines),
+        )
     src = content.encode("utf-8")
     grammar = grammar_for(path, language)
 

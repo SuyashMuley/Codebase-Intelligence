@@ -1,3 +1,5 @@
+import pytest
+
 from app.services.qa.classify import classify
 from app.services.qa.context import (
     build_excerpts,
@@ -115,8 +117,36 @@ def test_the_shipped_defaults_are_the_measured_ones() -> None:
     s = Settings(_env_file=None)
     # docs/PLAN.md (M7): similarity thresholds from eval/qa_eval.py on psf/requests and
     # pallets/click; neighbours off because they did not help; 6 excerpts matched 8.
-    assert s.qa_min_similarity == 0.725
+    assert s.qa_min_similarity == 0.0
     assert s.qa_high_similarity == 0.80
     assert s.qa_expand_max == 0
     assert s.qa_context_chunks == 6
     assert s.chat_budget_seconds < 30  # the browser's proxy gives up at about 30 seconds
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "what is the repo about?",
+        "What is this project for?",
+        "give me an overview of the codebase",
+        "what does this app do",
+        "summarize this repository",
+        "what is the tech stack?",
+        "how is the project structured?",
+    ],
+)
+def test_questions_about_the_whole_project_are_overview(question: str) -> None:
+    assert classify(question).style == "overview"
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What does `make_pass_decorator` do?",
+        "where are the prompt templates?",
+        "how does the parser handle errors",
+    ],
+)
+def test_questions_about_code_are_not_overview(question: str) -> None:
+    assert classify(question).style != "overview"

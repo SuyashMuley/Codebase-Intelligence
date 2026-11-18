@@ -13,7 +13,7 @@ from app.services.github.client import ByteSource, CommitInfo, GithubRepoInfo
 PREFIX = "owner-repo-abc123/"
 
 DEFAULT_FILES: dict[str, bytes | str] = {
-    "README.md": "# project\n",
+    "NOTES.md": "# project\n",
     "src/app.py": "import os\n\n\ndef main():\n    return os.getcwd()\n",
     "src/util.js": "export const x = 1;\n",
     "web/index.ts": "export function f(): number { return 1; }\n",

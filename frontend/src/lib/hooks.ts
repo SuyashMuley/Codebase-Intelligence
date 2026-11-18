@@ -121,11 +121,38 @@ export function useConnectRepo() {
   });
 }
 
+/** Anything cached for one repository (files, stats, search, graph...), whatever its key shape. */
+function forRepo(id: string) {
+  return (q: { queryKey: readonly unknown[] }) => q.queryKey.includes(id);
+}
+
+/** `mutate(true)` indexes the commit again from scratch, replacing its snapshot. */
 export function useStartIndex(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => post<IndexStartResult>(`/api/repositories/${id}/index`),
-    onSuccess: (result) => qc.setQueryData(keys.status(id), result.status),
+    mutationFn: (force?: boolean) =>
+      post<IndexStartResult>(`/api/repositories/${id}/index`, force ? { force: true } : undefined),
+    onSuccess: (result, force) => {
+      if (force) {
+        // The old snapshot is gone: drop what was cached from it.
+        qc.removeQueries({
+          predicate: (q) => forRepo(id)(q) && q.queryKey[0] !== "repo" && q.queryKey[0] !== "status",
+        });
+      }
+      qc.setQueryData(keys.status(id), result.status);
+    },
+  });
+}
+
+/** Disconnect a repository; the server deletes its data once nobody else is connected. */
+export function useDisconnectRepo(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>(`/api/repositories/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.removeQueries({ predicate: forRepo(id) });
+      return qc.invalidateQueries({ queryKey: keys.repos });
+    },
   });
 }
 

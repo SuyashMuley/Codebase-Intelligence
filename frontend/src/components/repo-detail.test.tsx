@@ -222,4 +222,73 @@ describe("RepoDetail", () => {
     renderWithClient(<RepoDetail id="repo-1" />);
     expect(await screen.findByText("Nothing to browse yet")).toBeInTheDocument();
   });
+
+  describe("re-index and disconnect", () => {
+    const READY = makeStatus({ state: "ready", phase: "done" });
+    const base = () => ({
+      "GET /api/repositories/repo-1": () => jsonResponse(REPO),
+      "GET /api/repositories/repo-1/status": () => jsonResponse(READY),
+      "GET /api/repositories/repo-1/stats": () => apiError(404, "repo_not_found", "none"),
+    });
+    const calls = (method: string) =>
+      fetchMock.mock.calls.filter(([, init]) => (init?.method ?? "GET") === method);
+
+    it("asks before re-indexing, then sends force", async () => {
+      route({
+        ...base(),
+        "POST /api/repositories/repo-1/index": () =>
+          jsonResponse({ created: true, status: makeStatus({ state: "pending", phase: "fetch" }) }, 202),
+      });
+      renderWithClient(<RepoDetail id="repo-1" />);
+      await userEvent.click(await screen.findByRole("button", { name: "Re-index" }));
+      expect(calls("POST")).toHaveLength(0); // nothing sent by the first click
+      expect(screen.getByRole("alertdialog")).toHaveTextContent(/daily indexing limit/i);
+      await userEvent.click(screen.getByRole("button", { name: /re-index now/i }));
+      const [, init] = calls("POST")[0];
+      expect(JSON.parse(String(init?.body))).toEqual({ force: true });
+    });
+
+    it("sends nothing when the re-index is cancelled", async () => {
+      route(base());
+      renderWithClient(<RepoDetail id="repo-1" />);
+      await userEvent.click(await screen.findByRole("button", { name: "Re-index" }));
+      await userEvent.click(screen.getByRole("button", { name: /cancel/i }));
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+      expect(calls("POST")).toHaveLength(0);
+    });
+
+    it("checking the latest commit does not force", async () => {
+      route({
+        ...base(),
+        "POST /api/repositories/repo-1/index": () => jsonResponse({ created: false, status: READY }, 200),
+      });
+      renderWithClient(<RepoDetail id="repo-1" />);
+      await userEvent.click(await screen.findByRole("button", { name: /check latest commit/i }));
+      const [, init] = calls("POST")[0];
+      expect(init?.body).toBeUndefined();
+    });
+
+    it("disconnects after confirmation and goes back to the list", async () => {
+      route({ ...base(), "DELETE /api/repositories/repo-1": () => new Response(null, { status: 204 }) });
+      renderWithClient(<RepoDetail id="repo-1" />);
+      await userEvent.click(await screen.findByRole("button", { name: "Disconnect" }));
+      expect(calls("DELETE")).toHaveLength(0);
+      expect(screen.getByRole("alertdialog")).toHaveTextContent(/cannot be undone/i);
+      await userEvent.click(screen.getByRole("button", { name: /disconnect and delete/i }));
+      await vi.waitFor(() => expect(nav.replace).toHaveBeenCalledWith("/repos"));
+      expect(calls("DELETE")).toHaveLength(1);
+    });
+
+    it("stays on the page and says why when disconnecting fails", async () => {
+      route({
+        ...base(),
+        "DELETE /api/repositories/repo-1": () => apiError(500, "internal_error", "Something broke."),
+      });
+      renderWithClient(<RepoDetail id="repo-1" />);
+      await userEvent.click(await screen.findByRole("button", { name: "Disconnect" }));
+      await userEvent.click(screen.getByRole("button", { name: /disconnect and delete/i }));
+      expect(await screen.findByText(/could not disconnect/i)).toBeInTheDocument();
+      expect(nav.replace).not.toHaveBeenCalledWith("/repos");
+    });
+  });
 });

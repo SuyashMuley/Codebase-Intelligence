@@ -78,12 +78,12 @@ class Settings(BaseSettings):
     ai_rate_limit_per_minute: int = 5  # per user; each call is a model request
 
     # --- Question answering (defaults measured with docs/PLAN.md's M7 evaluation) ---
-    # Below this cosine similarity (and with no existing symbol named in the question) nothing
-    # retrieved is close enough to answer from, so the answer is "cannot determine" without a
-    # model call. For bge-small-en-v1.5 with its query instruction, unrelated questions still
-    # score 0.45 to 0.73, so the usable threshold is high. Other embedding models need their
-    # own calibration (python -m eval.qa_eval).
-    qa_min_similarity: float = 0.725
+    # Any question may be asked. By default nothing is refused for being "too far" from the code:
+    # the model may decline, and every claim must quote the retrieved code or it is dropped. Set
+    # this above 0 to refuse, without a model call, questions whose closest chunk is less similar
+    # than this (and that name no existing symbol). bge-small-en-v1.5 scores unrelated questions
+    # 0.45 to 0.73, so a useful value is high and also refuses real questions (docs/PLAN.md, M7).
+    qa_min_similarity: float = 0.0
     qa_high_similarity: float = 0.80  # at or above this the retrieval is called strong
     qa_retrieve_k: int = 10  # chunks retrieved by search
     qa_context_chunks: int = 6  # most excerpts shown to the model (98% as good as 8, cheaper)

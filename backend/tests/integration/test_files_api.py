@@ -47,7 +47,7 @@ def test_file_list_has_every_stored_file_without_content(
     parseable = {p for p in REPO_FILES if not p.endswith(".md")}
     assert (
         set(paths) == parseable
-    )  # README.md is not stored: unsupported file types are only counted
+    )  # NOTES.md is not stored: unsupported file types are only counted
     by_path = {i["path"]: i for i in body["items"]}
     service = by_path["pkg/service.py"]
     assert service["language"] == "python" and service["symbol_count"] == 4
@@ -167,7 +167,7 @@ def test_stats_report_what_was_indexed(
     assert stats["parsing_done"] is True
     assert stats["files"]["by_language"] == {"go": 1, "javascript": 1, "python": 4, "typescript": 2}
     assert stats["files"]["parsed"] == 8
-    assert stats["files"]["skipped"] == {"unsupported": 1}  # README.md
+    assert stats["files"]["skipped"] == {"unsupported": 1}  # NOTES.md
     assert stats["syntax_error_files"] == 1
     with db_engine.connect() as conn:
         assert (

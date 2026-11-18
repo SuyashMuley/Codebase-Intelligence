@@ -109,6 +109,13 @@ def chat_repo(
     raise AssertionError("never became ready")
 
 
+def gate_at(app: FastAPI, similarity: float) -> None:
+    base = get_settings()
+    app.dependency_overrides[get_settings] = lambda: base.model_copy(
+        update={"qa_min_similarity": similarity}
+    )
+
+
 def use_chat(app: FastAPI, chat: FakeChat) -> FakeChat:
     app.dependency_overrides[get_llm] = lambda: chat
     return chat
@@ -246,6 +253,7 @@ def test_a_question_nothing_in_the_code_answers_costs_no_model_call(
     chat_repo: tuple[str, ScriptedEmbedder],
 ) -> None:
     rid, _ = chat_repo
+    gate_at(db_app, 0.65)  # the gate is off by default; this is what it does when switched on
     chat = use_chat(db_app, FakeChat("must never be called"))
     body = ask(db_client, rid, "what is the capital of France").json()
     assert body["insufficient_evidence"] is True and body["reason"] == "no_relevant_code"
@@ -489,7 +497,7 @@ def test_the_daily_limit_applies_to_model_backed_questions_only(
     rid, _ = chat_repo
     base = get_settings()
     db_app.dependency_overrides[get_settings] = lambda: base.model_copy(
-        update={"chat_daily_limit": 2, "chat_rate_limit_per_minute": 100}
+        update={"chat_daily_limit": 2, "chat_rate_limit_per_minute": 100, "qa_min_similarity": 0.65}
     )
     chat = use_chat(db_app, FakeChat(lambda p: grounded(p, "def create_session")))
     q = "how do users log in with a session"
@@ -583,6 +591,7 @@ def test_history_gives_context_to_a_short_follow_up(
     db_client: TestClient, db_app: FastAPI, chat_repo: tuple[str, ScriptedEmbedder]
 ) -> None:
     rid, _ = chat_repo
+    gate_at(db_app, 0.65)
     chat = use_chat(db_app, FakeChat(lambda p: grounded(p, "def create_session")))
     history = [
         {"role": "user", "content": "how do users log in with a session"},
@@ -594,3 +603,59 @@ def test_history_gives_context_to_a_short_follow_up(
     assert "- user: how do users log in with a session" in chat.prompts[0]
     # ...whereas the same short question alone finds nothing relevant
     assert ask(db_client, rid, "how long does it last?").json()["insufficient_evidence"] is True
+
+
+def test_by_default_any_question_reaches_the_model_which_may_decline(
+    db_client: TestClient,
+    db_app: FastAPI,
+    db_engine: Engine,
+    chat_repo: tuple[str, ScriptedEmbedder],
+) -> None:
+    rid, _ = chat_repo
+    chat = use_chat(
+        db_app,
+        FakeChat(
+            '{"cannot_determine": true, "claims": [], "missing": "Nothing here is about that."}'
+        ),
+    )
+    body = ask(db_client, rid, "what is the capital of France").json()
+    assert len(chat.prompts) == 1  # nothing was refused up front
+    assert body["insufficient_evidence"] is True and body["reason"] == "model_declined"
+    assert body["claims"] == []
+
+
+def test_a_fabricated_answer_to_an_off_topic_question_is_still_rejected(
+    db_client: TestClient, db_app: FastAPI, chat_repo: tuple[str, ScriptedEmbedder]
+) -> None:
+    rid, _ = chat_repo
+    fake = answer(
+        {
+            "text": "Paris is the capital.",
+            "cites": ["C1"],
+            "quote": "Paris is the capital of France",
+        }
+    )
+    use_chat(db_app, FakeChat(fake))
+    body = ask(db_client, rid, "what is the capital of France").json()
+    assert body["insufficient_evidence"] is True and body["claims"] == []
+    assert body["reason"] == "no_supported_claims"
+
+
+def test_a_question_about_the_whole_project_is_given_the_readme(
+    db_client: TestClient,
+    db_app: FastAPI,
+    fake_gh: FakeGitHub,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    use_embedder(db_app, monkeypatch, scripted())
+    files = dict(FILES)
+    files["README.md"] = "# Acme\n\nAcme turns invoices into ledgers for small shops.\n"
+    rid = index_repo(db_client, fake_gh, files)
+    for _ in range(40):
+        if tick(db_client, rid)["status"]["state"] == "ready":
+            break
+    chat = use_chat(db_app, FakeChat(lambda p: grounded(p, "turns invoices into ledgers")))
+    body = ask(db_client, rid, "what is this repo about?").json()
+    assert body["insufficient_evidence"] is False
+    assert body["citations"][0]["path"] == "README.md"
+    assert "README.md" in chat.prompts[0]

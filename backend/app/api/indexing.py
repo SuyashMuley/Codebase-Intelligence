@@ -54,10 +54,10 @@ def start_index(
     """Pin a commit and queue it for indexing. Drive it forward with `POST .../index/tick`.
 
     Indexing the same commit twice returns the existing snapshot instead of repeating work;
-    a failed one is restarted.
+    a failed one is restarted. Send `{"force": true}` to index the commit again from scratch.
     """
     snapshot, job, created = service.start_indexing(
-        db, repo, body.ref if body else None, user.id, gh, settings
+        db, repo, body.ref if body else None, user.id, gh, settings, force=bool(body and body.force)
     )
     if not created:
         response.status_code = status.HTTP_200_OK

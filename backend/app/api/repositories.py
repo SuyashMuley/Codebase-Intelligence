@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Response, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -122,3 +122,39 @@ def list_repositories(
 )
 def get_repository(repo: OwnedRepo) -> Repository:
     return repo
+
+
+@router.delete(
+    "/{repository_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        401: _ERRORS[401],
+        404: {"model": ErrorEnvelope, "description": "Repository not found"},
+    },
+)
+def disconnect_repository(repo: OwnedRepo, db: DbSession, user: CurrentUser) -> Response:
+    """Disconnect a repository from your account.
+
+    The repository's data (snapshots, files, chunks, embeddings, graph, chat counters) is public
+    source shared between everyone who connected it, so it is deleted when the last person
+    disconnects; while others are still connected only your connection is removed.
+    """
+    # Lock the repository row so two people disconnecting at once cannot both see the other
+    # still connected, and so nobody connects in between the count and the delete.
+    locked = db.scalar(select(Repository).where(Repository.id == repo.id).with_for_update())
+    if locked is None:  # already gone
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    db.execute(
+        delete(UserRepository).where(
+            UserRepository.user_id == user.id, UserRepository.repository_id == repo.id
+        )
+    )
+    remaining = db.scalar(
+        select(func.count())
+        .select_from(UserRepository)
+        .where(UserRepository.repository_id == repo.id)
+    )
+    if not remaining:
+        db.delete(locked)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

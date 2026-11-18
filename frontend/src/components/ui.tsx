@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 
 export function Button({
@@ -84,4 +87,50 @@ export function Badge({
     info: "bg-sky-500/15 text-sky-300",
   }[tone];
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tones}`}>{children}</span>;
+}
+
+/** A button that asks "are you sure?" in place before doing something that cannot be undone. */
+export function ConfirmButton({
+  label,
+  confirmLabel,
+  warning,
+  onConfirm,
+  disabled,
+  variant = "secondary",
+}: {
+  label: string;
+  confirmLabel: string;
+  warning: string;
+  onConfirm: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "ghost";
+}) {
+  const [asking, setAsking] = useState(false);
+  if (!asking) {
+    return (
+      <Button variant={variant} disabled={disabled} onClick={() => setAsking(true)}>
+        {label}
+      </Button>
+    );
+  }
+  return (
+    <div
+      role="alertdialog"
+      aria-label={label}
+      className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm"
+    >
+      <span className="text-amber-200">{warning}</span>
+      <Button
+        onClick={() => {
+          setAsking(false);
+          onConfirm();
+        }}
+      >
+        {confirmLabel}
+      </Button>
+      <Button variant="ghost" onClick={() => setAsking(false)}>
+        Cancel
+      </Button>
+    </div>
+  );
 }

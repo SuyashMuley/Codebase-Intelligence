@@ -66,7 +66,7 @@ REPO_FILES: dict[str, str | bytes] = {
         'const fs = require("fs");\nexports.read = function (p) { return fs.readFileSync(p); };\n'
     ),
     "cmd/main.go": ('package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("hi")\n}\n'),
-    "README.md": "# not parsed\n",
+    "NOTES.md": "# not parsed\n",
 }
 PARSEABLE = {p: c for p, c in REPO_FILES.items() if isinstance(c, str) and not p.endswith(".md")}
 
@@ -257,7 +257,7 @@ def test_a_file_with_syntax_errors_is_flagged_and_indexing_carries_on(
 def test_a_repo_with_nothing_to_parse_moves_straight_on(
     db_client: TestClient, fake_gh: FakeGitHub, db_engine: Engine
 ) -> None:
-    rid = index_repo(db_client, fake_gh, {"README.md": "# docs only\n", "data.json": "{}"})
+    rid = index_repo(db_client, fake_gh, {"NOTES.md": "# docs only\n", "data.json": "{}"})
     status = run_until(db_client, rid, "embed")
     assert status["phase"] == "embed" and status["parse"]["files"] == 0
     assert rows(db_engine, "SELECT count(*) FROM chunks")[0][0] == 0

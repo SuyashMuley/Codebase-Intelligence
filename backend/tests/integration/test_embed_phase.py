@@ -273,7 +273,7 @@ def test_a_repository_with_nothing_to_embed_needs_no_credentials(
         cloudflare_account_id=None,
         cloudflare_api_token=None,
     )
-    rid = indexed_until_embed(db_client, fake_gh, {"README.md": "# docs only\n"})
+    rid = indexed_until_embed(db_client, fake_gh, {"NOTES.md": "# docs only\n"})
     status = run_until(db_client, rid, "graph")
     assert status["state"] == "running" and status["embed"]["total"] == 0
     assert status["embed"]["done"] is True

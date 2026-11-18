@@ -138,6 +138,7 @@ def build_graph(deps: QADeps) -> Any:
             state["search_query"],
             state.get("names", []),
             s.qa_retrieve_k,
+            state.get("style") == "overview",
         )
         sufficient = is_sufficient(r, s)
         return step(

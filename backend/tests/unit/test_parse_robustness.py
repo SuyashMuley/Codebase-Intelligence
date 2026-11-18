@@ -81,3 +81,10 @@ def test_crlf_files_keep_working_line_numbers() -> None:
         ("a", 1, 2),
         ("b", 4, 5),
     ]
+
+
+def test_a_readme_is_chunked_as_plain_text_with_no_symbols() -> None:
+    text = "# Acme\n\n" + "Acme turns invoices into ledgers.\n" * 200
+    result = parse_source("README.md", "markdown", text)
+    assert result.parsed.symbols == [] and result.parsed.refs == []
+    assert len(result.chunks) > 1
