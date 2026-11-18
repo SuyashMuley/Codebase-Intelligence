@@ -300,3 +300,37 @@ export interface AiReview {
   dropped: number;
   static_dependents_considered: number;
 }
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatCitation {
+  n: number;
+  chunk_id: number;
+  path: string;
+  start_line: number;
+  end_line: number;
+}
+
+export interface ChatAnswer {
+  insufficient_evidence: boolean;
+  reason: string | null;
+  confidence: "none" | "low" | "medium" | "high";
+  claims: { text: string; cites: number[] }[];
+  citations: ChatCitation[];
+  missing: string;
+  notes: string[];
+  dropped_claims: number;
+  model: string | null;
+  snapshot: SnapshotRef;
+  retrieval: {
+    mode: string;
+    chunks_considered: number;
+    expanded_from_graph: number;
+    top_similarity: number | null;
+  };
+  attempts: number;
+  trace: string[];
+}

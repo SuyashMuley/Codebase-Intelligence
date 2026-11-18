@@ -7,6 +7,8 @@ import { decideNext, type StopReason } from "./tick-policy";
 import type {
   FileDetail,
   AiReview,
+  ChatAnswer,
+  ChatTurn,
   FileList,
   GraphData,
   GithubRepoList,
@@ -279,5 +281,13 @@ export function useAiReview(repoId: string) {
         ...(input.symbol !== null ? { symbol: input.symbol } : { file: input.file }),
         depth: input.depth,
       }),
+  });
+}
+
+/** One question about the code. A mutation: it can take up to half a minute and uses a model. */
+export function useAsk(repoId: string) {
+  return useMutation({
+    mutationFn: (input: { question: string; history: ChatTurn[] }) =>
+      post<ChatAnswer>(`/api/repositories/${repoId}/chat`, input),
   });
 }

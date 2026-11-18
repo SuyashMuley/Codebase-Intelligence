@@ -66,13 +66,33 @@ class Settings(BaseSettings):
     # --- Chat model (OpenRouter). Free models change often: set OPENROUTER_MODEL to pick one ---
     openrouter_api_key: SecretStr | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    openrouter_model: str = "openrouter/free"
-    # "openrouter/free" picks whichever free model is answering, which matters because individual
-    # free models are often rate limited upstream. The fallback is tried once if it fails.
-    openrouter_fallback_model: str | None = "inclusionai/ling-3.2-flash:free"
+    openrouter_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    # Free models come and go and are often slow, empty or rate limited. These two answered
+    # correctly in a side-by-side check on this project's real prompts (docs/PLAN.md, M7); check
+    # again if answers get slow. "openrouter/free" picks whichever free model is answering.
+    openrouter_fallback_model: str | None = "baidu/ernie-5.5-flash-preview:free"
+    # "low" asks reasoning models to think briefly (faster, fewer empty replies); blank to omit.
+    openrouter_reasoning_effort: str | None = "low"
     llm_timeout_seconds: float = 25.0  # one model attempt
     llm_budget_seconds: float = 28.0  # a whole call including the fallback; see OpenRouterClient
     ai_rate_limit_per_minute: int = 5  # per user; each call is a model request
+
+    # --- Question answering (defaults measured with docs/PLAN.md's M7 evaluation) ---
+    # Below this cosine similarity (and with no existing symbol named in the question) nothing
+    # retrieved is close enough to answer from, so the answer is "cannot determine" without a
+    # model call. For bge-small-en-v1.5 with its query instruction, unrelated questions still
+    # score 0.45 to 0.73, so the usable threshold is high. Other embedding models need their
+    # own calibration (python -m eval.qa_eval).
+    qa_min_similarity: float = 0.725
+    qa_high_similarity: float = 0.80  # at or above this the retrieval is called strong
+    qa_retrieve_k: int = 10  # chunks retrieved by search
+    qa_context_chunks: int = 6  # most excerpts shown to the model (98% as good as 8, cheaper)
+    qa_context_chars: int = 12_000  # most characters of code shown to the model
+    # Graph neighbours are off: measured no gain, and a loss when they take a search hit's slot.
+    qa_expand_max: int = 0
+    chat_budget_seconds: float = 28.0  # whole question, retries included (proxy gives up at ~30)
+    chat_rate_limit_per_minute: int = 5  # per user
+    chat_daily_limit: int = 25  # model-backed questions per user per repository per day
 
     # --- Parsing and chunking ---
     chunk_max_chars: int = 1800  # about 450 tokens: fits small embedding models
@@ -124,6 +144,7 @@ class Settings(BaseSettings):
         "cloudflare_api_token",
         "openrouter_api_key",
         "openrouter_fallback_model",
+        "openrouter_reasoning_effort",
         mode="before",
     )
     @classmethod

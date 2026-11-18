@@ -163,8 +163,10 @@ def test_each_attempt_is_given_only_the_time_that_is_left() -> None:
     clock = Clock()
 
     def handler(request: httpx.Request, n: int) -> httpx.Response:
-        clock.now += 20.0  # the first attempt burns 20 of the 28 seconds, then fails
-        return httpx.Response(503) if n == 1 else ok("late but in time")
+        if n == 1:
+            clock.now += 20.0  # the first attempt burns 20 of the 28 seconds, then fails
+            return httpx.Response(503)
+        return ok("late but in time")
 
     c, seen = budgeted(handler, clock, budget=28.0)
     assert c.complete("s", "u") == "late but in time"
@@ -194,3 +196,65 @@ def test_a_timeout_is_reported_as_taking_too_long_and_is_retryable() -> None:
     with pytest.raises(LlmUnavailable) as exc:
         c.complete("s", "u")
     assert "too long" in exc.value.message and exc.value.retryable
+
+
+class Trickle(httpx.SyncByteStream):
+    """A response that keeps sending filler bytes, each one taking `step` seconds."""
+
+    def __init__(self, clock: Clock, step: float, chunks: int, tail: bytes = b"") -> None:
+        self.clock, self.step, self.chunks, self.tail = clock, step, chunks, tail
+
+    def __iter__(self):  # type: ignore[no-untyped-def]
+        for _ in range(self.chunks):
+            self.clock.now += self.step
+            yield b" "  # filler: keeps a connection alive without answering
+        if self.tail:
+            yield self.tail
+
+
+def test_a_response_that_keeps_trickling_is_cut_off_at_the_wall_clock_limit() -> None:
+    clock = Clock()
+
+    def handler(request: httpx.Request, n: int) -> httpx.Response:
+        return httpx.Response(200, stream=Trickle(clock, step=5.0, chunks=100))
+
+    c, seen = budgeted(handler, clock, budget=28.0)
+    with pytest.raises(LlmUnavailable) as exc:
+        c.complete("s", "u")
+    assert "too long" in exc.value.message and exc.value.retryable
+    assert clock.now < 60  # gave up near the limit rather than reading 500 seconds of filler
+
+
+def test_leading_filler_before_a_real_answer_is_accepted_when_it_arrives_in_time() -> None:
+    clock = Clock()
+    body = json.dumps({"choices": [{"message": {"content": "answer"}}]}).encode()
+
+    def handler(request: httpx.Request, n: int) -> httpx.Response:
+        return httpx.Response(200, stream=Trickle(clock, step=1.0, chunks=3, tail=body))
+
+    c, _ = budgeted(handler, clock, budget=28.0)
+    assert c.complete("s", "u") == "answer"
+
+
+def test_an_oversized_answer_is_refused() -> None:
+    def handler(request: httpx.Request, n: int) -> httpx.Response:
+        return httpx.Response(200, content=b"x" * 1_100_000)
+
+    c, _ = budgeted(handler, Clock(), budget=28.0)
+    with pytest.raises(LlmBadResponse):
+        c.complete("s", "u")
+
+
+def test_reasoning_effort_is_sent_only_when_configured() -> None:
+    sent: list[dict[str, Any]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.append(json.loads(request.content))
+        return ok()
+
+    for effort in ("low", None):
+        c = OpenRouterClient(
+            KEY, "m", None, transport=httpx.MockTransport(handler), reasoning_effort=effort
+        )
+        c.complete("s", "u")
+    assert sent[0]["reasoning"] == {"effort": "low"} and "reasoning" not in sent[1]

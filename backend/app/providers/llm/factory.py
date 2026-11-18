@@ -7,9 +7,15 @@ from app.providers.llm.openrouter import OpenRouterClient
 
 @lru_cache
 def _openrouter(
-    key: str, model: str, fallback: str | None, base: str, timeout: float, budget: float
+    key: str,
+    model: str,
+    fallback: str | None,
+    base: str,
+    timeout: float,
+    budget: float,
+    reasoning: str | None,
 ) -> OpenRouterClient:
-    return OpenRouterClient(key, model, fallback, base, timeout, budget)
+    return OpenRouterClient(key, model, fallback, base, timeout, budget, reasoning_effort=reasoning)
 
 
 def get_llm(settings: Settings) -> OpenRouterClient:
@@ -25,4 +31,5 @@ def get_llm(settings: Settings) -> OpenRouterClient:
         settings.openrouter_base_url,
         settings.llm_timeout_seconds,
         settings.llm_budget_seconds,
+        settings.openrouter_reasoning_effort,
     )

@@ -1,0 +1,2027 @@
+{
+  "repo": "psf/requests",
+  "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+  "embedding_model": "@cf/baai/bge-small-en-v1.5",
+  "threshold_evaluated": 0.75,
+  "similarity": {
+    "answerable": {
+      "min": 0.716,
+      "median": 0.791,
+      "max": 0.857
+    },
+    "unanswerable": {
+      "min": 0.453,
+      "median": 0.636,
+      "max": 0.734
+    }
+  },
+  "at_threshold": {
+    "answers_answerable": 0.925,
+    "declines_unanswerable": 1.0,
+    "by_unanswerable_kind": {
+      "off_topic": {
+        "n": 6,
+        "declined": 1.0,
+        "max_similarity": 0.66,
+        "symbol_hits": 0
+      },
+      "absent_feature": {
+        "n": 6,
+        "declined": 1.0,
+        "max_similarity": 0.734,
+        "symbol_hits": 0
+      },
+      "absent_name": {
+        "n": 3,
+        "declined": 1.0,
+        "max_similarity": 0.706,
+        "symbol_hits": 0
+      }
+    }
+  },
+  "context": {
+    "n": 40,
+    "labelled_code_in_top_k": 0.975,
+    "labelled_code_in_context_without_graph": 0.975,
+    "labelled_code_in_context_with_graph": 0.975,
+    "added_by_graph": 0,
+    "lost_by_graph": 0,
+    "mean_excerpts_without_graph": 8.0,
+    "mean_excerpts_with_graph": 8.0,
+    "mean_chars_without_graph": 7160,
+    "mean_chars_with_graph": 7160
+  },
+  "budgets": {
+    "3": {
+      "without_graph": 0.925,
+      "with_graph": 0.925,
+      "reserved_slots": 0.75,
+      "gained": 0,
+      "lost": 0
+    },
+    "4": {
+      "without_graph": 0.95,
+      "with_graph": 0.95,
+      "reserved_slots": 0.85,
+      "gained": 0,
+      "lost": 0
+    },
+    "5": {
+      "without_graph": 0.95,
+      "with_graph": 0.95,
+      "reserved_slots": 0.925,
+      "gained": 0,
+      "lost": 0
+    },
+    "6": {
+      "without_graph": 0.975,
+      "with_graph": 0.975,
+      "reserved_slots": 0.95,
+      "gained": 0,
+      "lost": 0
+    },
+    "8": {
+      "without_graph": 0.975,
+      "with_graph": 0.975,
+      "reserved_slots": 0.975,
+      "gained": 0,
+      "lost": 0
+    }
+  },
+  "sweep": [
+    {
+      "threshold": 0.3,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.325,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.35,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.375,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.4,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.425,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.45,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.475,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.133,
+      "balanced_accuracy": 0.567,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.133
+    },
+    {
+      "threshold": 0.5,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.133,
+      "balanced_accuracy": 0.567,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.133
+    },
+    {
+      "threshold": 0.525,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.2,
+      "balanced_accuracy": 0.6,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.2
+    },
+    {
+      "threshold": 0.55,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.267,
+      "balanced_accuracy": 0.633,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.267
+    },
+    {
+      "threshold": 0.575,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.267,
+      "balanced_accuracy": 0.633,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.267
+    },
+    {
+      "threshold": 0.6,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.333,
+      "balanced_accuracy": 0.667,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.333
+    },
+    {
+      "threshold": 0.625,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.467,
+      "balanced_accuracy": 0.733,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.467
+    },
+    {
+      "threshold": 0.65,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.533,
+      "balanced_accuracy": 0.767,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.533
+    },
+    {
+      "threshold": 0.675,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.733,
+      "balanced_accuracy": 0.867,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.733
+    },
+    {
+      "threshold": 0.7,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.8,
+      "balanced_accuracy": 0.9,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.8
+    },
+    {
+      "threshold": 0.725,
+      "answers_answerable": 0.975,
+      "declines_unanswerable": 0.933,
+      "balanced_accuracy": 0.954,
+      "answers_answerable_similarity_only": 0.975,
+      "declines_unanswerable_similarity_only": 0.933
+    },
+    {
+      "threshold": 0.75,
+      "answers_answerable": 0.925,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.963,
+      "answers_answerable_similarity_only": 0.925,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.775,
+      "answers_answerable": 0.7,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.85,
+      "answers_answerable_similarity_only": 0.7,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "answers_answerable": 0.475,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.738,
+      "answers_answerable_similarity_only": 0.35,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.825,
+      "answers_answerable": 0.475,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.738,
+      "answers_answerable_similarity_only": 0.2,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "answers_answerable": 0.425,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.713,
+      "answers_answerable_similarity_only": 0.075,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.875,
+      "answers_answerable": 0.4,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.7,
+      "answers_answerable_similarity_only": 0.0,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "answers_answerable": 0.4,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.7,
+      "answers_answerable_similarity_only": 0.0,
+      "declines_unanswerable_similarity_only": 1.0
+    }
+  ],
+  "answerable": [
+    {
+      "id": "q01",
+      "type": "identifier",
+      "question": "Where is `get_netrc_auth` defined and what does it do?",
+      "top_similarity": 0.8570603728294373,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8500,
+      "chars_expanded": 8500
+    },
+    {
+      "id": "q02",
+      "type": "identifier",
+      "question": "Show me `guess_json_utf`.",
+      "top_similarity": 0.8263638512113021,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8396,
+      "chars_expanded": 8396
+    },
+    {
+      "id": "q03",
+      "type": "identifier",
+      "question": "What does `requote_uri` do?",
+      "top_similarity": 0.8291193988131973,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6748,
+      "chars_expanded": 6748
+    },
+    {
+      "id": "q04",
+      "type": "identifier",
+      "question": "Where is `HTTPDigestAuth.build_digest_header` implemented?",
+      "top_similarity": 0.8132626060623711,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7380,
+      "chars_expanded": 7380
+    },
+    {
+      "id": "q05",
+      "type": "identifier",
+      "question": "How does `resolve_redirects` work?",
+      "top_similarity": 0.8015820982429536,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8514,
+      "chars_expanded": 8514
+    },
+    {
+      "id": "q06",
+      "type": "identifier",
+      "question": "Where is `CaseInsensitiveDict.lower_items` defined?",
+      "top_similarity": 0.7987566470358771,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6740,
+      "chars_expanded": 6740
+    },
+    {
+      "id": "q07",
+      "type": "identifier",
+      "question": "What does `merge_environment_settings` do?",
+      "top_similarity": 0.7989016771316528,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8580,
+      "chars_expanded": 8580
+    },
+    {
+      "id": "q08",
+      "type": "identifier",
+      "question": "Find `extract_cookies_to_jar`.",
+      "top_similarity": 0.8551515509323706,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6964,
+      "chars_expanded": 6964
+    },
+    {
+      "id": "q09",
+      "type": "identifier",
+      "question": "Where is `PreparedRequest.prepare_url` implemented?",
+      "top_similarity": 0.8463102487510606,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7670,
+      "chars_expanded": 7670
+    },
+    {
+      "id": "q10",
+      "type": "identifier",
+      "question": "What does `Response.raise_for_status` do?",
+      "top_similarity": 0.7755389675819272,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6510,
+      "chars_expanded": 6510
+    },
+    {
+      "id": "q11",
+      "type": "identifier",
+      "question": "Show `HTTPAdapter.cert_verify`.",
+      "top_similarity": 0.8014346838852588,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 10139,
+      "chars_expanded": 10139
+    },
+    {
+      "id": "q12",
+      "type": "identifier",
+      "question": "What does `dispatch_hook` do?",
+      "top_similarity": 0.818888951473771,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5396,
+      "chars_expanded": 5396
+    },
+    {
+      "id": "q13",
+      "type": "concept",
+      "question": "How does the library decide whether to keep the Authorization header when a redirect goes to a different host?",
+      "top_similarity": 0.763312532704323,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6405,
+      "chars_expanded": 6405
+    },
+    {
+      "id": "q14",
+      "type": "concept",
+      "question": "How are HTTP proxies chosen for a particular URL?",
+      "top_similarity": 0.8371931910514832,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8125,
+      "chars_expanded": 8125
+    },
+    {
+      "id": "q15",
+      "type": "concept",
+      "question": "Which hosts are excluded from using a proxy according to the environment configuration?",
+      "top_similarity": 0.7447749680548997,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7122,
+      "chars_expanded": 7122
+    },
+    {
+      "id": "q16",
+      "type": "concept",
+      "question": "How is the character encoding of a JSON response body detected from its raw bytes?",
+      "top_similarity": 0.7935938116069934,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7813,
+      "chars_expanded": 7813
+    },
+    {
+      "id": "q17",
+      "type": "concept",
+      "question": "How are multipart file uploads turned into a request body?",
+      "top_similarity": 0.7538506984710693,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8292,
+      "chars_expanded": 8292
+    },
+    {
+      "id": "q18",
+      "type": "concept",
+      "question": "How can a large response body be read in pieces without loading it all into memory?",
+      "top_similarity": 0.749310933032958,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5813,
+      "chars_expanded": 5813
+    },
+    {
+      "id": "q19",
+      "type": "concept",
+      "question": "How is a response body parsed as JSON, and what happens when it is not valid JSON?",
+      "top_similarity": 0.7751190662384033,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6740,
+      "chars_expanded": 6740
+    },
+    {
+      "id": "q20",
+      "type": "concept",
+      "question": "How are a username and password encoded into the value of a Basic authentication header?",
+      "top_similarity": 0.7779269218444824,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6742,
+      "chars_expanded": 6742
+    },
+    {
+      "id": "q21",
+      "type": "concept",
+      "question": "What turns a plain dictionary into a cookie jar?",
+      "top_similarity": 0.7902429103851318,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5172,
+      "chars_expanded": 5172
+    },
+    {
+      "id": "q22",
+      "type": "concept",
+      "question": "How does a mapping for header names ignore letter case while remembering the original spelling?",
+      "top_similarity": 0.7157149910926819,
+      "symbol_hit": false,
+      "in_top_k": false,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6972,
+      "chars_expanded": 6972
+    },
+    {
+      "id": "q23",
+      "type": "concept",
+      "question": "How does the library check that a header name and value are acceptable before sending them?",
+      "top_similarity": 0.7582918405532837,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 4458,
+      "chars_expanded": 4458
+    },
+    {
+      "id": "q24",
+      "type": "concept",
+      "question": "How is the default User-Agent string generated?",
+      "top_similarity": 0.7952996966421437,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7473,
+      "chars_expanded": 7473
+    },
+    {
+      "id": "q25",
+      "type": "concept",
+      "question": "How is the pool of reusable connections configured?",
+      "top_similarity": 0.771782659643372,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7440,
+      "chars_expanded": 7440
+    },
+    {
+      "id": "q26",
+      "type": "concept",
+      "question": "What puts a request body back at its starting position so it can be sent again?",
+      "top_similarity": 0.7715072265716564,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6077,
+      "chars_expanded": 6077
+    },
+    {
+      "id": "q27",
+      "type": "concept",
+      "question": "How are Link headers from a response parsed into a structure?",
+      "top_similarity": 0.7926048760053603,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6969,
+      "chars_expanded": 6969
+    },
+    {
+      "id": "q28",
+      "type": "concept",
+      "question": "How are credentials embedded in a URL extracted into a username and password?",
+      "top_similarity": 0.77328430254962,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7040,
+      "chars_expanded": 7040
+    },
+    {
+      "id": "q29",
+      "type": "mixed",
+      "question": "timeout handling when the adapter sends a request",
+      "top_similarity": 0.7766240568904944,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9078,
+      "chars_expanded": 9078
+    },
+    {
+      "id": "q30",
+      "type": "mixed",
+      "question": "REQUESTS_CA_BUNDLE environment variable used for the verify setting",
+      "top_similarity": 0.7693095207214355,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8783,
+      "chars_expanded": 8783
+    },
+    {
+      "id": "q31",
+      "type": "mixed",
+      "question": "when a POST is turned into a GET after a 302 or 303 redirect",
+      "top_similarity": 0.757094942244737,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6943,
+      "chars_expanded": 6943
+    },
+    {
+      "id": "q32",
+      "type": "mixed",
+      "question": "TooManyRedirects raised when the redirect limit is exceeded",
+      "top_similarity": 0.8215341567993164,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7478,
+      "chars_expanded": 7478
+    },
+    {
+      "id": "q33",
+      "type": "mixed",
+      "question": "ConnectTimeout and ReadTimeout exceptions",
+      "top_similarity": 0.7992576837097232,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6968,
+      "chars_expanded": 6968
+    },
+    {
+      "id": "q34",
+      "type": "mixed",
+      "question": "what happens after a 401 response during digest authentication",
+      "top_similarity": 0.7776685953140259,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8495,
+      "chars_expanded": 8495
+    },
+    {
+      "id": "q35",
+      "type": "mixed",
+      "question": "iter_lines splitting a streamed response on a delimiter",
+      "top_similarity": 0.8032450798074976,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6802,
+      "chars_expanded": 6802
+    },
+    {
+      "id": "q36",
+      "type": "mixed",
+      "question": "IDNA encoding of a unicode host name when preparing a URL",
+      "top_similarity": 0.8501391917550097,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6129,
+      "chars_expanded": 6129
+    },
+    {
+      "id": "q37",
+      "type": "mixed",
+      "question": "no_proxy entries given as CIDR network ranges",
+      "top_similarity": 0.7851860395184793,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8664,
+      "chars_expanded": 8664
+    },
+    {
+      "id": "q38",
+      "type": "mixed",
+      "question": "registering a hook callback on a request",
+      "top_similarity": 0.7721103795733966,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5729,
+      "chars_expanded": 5729
+    },
+    {
+      "id": "q39",
+      "type": "mixed",
+      "question": "mounting an adapter for a URL prefix and finding the adapter for a URL",
+      "top_similarity": 0.8262238010034695,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5491,
+      "chars_expanded": 5491
+    },
+    {
+      "id": "q40",
+      "type": "mixed",
+      "question": "status code names like ok and not_found mapped to numbers",
+      "top_similarity": 0.7812930112691847,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 5633,
+      "chars_expanded": 5633
+    }
+  ],
+  "unanswerable": [
+    {
+      "question": "What is the capital of France?",
+      "kind": "off_topic",
+      "top_similarity": 0.4657973051071167,
+      "symbol_hit": false
+    },
+    {
+      "question": "Write me a short poem about autumn.",
+      "kind": "off_topic",
+      "top_similarity": 0.5243021406025334,
+      "symbol_hit": false
+    },
+    {
+      "question": "How do I install Kubernetes on Ubuntu?",
+      "kind": "off_topic",
+      "top_similarity": 0.6360364556312561,
+      "symbol_hit": false
+    },
+    {
+      "question": "What is the best way to train a neural network on images?",
+      "kind": "off_topic",
+      "top_similarity": 0.5258157849311829,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does React handle state updates?",
+      "kind": "off_topic",
+      "top_similarity": 0.6597177791931892,
+      "symbol_hit": false
+    },
+    {
+      "question": "Who won the football world cup in 2018?",
+      "kind": "off_topic",
+      "top_similarity": 0.4527876512046951,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does requests implement WebSocket support?",
+      "kind": "absent_feature",
+      "top_similarity": 0.7337017059326172,
+      "symbol_hit": false
+    },
+    {
+      "question": "Where is the GraphQL query builder?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6131899722331746,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does the library refresh an expired OAuth2 token?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6977855175073602,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does it cache responses on disk between runs?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6709246039390564,
+      "symbol_hit": false
+    },
+    {
+      "question": "How are gRPC calls made?",
+      "kind": "absent_feature",
+      "top_similarity": 0.5801279544830322,
+      "symbol_hit": false
+    },
+    {
+      "question": "Where does it integrate with the Django ORM?",
+      "kind": "absent_feature",
+      "top_similarity": 0.7106600999832153,
+      "symbol_hit": false
+    },
+    {
+      "question": "What does `WebSocketHandler` do?",
+      "kind": "absent_name",
+      "top_similarity": 0.6143707999212027,
+      "symbol_hit": false
+    },
+    {
+      "question": "Explain `refresh_oauth_token` in detail.",
+      "kind": "absent_name",
+      "top_similarity": 0.6684111752019959,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does `ResponseDiskCache` decide when to expire entries?",
+      "kind": "absent_name",
+      "top_similarity": 0.7064621623479044,
+      "symbol_hit": false
+    }
+  ]
+}

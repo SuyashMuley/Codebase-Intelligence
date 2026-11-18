@@ -1,0 +1,1207 @@
+{
+  "repo": "pallets/click",
+  "commit": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+  "embedding_model": "@cf/baai/bge-small-en-v1.5",
+  "threshold_evaluated": 0.75,
+  "similarity": {
+    "answerable": {
+      "min": 0.693,
+      "median": 0.783,
+      "max": 0.868
+    },
+    "unanswerable": {
+      "min": 0.473,
+      "median": 0.629,
+      "max": 0.69
+    }
+  },
+  "at_threshold": {
+    "answers_answerable": 0.9,
+    "declines_unanswerable": 1.0,
+    "by_unanswerable_kind": {
+      "off_topic": {
+        "n": 6,
+        "declined": 1.0,
+        "max_similarity": 0.69,
+        "symbol_hits": 0
+      },
+      "absent_feature": {
+        "n": 6,
+        "declined": 1.0,
+        "max_similarity": 0.683,
+        "symbol_hits": 0
+      },
+      "absent_name": {
+        "n": 3,
+        "declined": 1.0,
+        "max_similarity": 0.672,
+        "symbol_hits": 0
+      }
+    }
+  },
+  "context": {
+    "n": 20,
+    "labelled_code_in_top_k": 0.8,
+    "labelled_code_in_context_without_graph": 0.75,
+    "labelled_code_in_context_with_graph": 0.75,
+    "added_by_graph": 0,
+    "lost_by_graph": 0,
+    "mean_excerpts_without_graph": 8.0,
+    "mean_excerpts_with_graph": 8.0,
+    "mean_chars_without_graph": 8647,
+    "mean_chars_with_graph": 8647
+  },
+  "budgets": {
+    "3": {
+      "without_graph": 0.7,
+      "with_graph": 0.7,
+      "reserved_slots": 0.5,
+      "gained": 0,
+      "lost": 0
+    },
+    "4": {
+      "without_graph": 0.75,
+      "with_graph": 0.75,
+      "reserved_slots": 0.6,
+      "gained": 0,
+      "lost": 0
+    },
+    "5": {
+      "without_graph": 0.75,
+      "with_graph": 0.75,
+      "reserved_slots": 0.7,
+      "gained": 0,
+      "lost": 0
+    },
+    "6": {
+      "without_graph": 0.75,
+      "with_graph": 0.75,
+      "reserved_slots": 0.75,
+      "gained": 0,
+      "lost": 0
+    },
+    "8": {
+      "without_graph": 0.75,
+      "with_graph": 0.75,
+      "reserved_slots": 0.75,
+      "gained": 0,
+      "lost": 0
+    }
+  },
+  "sweep": [
+    {
+      "threshold": 0.3,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.325,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.35,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.375,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.4,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.425,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.45,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.0,
+      "balanced_accuracy": 0.5,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.0
+    },
+    {
+      "threshold": 0.475,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.067,
+      "balanced_accuracy": 0.533,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.067
+    },
+    {
+      "threshold": 0.5,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.133,
+      "balanced_accuracy": 0.567,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.133
+    },
+    {
+      "threshold": 0.525,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.133,
+      "balanced_accuracy": 0.567,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.133
+    },
+    {
+      "threshold": 0.55,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.133,
+      "balanced_accuracy": 0.567,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.133
+    },
+    {
+      "threshold": 0.575,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.2,
+      "balanced_accuracy": 0.6,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.2
+    },
+    {
+      "threshold": 0.6,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.333,
+      "balanced_accuracy": 0.667,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.333
+    },
+    {
+      "threshold": 0.625,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.467,
+      "balanced_accuracy": 0.733,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.467
+    },
+    {
+      "threshold": 0.65,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.733,
+      "balanced_accuracy": 0.867,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.733
+    },
+    {
+      "threshold": 0.675,
+      "answers_answerable": 1.0,
+      "declines_unanswerable": 0.867,
+      "balanced_accuracy": 0.933,
+      "answers_answerable_similarity_only": 1.0,
+      "declines_unanswerable_similarity_only": 0.867
+    },
+    {
+      "threshold": 0.7,
+      "answers_answerable": 0.95,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.975,
+      "answers_answerable_similarity_only": 0.95,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.725,
+      "answers_answerable": 0.95,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.975,
+      "answers_answerable_similarity_only": 0.95,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "answers_answerable": 0.9,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.95,
+      "answers_answerable_similarity_only": 0.85,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.775,
+      "answers_answerable": 0.8,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.9,
+      "answers_answerable_similarity_only": 0.65,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "answers_answerable": 0.6,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.8,
+      "answers_answerable_similarity_only": 0.4,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.825,
+      "answers_answerable": 0.5,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.75,
+      "answers_answerable_similarity_only": 0.15,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "answers_answerable": 0.45,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.725,
+      "answers_answerable_similarity_only": 0.05,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.875,
+      "answers_answerable": 0.45,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.725,
+      "answers_answerable_similarity_only": 0.0,
+      "declines_unanswerable_similarity_only": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "answers_answerable": 0.45,
+      "declines_unanswerable": 1.0,
+      "balanced_accuracy": 0.725,
+      "answers_answerable_similarity_only": 0.0,
+      "declines_unanswerable_similarity_only": 1.0
+    }
+  ],
+  "answerable": [
+    {
+      "id": "c01",
+      "type": "identifier",
+      "question": "Where is `make_pass_decorator` defined?",
+      "top_similarity": 0.8191392909967491,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8677,
+      "chars_expanded": 8677
+    },
+    {
+      "id": "c02",
+      "type": "identifier",
+      "question": "What does `Context.find_root` do?",
+      "top_similarity": 0.8061885237693787,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9029,
+      "chars_expanded": 9029
+    },
+    {
+      "id": "c03",
+      "type": "identifier",
+      "question": "Show `split_arg_string`.",
+      "top_similarity": 0.7771700985082985,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9541,
+      "chars_expanded": 9541
+    },
+    {
+      "id": "c04",
+      "type": "identifier",
+      "question": "What does `Group.resolve_command` do?",
+      "top_similarity": 0.7686598530012329,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8990,
+      "chars_expanded": 8990
+    },
+    {
+      "id": "c05",
+      "type": "identifier",
+      "question": "Where is `CliRunner.isolation` implemented?",
+      "top_similarity": 0.7305186447964891,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9920,
+      "chars_expanded": 9920
+    },
+    {
+      "id": "c06",
+      "type": "identifier",
+      "question": "What does `HelpFormatter.write_dl` do?",
+      "top_similarity": 0.8075930006140176,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7097,
+      "chars_expanded": 7097
+    },
+    {
+      "id": "c07",
+      "type": "concept",
+      "question": "How does the library show long text through a pager such as less?",
+      "top_similarity": 0.6926887814588093,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9102,
+      "chars_expanded": 9102
+    },
+    {
+      "id": "c08",
+      "type": "concept",
+      "question": "How is a partially typed command line split into words for tab completion?",
+      "top_similarity": 0.7852500443086047,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9515,
+      "chars_expanded": 9515
+    },
+    {
+      "id": "c09",
+      "type": "concept",
+      "question": "How is a command's output captured and its input faked when testing it?",
+      "top_similarity": 0.7487516403198242,
+      "symbol_hit": false,
+      "in_top_k": false,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6823,
+      "chars_expanded": 6823
+    },
+    {
+      "id": "c10",
+      "type": "concept",
+      "question": "How does an option read its value from an environment variable?",
+      "top_similarity": 0.7935662383049376,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 8474,
+      "chars_expanded": 8474
+    },
+    {
+      "id": "c11",
+      "type": "concept",
+      "question": "How does a command ask the user to confirm an action with yes or no?",
+      "top_similarity": 0.7688354253768921,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9333,
+      "chars_expanded": 9333
+    },
+    {
+      "id": "c12",
+      "type": "concept",
+      "question": "How is the message built when a required option or argument is missing?",
+      "top_similarity": 0.7800764077924615,
+      "symbol_hit": false,
+      "in_top_k": false,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6611,
+      "chars_expanded": 6611
+    },
+    {
+      "id": "c13",
+      "type": "concept",
+      "question": "How does a progress bar estimate how much time is left?",
+      "top_similarity": 0.7784855597759953,
+      "symbol_hit": false,
+      "in_top_k": false,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 6536,
+      "chars_expanded": 6536
+    },
+    {
+      "id": "c14",
+      "type": "concept",
+      "question": "How is text wrapped to the terminal width in help output while keeping indentation?",
+      "top_similarity": 0.819818759555184,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7643,
+      "chars_expanded": 7643
+    },
+    {
+      "id": "c15",
+      "type": "mixed",
+      "question": "prompting for a password without echoing what is typed",
+      "top_similarity": 0.7507772445678711,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7588,
+      "chars_expanded": 7588
+    },
+    {
+      "id": "c16",
+      "type": "mixed",
+      "question": "version_option decorator printing the installed package version",
+      "top_similarity": 0.8682092945700479,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 11083,
+      "chars_expanded": 11083
+    },
+    {
+      "id": "c17",
+      "type": "mixed",
+      "question": "ParameterSource tells whether a value came from the command line, environment or default",
+      "top_similarity": 0.8306080845542033,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 10342,
+      "chars_expanded": 10342
+    },
+    {
+      "id": "c18",
+      "type": "mixed",
+      "question": "bash, zsh and fish shell completion classes",
+      "top_similarity": 0.8411585783267883,
+      "symbol_hit": false,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": false
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 10005,
+      "chars_expanded": 10005
+    },
+    {
+      "id": "c19",
+      "type": "mixed",
+      "question": "Choice type checks a value against allowed choices ignoring case",
+      "top_similarity": 0.8083154685779367,
+      "symbol_hit": false,
+      "in_top_k": false,
+      "by_budget": {
+        "3": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "4": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "5": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "6": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        },
+        "8": {
+          "plain": false,
+          "expanded": false,
+          "reserved": false
+        }
+      },
+      "in_context_plain": false,
+      "in_context_expanded": false,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 7494,
+      "chars_expanded": 7494
+    },
+    {
+      "id": "c20",
+      "type": "mixed",
+      "question": "UsageError show method prints the usage line and the error",
+      "top_similarity": 0.7595640134291678,
+      "symbol_hit": true,
+      "in_top_k": true,
+      "by_budget": {
+        "3": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "4": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "5": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "6": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        },
+        "8": {
+          "plain": true,
+          "expanded": true,
+          "reserved": true
+        }
+      },
+      "in_context_plain": true,
+      "in_context_expanded": true,
+      "excerpts_plain": 8,
+      "excerpts_expanded": 8,
+      "chars_plain": 9133,
+      "chars_expanded": 9133
+    }
+  ],
+  "unanswerable": [
+    {
+      "question": "What is the capital of France?",
+      "kind": "off_topic",
+      "top_similarity": 0.4734618663787842,
+      "symbol_hit": false
+    },
+    {
+      "question": "Write me a short poem about autumn.",
+      "kind": "off_topic",
+      "top_similarity": 0.5579906272289347,
+      "symbol_hit": false
+    },
+    {
+      "question": "How do I install Kubernetes on Ubuntu?",
+      "kind": "off_topic",
+      "top_similarity": 0.5910238203711459,
+      "symbol_hit": false
+    },
+    {
+      "question": "What is the best way to train a neural network on images?",
+      "kind": "off_topic",
+      "top_similarity": 0.6287086009979248,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does React handle state updates?",
+      "kind": "off_topic",
+      "top_similarity": 0.6896918621567523,
+      "symbol_hit": false
+    },
+    {
+      "question": "Who won the football world cup in 2018?",
+      "kind": "off_topic",
+      "top_similarity": 0.48973326354423974,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does click serve HTTP requests?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6696039438247681,
+      "symbol_hit": false
+    },
+    {
+      "question": "Where does click run database migrations?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6834109018200111,
+      "symbol_hit": false
+    },
+    {
+      "question": "How are JWT tokens validated?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6479630067337458,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does click draw graphical windows?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6475411653518677,
+      "symbol_hit": false
+    },
+    {
+      "question": "Where is the websocket handler?",
+      "kind": "absent_feature",
+      "top_similarity": 0.6367462873458862,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does it send email notifications?",
+      "kind": "absent_feature",
+      "top_similarity": 0.5865421716409298,
+      "symbol_hit": false
+    },
+    {
+      "question": "What does `MigrationRunner` do?",
+      "kind": "absent_name",
+      "top_similarity": 0.6198361700724416,
+      "symbol_hit": false
+    },
+    {
+      "question": "Explain `validate_jwt_token` step by step.",
+      "kind": "absent_name",
+      "top_similarity": 0.6720349192619324,
+      "symbol_hit": false
+    },
+    {
+      "question": "How does `HttpServer.listen` work?",
+      "kind": "absent_name",
+      "top_similarity": 0.6216268724687958,
+      "symbol_hit": false
+    }
+  ]
+}

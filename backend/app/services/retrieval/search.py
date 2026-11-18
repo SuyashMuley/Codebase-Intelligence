@@ -57,6 +57,8 @@ class Hit:
     score: float
     keyword_rank: int | None = None
     vector_rank: int | None = None
+    symbol_id: int | None = None
+    file_id: int | None = None
 
 
 @dataclass
@@ -93,18 +95,26 @@ def keyword_search(
     return [int(r[0]) for r in rows]
 
 
-def vector_search(
+def vector_search_scored(
     db: Session, snapshot_id: uuid.UUID, query_vector: list[float], limit: int
-) -> list[int]:
-    """Exact nearest neighbours by cosine distance, restricted to this snapshot."""
+) -> list[tuple[int, float]]:
+    """Exact nearest neighbours as (chunk id, cosine similarity), best first, restricted to this
+    snapshot. The similarity is what lets a caller decide whether anything is close enough."""
     distance = Chunk.embedding.cosine_distance(query_vector)
     rows = db.execute(
-        select(Chunk.id)
+        select(Chunk.id, distance)
         .where(Chunk.snapshot_id == snapshot_id, Chunk.embedding.is_not(None))
         .order_by(distance, Chunk.id)
         .limit(limit)
     ).all()
-    return [int(r[0]) for r in rows]
+    return [(int(r[0]), 1.0 - float(r[1])) for r in rows]
+
+
+def vector_search(
+    db: Session, snapshot_id: uuid.UUID, query_vector: list[float], limit: int
+) -> list[int]:
+    """Exact nearest neighbours by cosine distance, restricted to this snapshot."""
+    return [i for i, _sim in vector_search_scored(db, snapshot_id, query_vector, limit)]
 
 
 def _has_embeddings(db: Session, snapshot_id: uuid.UUID) -> bool:
@@ -162,10 +172,10 @@ def search(
 
     fused = reciprocal_rank_fusion({"keyword": keyword_ids, "vector": vector_ids}, weights=weights)
     top = fused[:limit]
-    return SearchResult(hits=_load(db, top), mode_used=used, warnings=warnings)
+    return SearchResult(hits=load_hits(db, top), mode_used=used, warnings=warnings)
 
 
-def _load(db: Session, top: list[tuple[int, float, dict[str, int]]]) -> list[Hit]:
+def load_hits(db: Session, top: list[tuple[int, float, dict[str, int]]]) -> list[Hit]:
     if not top:
         return []
     ids = [i for i, _s, _r in top]
@@ -190,6 +200,8 @@ def _load(db: Session, top: list[tuple[int, float, dict[str, int]]]) -> list[Hit
                 score=score,
                 keyword_rank=ranks.get("keyword"),
                 vector_rank=ranks.get("vector"),
+                symbol_id=chunk.symbol_id,
+                file_id=chunk.file_id,
             )
         )
     return hits

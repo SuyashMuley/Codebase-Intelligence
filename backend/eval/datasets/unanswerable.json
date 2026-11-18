@@ -1,0 +1,42 @@
+{
+  "name": "Questions the indexed code cannot answer",
+  "notes": "Written before any similarity score was computed. off_topic: nothing to do with code. absent_feature: sounds like it could be in the repository but is not (checked by reading the repositories' public descriptions and file lists). absent_name: names a function or class that does not exist in the repository. Used to calibrate the 'not enough evidence' rule on psf/requests and to check it on pallets/click.",
+  "off_topic": [
+    "What is the capital of France?",
+    "Write me a short poem about autumn.",
+    "How do I install Kubernetes on Ubuntu?",
+    "What is the best way to train a neural network on images?",
+    "How does React handle state updates?",
+    "Who won the football world cup in 2018?"
+  ],
+  "psf/requests": {
+    "absent_feature": [
+      "How does requests implement WebSocket support?",
+      "Where is the GraphQL query builder?",
+      "How does the library refresh an expired OAuth2 token?",
+      "How does it cache responses on disk between runs?",
+      "How are gRPC calls made?",
+      "Where does it integrate with the Django ORM?"
+    ],
+    "absent_name": [
+      "What does `WebSocketHandler` do?",
+      "Explain `refresh_oauth_token` in detail.",
+      "How does `ResponseDiskCache` decide when to expire entries?"
+    ]
+  },
+  "pallets/click": {
+    "absent_feature": [
+      "How does click serve HTTP requests?",
+      "Where does click run database migrations?",
+      "How are JWT tokens validated?",
+      "How does click draw graphical windows?",
+      "Where is the websocket handler?",
+      "How does it send email notifications?"
+    ],
+    "absent_name": [
+      "What does `MigrationRunner` do?",
+      "Explain `validate_jwt_token` step by step.",
+      "How does `HttpServer.listen` work?"
+    ]
+  }
+}

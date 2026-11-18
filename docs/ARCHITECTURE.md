@@ -118,23 +118,36 @@ The response keeps three kinds of answer apart:
 
 **Views.** `GET .../graph` returns the files linked by imports (and resolved calls), capped at the 60 most connected files for the whole repository and at 300 for a neighbourhood (`path` and `depth` up to 3); with `level=symbol&path=...` it returns one file's symbols with their static callers and callees, plus unresolved calls as dashed edges to nodes named after what the code said (at most 40).
 
-## Chat workflow (LangGraph)
+## Question answering (M7, LangGraph)
 
 ```mermaid
 flowchart LR
-    A[Classify] --> B[Scope: repo + commit]
-    B --> C[Retrieve: text + vector]
-    C -->|weak evidence| X["Say it cannot determine"]
-    C --> D[Expand: graph links]
-    D --> E[Assemble: top chunks]
-    E --> F[Generate: chunk IDs cited]
-    F --> V{Citations valid?}
-    V -->|yes| OK["Answer with files and line ranges"]
-    V -->|"no: retry once"| F
-    V -->|"still invalid"| DROP["Drop unsupported claim"]
+    A[classify] --> B[scope]
+    B --> C[retrieve]
+    C -->|not enough evidence| X["cannot_determine<br/>no model call"]
+    C --> D[expand]
+    D --> E[assemble]
+    E --> F[generate]
+    F -->|"a claim failed validation, time left"| R[retry]
+    R --> F
+    F --> Z[finalize]
 ```
 
-The model returns chunk IDs, never line numbers. The server maps IDs to path and line range and rejects any ID that was not retrieved.
+`POST /api/repositories/{id}/chat` runs this graph (`app/services/qa/graph.py`). The nodes:
+
+- **classify** (rules, no model): finds names in the question that may be functions or classes, and borrows the topic of the previous question for a follow-up under six words.
+- **scope**: pins the snapshot (must be `ready`) and checks embeddings exist.
+- **retrieve** (`app/services/qa/retrieve.py`, shared with the offline evaluation): exact vector search for the question; also keyword search when the question names code. The decision rule is one function: there is enough evidence when something was retrieved and either the question names a symbol that exists in this snapshot, or the closest chunk's cosine similarity is at least `qa_min_similarity` (0.725 for the default embedding model, calibrated, see the plan). Without enough evidence the graph goes straight to `cannot_determine`: no model is called and no daily allowance is used.
+- **expand**: adds callers and callees of the best hits from the static graph (M6). Off by default (`qa_expand_max = 0`): measured no gain, and a loss when neighbours take a search hit's place.
+- **assemble**: at most six excerpts within a character budget, never the same chunk twice nor one inside another, each given a short per-request id (`C1`, `C2`…). The database connection is released here, before the slow model call.
+- **generate**: one model call asking for JSON claims, each with the excerpts it cites and a verbatim quote. The first call reserves one unit of the user's daily allowance; a model-service failure refunds it.
+- **validate** (`app/services/qa/validate.py`, mechanical, no model): a claim is kept only if it cites an excerpt that was really provided and its quote is found, word for word, in a cited excerpt (whitespace may differ; case and punctuation may not). The quote also fixes the exact lines, so a citation points at those lines rather than at a whole chunk. Failed claims produce feedback; the graph retries once if at least eight seconds remain; claims that still fail are dropped and the answer says how many. If none survive the answer is "cannot determine". Verified claims win over a later refusal.
+
+**What is and is not guaranteed.** Every citation points at real lines in this snapshot that contain the quoted text. That ties a statement to code; it does not prove the statement reads the code correctly. The response says so, and `confidence` is a label with a plain meaning, not a probability: `high` is strong retrieval, every claim verified, first attempt; `none` is no answer.
+
+**Prompt injection.** Retrieved code is untrusted. The system prompt says excerpts are data; excerpts sit between markers carrying a fresh random value for each request, so code cannot fake the end of the block; the question and any earlier turns sit outside the block; and nothing the model writes is believed until the validator has checked it. A model that obeys injected text still cannot cite an excerpt that was not shown or quote code that is not there.
+
+**Limits.** One question has a 28 second budget in total, retries included (the browser's proxy gives up at about 30); the model client enforces it as a wall-clock limit on a streamed response. Per user: 5 questions a minute, and 25 model-backed questions a day per repository (`chat_usage`). Conversation history is sent by the client (at most six turns), used only as context, and is not stored.
 
 ## Authentication and ownership (M3)
 
@@ -235,7 +248,7 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 | `GET /api/repositories/{id}/files` | `snapshot` (optional) | Every stored file of the snapshot: `{path, language, size_bytes, skipped_reason, redactions, parse_status, symbol_count}`, sorted bytewise. Parsed source plus notable skips (M4). |
 | `GET /api/repositories/{id}/files/{path}` | `snapshot` (optional) | One file: text (secrets redacted, null if skipped), language, line count, and its symbols with parent links. Paths are looked up in the database only; unknown or hostile paths are a plain 404 (M4). |
 | `GET /api/repositories/{id}/stats` | `snapshot` (optional) | Files by language and skip reason, symbols by kind, chunk sizes, import and call counts, redaction counts, syntax-error files, and whether parsing is done (M4). |
-| `POST /api/repositories/{id}/chat` | `{question, history?}` | answer, citations `[{path, start_line, end_line, chunk_id}]`, `confidence`, `insufficient_evidence` |
+| `POST /api/repositories/{id}/chat` | `{question, history?, snapshot?}` | `{insufficient_evidence, reason, confidence, claims[{text, cites[]}], citations[{n, chunk_id, path, start_line, end_line}], missing, notes, dropped_claims, model, retrieval, attempts, trace}`. Each citation is the lines holding a verified quotation. 429 `chat_quota_exceeded` after 25 model-backed questions a day per repository (M7). |
 | `GET /api/repositories/{id}/impact` | `file` or `symbol` (id), `depth` (1 to 6), `snapshot` | `{target, dependents[{path, symbol, depth, hops}], direct, transitive, files_affected, unverified_callers, suggested_tests[{path, basis, confidence, heuristic}], limitations}` (M6) |
 | `POST /api/repositories/{id}/impact/review` | `{file or symbol, depth}` | An AI reading of the impact result: `{notice, model, summary, risks, tests_to_consider, open_questions, dropped}`. Labelled unverified; 5 per minute per user (M6). |
 | `GET /health`, `GET /ready` | none | liveness, and readiness (DB reachable, migrations at head) |
@@ -246,10 +259,10 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 {"error": {"code": "invalid_github_url", "message": "...", "details": {}, "request_id": "..."}}
 ```
 
-Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M4: `snapshot_not_ready` (nothing indexed yet), `snapshot_not_found` (not a snapshot of this repository), `file_not_found`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Added in M5: `embedding_not_configured`, `embedding_auth_failed`, `embedding_quota_exceeded`, `embedding_unavailable`, `embedding_bad_response`. Added in M6: `graph_not_ready`, `symbol_not_found`, `missing_target`, `llm_not_configured`, `llm_auth_failed`, `llm_rate_limited`, `llm_unavailable`, `llm_bad_response`.
+Codes: `invalid_github_url`, `repo_not_found`, `repo_too_large`, `rate_limited` (this API's limit, with `Retry-After`), `quota_exceeded`, `job_in_progress`, `no_active_job`, `github_rate_limited` (GitHub's limit), `github_unavailable`, `fetch_timeout`, `internal_error`, `not_ready`, `not_found`, `validation_error`. Added in M4: `snapshot_not_ready` (nothing indexed yet), `snapshot_not_found` (not a snapshot of this repository), `file_not_found`. Added in M3: `unauthenticated`, `reauth_required`, `forbidden_origin`, `auth_not_configured`, `github_auth_failed`. Sign-in failures that happen in the browser flow (bad or reused state, user cancelled, GitHub rejected the code) are not JSON: they redirect to `/login?error=<code>` with `invalid_state`, `access_denied`, `github_auth_failed`, `github_unavailable`, `github_error` or `auth_not_configured`. Added in M5: `embedding_not_configured`, `embedding_auth_failed`, `embedding_quota_exceeded`, `embedding_unavailable`, `embedding_bad_response`. Added in M7: `chat_quota_exceeded`. Added in M6: `graph_not_ready`, `symbol_not_found`, `missing_target`, `llm_not_configured`, `llm_auth_failed`, `llm_rate_limited`, `llm_unavailable`, `llm_bad_response`.
 
 **Result shapes that matter**
-- A citation always comes from a retrieved chunk. The server maps chunk IDs to path and lines.
+- A citation is always the lines of a retrieved chunk that contain a quotation the server found there; the model never supplies line numbers or chunk ids.
 - The impact response returns static `dependents` (with the edge path), `suggested_tests` (each marked static or heuristic) and `unverified_callers`; the AI review is a separate endpoint and object. `limitations` is always present.
 - Rate limits are in-process (single instance), returned as `429` with `Retry-After`. Per signed-in user: 120 requests/minute on repository routes and 10/minute on `POST .../index`. Per IP: 600/minute as a backstop on every `/api` route and 30/minute on the sign-in endpoints. Chat and impact get their own tighter limit in M7. IPs are hashed with a salt before they are used as limiter keys; raw IPs are not stored.
 

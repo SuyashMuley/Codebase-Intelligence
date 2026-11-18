@@ -227,6 +227,7 @@ user_general_limit = user_limit("general", lambda s: s.rate_limit_per_minute)
 user_index_limit = user_limit("index", lambda s: s.index_rate_limit_per_minute)
 user_search_limit = user_limit("search", lambda s: s.search_rate_limit_per_minute)
 user_ai_limit = user_limit("ai", lambda s: s.ai_rate_limit_per_minute)
+user_chat_limit = user_limit("chat", lambda s: s.chat_rate_limit_per_minute)
 
 
 def get_llm(settings: AppSettings) -> OpenRouterClient:

@@ -12,6 +12,7 @@ import {
 } from "@/lib/hooks";
 import { formatLineRange, parseLineRange } from "@/lib/tree";
 import { FilesTab } from "./files-tab";
+import { ChatTab } from "./chat-tab";
 import { GraphTab, type GraphSelection } from "./graph-tab";
 import { SearchTab } from "./search-tab";
 import { ReauthNotice } from "./reauth-notice";
@@ -20,7 +21,7 @@ import { StatusPanel } from "./status-panel";
 import { Button, EmptyState, ErrorNotice, Spinner } from "./ui";
 import type { LineRange } from "./code-viewer";
 
-type Tab = "overview" | "files" | "search" | "graph";
+type Tab = "overview" | "files" | "search" | "graph" | "ask";
 const MAX_PATH = 500;
 
 function parseSymbolId(raw: string | null): number | null {
@@ -49,8 +50,10 @@ export function RepoDetail({ id }: { id: string }) {
   const range = parseLineRange(params.get("line"));
   const tabParam = params.get("tab");
   const tab: Tab =
-    tabParam === "search"
-      ? "search"
+    tabParam === "ask"
+      ? "ask"
+      : tabParam === "search"
+        ? "search"
       : tabParam === "graph"
         ? "graph"
         : tabParam === "files" || (file !== null && !tabParam)
@@ -93,6 +96,7 @@ export function RepoDetail({ id }: { id: string }) {
     { key: "files", label: "Files" },
     { key: "search", label: "Search" },
     { key: "graph", label: "Graph" },
+    { key: "ask", label: "Ask" },
   ];
 
   return (
@@ -164,6 +168,14 @@ export function RepoDetail({ id }: { id: string }) {
             />
           ) : null}
           {stats.data ? <StatsPanel stats={stats.data} progress={status.data?.parse ?? null} /> : null}
+        </div>
+      ) : tab === "ask" ? (
+        <div role="tabpanel" id="panel-ask" aria-labelledby="tab-ask">
+          <ChatTab
+            repoId={id}
+            ready={status.data?.state === "ready"}
+            onOpen={(path, line) => update({ tab: "files", file: path, line })}
+          />
         </div>
       ) : tab === "graph" ? (
         <div role="tabpanel" id="panel-graph" aria-labelledby="tab-graph">

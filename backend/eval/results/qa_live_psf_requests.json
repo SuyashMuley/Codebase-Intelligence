@@ -1,0 +1,404 @@
+{
+  "repo": "psf/requests",
+  "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+  "questions_attempted": 12,
+  "questions_answered_or_declined": 9,
+  "model_service_failures": [
+    {
+      "id": "q02",
+      "code": "llm_unavailable"
+    },
+    {
+      "id": "q14",
+      "code": "llm_unavailable"
+    },
+    {
+      "id": "q32",
+      "code": "llm_rate_limited"
+    }
+  ],
+  "stopped_early": null,
+  "declined": 0,
+  "answered": 9,
+  "first_attempt_clean": 7,
+  "needed_retry": 2,
+  "claims_dropped": 1,
+  "claims_kept": 35,
+  "answers_citing_labelled_code": 9,
+  "median_seconds": 14.8,
+  "models": [
+    "baidu/ernie-5.5-flash-preview:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free"
+  ],
+  "by_confidence": {
+    "none": 0,
+    "low": 1,
+    "medium": 5,
+    "high": 3
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "type": "identifier",
+      "question": "Where is `get_netrc_auth` defined and what does it do?",
+      "seconds": 15.5,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 4,
+      "dropped": 0,
+      "confidence": "high",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "get_netrc_auth is defined in src/requests/utils.py at lines 231-280.",
+          "at": [
+            "src/requests/utils.py:231-234"
+          ]
+        },
+        {
+          "text": "It returns a tuple of (login, password) for the given URL by looking up credentials in a netrc file.",
+          "at": [
+            "src/requests/utils.py:234-234"
+          ]
+        },
+        {
+          "text": "The function searches for a netrc file using the NETRC environment variable or default locations like ~/.netrc.",
+          "at": [
+            "src/requests/utils.py:239-243"
+          ]
+        },
+        {
+          "text": "It parses the netrc file for authenticators matching the URL's hostname and returns the login and password.",
+          "at": [
+            "src/requests/utils.py:260-271"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q03",
+      "type": "identifier",
+      "question": "What does `requote_uri` do?",
+      "seconds": 14.5,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 4,
+      "dropped": 0,
+      "confidence": "high",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "requote_uri re-quotes a URI by passing it through an unquote/quote cycle to ensure it is fully and consistently quoted.",
+          "at": [
+            "src/requests/utils.py:705-708"
+          ]
+        },
+        {
+          "text": "It first tries to unquote only unreserved characters using unquote_unreserved, then quotes only illegal characters while preserving reserved characters and percent signs.",
+          "at": [
+            "src/requests/utils.py:714-718"
+          ]
+        },
+        {
+          "text": "If unquoting fails with InvalidURL, it falls back to quoting the original URI while ensuring any unquoted percent signs are properly encoded.",
+          "at": [
+            "src/requests/utils.py:719-723"
+          ]
+        },
+        {
+          "text": "The function preserves already-encoded percent sequences (e.g., %25 stays %25) but encodes bare percent signs (e.g., %p becomes %25p).",
+          "at": [
+            "tests/test_utils.py:479-488"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q04",
+      "type": "identifier",
+      "question": "Where is `HTTPDigestAuth.build_digest_header` implemented?",
+      "seconds": 6.0,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 1,
+      "dropped": 0,
+      "confidence": "high",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "The `HTTPDigestAuth.build_digest_header` method is implemented in `src/requests/auth.py` at lines 157-208.",
+          "at": [
+            "src/requests/auth.py:157-157"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q13",
+      "type": "concept",
+      "question": "How does the library decide whether to keep the Authorization header when a redirect goes to a different host?",
+      "seconds": 20.0,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 5,
+      "dropped": 0,
+      "confidence": "medium",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "The library strips the Authorization header when the redirect goes to a different hostname.",
+          "at": [
+            "src/requests/sessions.py:158-159"
+          ]
+        },
+        {
+          "text": "On the same host, it keeps the Authorization header for http-to-https redirects on standard ports (80 to 443).",
+          "at": [
+            "src/requests/sessions.py:164-170"
+          ]
+        },
+        {
+          "text": "It also keeps the header when the scheme hasn't changed and both old and new ports are default ports for that scheme.",
+          "at": [
+            "src/requests/sessions.py:176-181"
+          ]
+        },
+        {
+          "text": "Otherwise, if the scheme or port changes on the same host, the header is stripped.",
+          "at": [
+            "src/requests/sessions.py:184-184"
+          ]
+        },
+        {
+          "text": "The rebuild_auth method calls should_strip_auth and deletes the Authorization header when it returns True.",
+          "at": [
+            "src/requests/sessions.py:324-327"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q15",
+      "type": "concept",
+      "question": "Which hosts are excluded from using a proxy according to the environment configuration?",
+      "seconds": 24.2,
+      "declined": false,
+      "reason": null,
+      "attempts": 2,
+      "claims": 3,
+      "dropped": 0,
+      "confidence": "medium",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "The no_proxy environment variable defines hosts excluded from proxy usage, parsed by splitting on commas after removing spaces.",
+          "at": [
+            "src/requests/utils.py:837-837"
+          ]
+        },
+        {
+          "text": "For IP addresses, exclusion matches exact IP or CIDR network notation in no_proxy.",
+          "at": [
+            "src/requests/utils.py:841-844"
+          ]
+        },
+        {
+          "text": "For hostnames, exclusion matches exact hostname, hostname with port, or domain suffix with leading dot.",
+          "at": [
+            "src/requests/utils.py:854-859"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q16",
+      "type": "concept",
+      "question": "How is the character encoding of a JSON response body detected from its raw bytes?",
+      "seconds": 13.2,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 5,
+      "dropped": 0,
+      "confidence": "medium",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "When no encoding is set on the response, the JSON decoder calls guess_json_utf on the raw content bytes to detect the UTF encoding.",
+          "at": [
+            "src/requests/models.py:1101-1103"
+          ]
+        },
+        {
+          "text": "guess_json_utf examines the first four bytes of the data for byte order marks (BOMs) and null byte patterns to determine the encoding.",
+          "at": [
+            "src/requests/utils.py:1015-1017"
+          ]
+        },
+        {
+          "text": "If no BOM is present, guess_json_utf counts null bytes in the sample and checks their positions to distinguish between UTF-8, UTF-16 (LE/BE), and UTF-32 (LE/BE).",
+          "at": [
+            "src/requests/utils.py:1022-1027"
+          ]
+        },
+        {
+          "text": "If guess_json_utf returns an encoding, the JSON decoder attempts to decode the content with that encoding before falling back to the text property.",
+          "at": [
+            "src/requests/models.py:1106-1109"
+          ]
+        },
+        {
+          "text": "If JSON-specific detection fails or returns None, the decoder falls back to using self.text which relies on charset_normalizer or chardet for general encoding detection.",
+          "at": [
+            "src/requests/models.py:1119-1120"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q29",
+      "type": "mixed",
+      "question": "timeout handling when the adapter sends a request",
+      "seconds": 26.7,
+      "declined": false,
+      "reason": null,
+      "attempts": 2,
+      "claims": 4,
+      "dropped": 1,
+      "confidence": "low",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "HTTPAdapter.send normalizes the timeout parameter into a TimeoutSauce object with separate connect and read values before passing it to urllib3.",
+          "at": [
+            "src/requests/adapters.py:681-684"
+          ]
+        },
+        {
+          "text": "ConnectTimeout and ReadTimeout exceptions are raised from urllib3's MaxRetryError when the underlying connection or read operations exceed their respective timeout values.",
+          "at": [
+            "src/requests/adapters.py:713-717"
+          ]
+        },
+        {
+          "text": "The BaseAdapter.send method documents that timeout can be a float or a (connect timeout, read timeout) tuple.",
+          "at": [
+            "src/requests/adapters.py:141-143"
+          ]
+        },
+        {
+          "text": "Session.send delegates timeout handling to the adapter by passing the timeout parameter through kwargs to adapter.send.",
+          "at": [
+            "src/requests/sessions.py:784-784"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q30",
+      "type": "mixed",
+      "question": "REQUESTS_CA_BUNDLE environment variable used for the verify setting",
+      "seconds": 14.8,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 5,
+      "dropped": 0,
+      "confidence": "medium",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "When trust_env is enabled and verify is True or None, REQUESTS_CA_BUNDLE environment variable is checked first and used as the verify value if set.",
+          "at": [
+            "src/requests/sessions.py:855-860"
+          ]
+        },
+        {
+          "text": "REQUESTS_CA_BUNDLE takes precedence over CURL_CA_BUNDLE when both are set in the environment.",
+          "at": [
+            "tests/test_requests.py:1002-1008"
+          ]
+        },
+        {
+          "text": "An empty REQUESTS_CA_BUNDLE value is treated as unset and verify remains True.",
+          "at": [
+            "tests/test_requests.py:998-998"
+          ]
+        },
+        {
+          "text": "The merged verify setting from merge_environment_settings is passed to the adapter's cert_verify method which uses it as a CA bundle path when not True.",
+          "at": [
+            "src/requests/adapters.py:325-326"
+          ]
+        },
+        {
+          "text": "Session.request calls merge_environment_settings with the verify parameter and uses the returned verify value for the actual request.",
+          "at": [
+            "src/requests/sessions.py:641-650"
+          ]
+        }
+      ],
+      "missing": ""
+    },
+    {
+      "id": "q31",
+      "type": "mixed",
+      "question": "when a POST is turned into a GET after a 302 or 303 redirect",
+      "seconds": 3.6,
+      "declined": false,
+      "reason": null,
+      "attempts": 1,
+      "claims": 4,
+      "dropped": 0,
+      "confidence": "medium",
+      "model": "baidu/ernie-5.5-flash-preview:free",
+      "cites_labelled_code": true,
+      "answer": [
+        {
+          "text": "For a 303 (see_other) redirect, rebuild_method changes the request method to GET unless the method is HEAD.",
+          "at": [
+            "src/requests/sessions.py:379-379"
+          ]
+        },
+        {
+          "text": "For a 302 (found) redirect, rebuild_method changes the method to GET unless the method is HEAD, following browser behavior.",
+          "at": [
+            "src/requests/sessions.py:384-384"
+          ]
+        },
+        {
+          "text": "A test confirms that a POST receiving a 303 redirect results in the final request method being GET.",
+          "at": [
+            "tests/test_requests.py:306-306"
+          ]
+        },
+        {
+          "text": "A test confirms that a POST receiving a 302 redirect results in the final request method being GET.",
+          "at": [
+            "tests/test_requests.py:292-292"
+          ]
+        }
+      ],
+      "missing": ""
+    }
+  ]
+}

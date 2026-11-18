@@ -244,7 +244,11 @@ def test_callback_with_tampered_state_cookie_is_rejected(
 ) -> None:
     register_code(fake_oauth, "c1")
     state = start_login(anon_client)
+    # Replace the genuine cookie. (Some cookie jars keep both when only the value differs, which
+    # would send the real one and test nothing.)
+    anon_client.cookies.clear()
     anon_client.cookies.set(STATE_COOKIE, "forged-value", path="/api/auth")
+    assert [c.value for c in anon_client.cookies.jar if c.name == STATE_COOKIE] == ["forged-value"]
     assert_failed(callback(anon_client, "c1", state), "invalid_state", db_engine)
 
 

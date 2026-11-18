@@ -84,6 +84,11 @@ class SnapshotNotReady(AppError):
     code = "snapshot_not_ready"
 
 
+class ChatQuotaExceeded(AppError):
+    status_code = 429
+    code = "chat_quota_exceeded"
+
+
 class MissingTarget(AppError):
     status_code = 422
     code = "missing_target"
