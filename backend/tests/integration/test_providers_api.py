@@ -94,7 +94,7 @@ def test_saving_again_replaces_the_provider_and_switching_mode_drops_the_key(
     put(
         db_client,
         "chat",
-        **chat(kind="groq", model="llama-3.3-70b-versatile", api_key="gsk_other_key_0123456789"),
+        **chat(kind="groq", model="openai/gpt-oss-120b", api_key="gsk_other_key_0123456789"),
     )
     assert len(rows(db_engine)) == 1
     assert db_client.get("/api/providers").json()["chat"]["kind"] == "groq"

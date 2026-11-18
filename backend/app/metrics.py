@@ -81,6 +81,14 @@ PROVIDER_DURATION = Histogram(
     registry=REGISTRY,
 )
 
+PROVIDER_FAILOVERS = Counter(
+    "cip_provider_failovers_total",
+    "Chat requests that moved from one platform provider to the next, and why "
+    "(rate_limited, unavailable, auth_failed, bad_response).",
+    ["from_provider", "to_provider", "reason"],
+    registry=REGISTRY,
+)
+
 _ACTIVE_PHASES = ("fetch", "parse", "embed", "graph")
 
 

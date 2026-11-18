@@ -5,6 +5,7 @@ model is treated as an untrusted source whatever it says.
 """
 
 import json
+import re
 import time
 from collections.abc import Callable
 from typing import Any
@@ -21,7 +22,67 @@ from app.metrics import observe_provider
 
 _FALLBACK_STATUSES = {400, 404, 408, 409, 500, 502, 503, 504}
 _MAX_RESPONSE_BYTES = 1_000_000
+_ALLOWANCE_USED_UP_SECONDS = 600
+_MAX_RETRY_HINT_SECONDS = 3600
 _MIN_ATTEMPT_SECONDS = 3.0  # not worth starting another model attempt with less time than this
+
+
+_DURATION = re.compile(
+    r"(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?$"
+)
+
+
+def _duration_seconds(text: str) -> float | None:
+    """Read a duration like '7.66s', '2m59.56s' or '1h2m' (what Groq sends), or plain seconds."""
+    text = text.strip()
+    try:
+        return float(text)
+    except ValueError:
+        pass
+    m = _DURATION.fullmatch(text)
+    if not text or m is None:
+        return None
+    h, mi, sec, ms = (float(g) if g else 0.0 for g in m.groups())
+    return h * 3600 + mi * 60 + sec + ms / 1000
+
+
+def retry_after_seconds(headers: dict[str, str], now_epoch: float) -> int | None:
+    """When a rate-limited provider says it will answer again, in whole seconds from now.
+
+    `Retry-After` (seconds) is the provider's own answer to "when may I retry?" and, on Groq, is
+    only sent with a 429, so when it is there it is used alone. The reset headers describe
+    *different* limits (Groq: `x-ratelimit-reset-requests` is the daily request limit,
+    `x-ratelimit-reset-tokens` the per-minute token limit), so taking the longest of them after a
+    per-minute limit would wait for a daily reset. They are only a fallback when there is no
+    `Retry-After`, and then the longest is used, because a limit on either blocks the call.
+    OpenRouter sends `X-RateLimit-Reset` as an epoch time (seconds or milliseconds).
+    Returns None when there is no usable hint; never more than an hour, never less than a second.
+    """
+
+    def clamp(seconds: float) -> int:
+        return int(min(_MAX_RETRY_HINT_SECONDS, max(1.0, seconds)) + 0.999)
+
+    value = headers.get("retry-after")
+    direct = _duration_seconds(value) if value else None
+    if direct is not None:
+        return clamp(direct)
+    waits: list[float] = []
+    for name in ("x-ratelimit-reset-requests", "x-ratelimit-reset-tokens"):
+        value = headers.get(name)
+        parsed = _duration_seconds(value) if value else None
+        if parsed is not None:
+            waits.append(parsed)
+    reset = headers.get("x-ratelimit-reset")
+    if reset:
+        try:
+            epoch: float | None = float(reset)
+        except ValueError:
+            epoch = None
+        if epoch is not None:
+            epoch = epoch / 1000 if epoch > 1e11 else epoch  # milliseconds or seconds
+            if epoch > 1e9:  # an absolute time; anything smaller is not one
+                waits.append(epoch - now_epoch)
+    return clamp(max(waits)) if waits else None
 
 
 class OpenRouterClient:
@@ -37,8 +98,13 @@ class OpenRouterClient:
         clock: Callable[[], float] = time.monotonic,
         reasoning_effort: str | None = None,
         label: str = "openrouter",
+        extra_body: dict[str, Any] | None = None,
+        max_tokens_field: str = "max_tokens",
     ) -> None:
         self.label = label  # which provider this is, for metrics (a fixed catalogue id)
+        self._extra_body = dict(extra_body or {})  # provider-specific request fields
+        # What this provider calls the reply limit (Groq deprecated max_tokens for another name).
+        self._max_tokens_field = max_tokens_field
         self.model = model
         self.fallback_model = fallback_model if fallback_model != model else None
         self.usage: dict[str, int] = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0}
@@ -130,7 +196,7 @@ class OpenRouterClient:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "max_tokens": max_tokens,
+            self._max_tokens_field: max_tokens,
             "temperature": temperature,
         }
         if json_mode:
@@ -139,6 +205,7 @@ class OpenRouterClient:
             # Reasoning models spend tokens thinking before they answer; on a free tier that
             # means slow replies and sometimes an empty one when the token limit runs out.
             body["reasoning"] = {"effort": self._reasoning_effort}
+        body.update(self._extra_body)
         deadline = self._clock() + timeout
         try:
             # Streamed so that the deadline is a wall-clock limit. A plain read timeout only
@@ -151,6 +218,7 @@ class OpenRouterClient:
                 timeout=httpx.Timeout(timeout, connect=min(5.0, timeout)),
             ) as resp:
                 status = resp.status_code
+                headers = {k.lower(): v for k, v in resp.headers.items()}
                 parts: list[bytes] = []
                 for chunk in resp.iter_bytes():
                     if self._clock() > deadline:
@@ -168,11 +236,18 @@ class OpenRouterClient:
         if status in (401, 403):
             raise LlmAuthFailed("The language model service rejected the API key.")
         if status == 402:
-            raise LlmRateLimited("The language model allowance is used up. Try again later.")
-        if status == 429:
+            # Credit or the free allowance is gone: it will not come back in a minute.
             raise LlmRateLimited(
-                "The language model service is rate limiting requests.",
-                details={"model_specific": True},
+                "The language model allowance is used up. Try again later.",
+                details={"retry_after_seconds": _ALLOWANCE_USED_UP_SECONDS},
+            )
+        if status == 429:
+            details: dict[str, Any] = {"model_specific": True}
+            wait = retry_after_seconds(headers, time.time())
+            if wait is not None:
+                details["retry_after_seconds"] = wait
+            raise LlmRateLimited(
+                "The language model service is rate limiting requests.", details=details
             )
         if status in _FALLBACK_STATUSES:
             raise LlmUnavailable(f"The language model is unavailable (HTTP {status}).")

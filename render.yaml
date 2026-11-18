@@ -50,6 +50,9 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      # Optional second chat provider, used when OpenRouter is limited or down (public repos only).
+      - key: GROQ_API_KEY
+        sync: false
       # Optional: lets the scheduled workflow purge expired private data (see DEPLOYMENT.md).
       - key: MAINTENANCE_TOKEN
         generateValue: true

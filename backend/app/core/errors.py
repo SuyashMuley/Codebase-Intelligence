@@ -185,6 +185,13 @@ class LlmUnavailable(AppError):
     retryable = True
 
 
+class LlmRequestTooLarge(AppError):
+    """The question and the code it needs are bigger than any available model accepts."""
+
+    status_code = 413
+    code = "llm_request_too_large"
+
+
 class LlmBadResponse(AppError):
     status_code = 502
     code = "llm_bad_response"

@@ -111,6 +111,24 @@ class Settings(BaseSettings):
     openrouter_fallback_model: str | None = "baidu/ernie-5.5-flash-preview:free"
     # "low" asks reasoning models to think briefly (faster, fewer empty replies); blank to omit.
     openrouter_reasoning_effort: str | None = "low"
+    # A second chat provider the platform falls back to when the first is rate limited, down or out
+    # of credit (Groq has a free tier). Optional: leave the key blank to use OpenRouter alone.
+    groq_api_key: SecretStr | None = None
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    # Must be a model Groq currently offers; they change. Check console.groq.com.
+    groq_model: str = "openai/gpt-oss-120b"
+    groq_fallback_model: str | None = None
+    # Groq spells this differently from OpenRouter: a flat `reasoning_effort` (low, medium, high)
+    # for the gpt-oss models, sent with `include_reasoning: false` so the thinking is not returned.
+    # Blank to send neither (a model that does not take them, such as a non-reasoning one, may
+    # reject the request).
+    groq_reasoning_effort: str | None = "low"
+    # Groq's limit on tokens per minute for the chat models in its published table (8,000 for
+    # gpt-oss-120b, gpt-oss-20b and qwen3.8-27b). A request that cannot fit in it can never
+    # succeed there, so it is not sent (it goes to the next provider). 0 turns the check off.
+    groq_tokens_per_minute: int = Field(default=8000, ge=0)
+    # The order providers are tried in, by name. Unconfigured ones (no key) are skipped.
+    llm_provider_order: str = "openrouter,groq"
     llm_timeout_seconds: float = 25.0  # one model attempt
     llm_budget_seconds: float = 28.0  # a whole call including the fallback; see OpenRouterClient
     ai_rate_limit_per_minute: int = 5  # per user; each call is a model request
@@ -183,6 +201,9 @@ class Settings(BaseSettings):
         "openrouter_api_key",
         "openrouter_fallback_model",
         "openrouter_reasoning_effort",
+        "groq_api_key",
+        "groq_fallback_model",
+        "groq_reasoning_effort",
         "github_app_slug",
         "maintenance_token",
         "metrics_token",
@@ -193,6 +214,18 @@ class Settings(BaseSettings):
     def _blank_to_none(cls, v: object) -> object:
         # docker compose passes unset variables as empty strings.
         return None if isinstance(v, str) and not v.strip() else v
+
+    @field_validator("llm_provider_order")
+    @classmethod
+    def _known_providers(cls, v: str) -> str:
+        names = [n.strip().lower() for n in v.split(",") if n.strip()]
+        unknown = [n for n in names if n not in ("openrouter", "groq")]
+        if unknown or not names or len(set(names)) != len(names):
+            raise ValueError(
+                "LLM_PROVIDER_ORDER must list each of openrouter and groq at most once, "
+                "separated by commas."
+            )
+        return ",".join(names)
 
     @model_validator(mode="after")
     def _validate_auth(self) -> "Settings":

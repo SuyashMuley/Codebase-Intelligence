@@ -53,7 +53,9 @@ CHAT_PROVIDERS: dict[str, ChatProvider] = {
             "https://api.together.xyz/v1",
             "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         ),
-        ChatProvider("groq", "Groq", "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
+        # A model on Groq's published rate-limit table when this was written (2026-11-18); Groq
+        # changes its models, so the user can type another.
+        ChatProvider("groq", "Groq", "https://api.groq.com/openai/v1", "openai/gpt-oss-120b"),
     )
 }
 
