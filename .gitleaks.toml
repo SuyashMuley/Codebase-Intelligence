@@ -18,3 +18,16 @@ description = "the cipher test encrypts a made-up token in GitHub's documented e
 condition = "AND"
 paths = ['''backend/tests/unit/test_auth_crypto\.py''']
 targetRules = ["github-oauth", "generic-api-key"]
+
+# Tests are full of fake keys on purpose (the provider tests, the log-hygiene markers, the browser-key
+# tests). The *generic* rule, which flags any high-entropy string next to a word like "key", is pure
+# noise there, so it is allowed in test files only. Every vendor-specific rule (AWS, GitHub, Stripe,
+# OpenAI, private keys, ...) still applies in test files, and every rule still applies everywhere else.
+[[allowlists]]
+description = "the generic high-entropy rule, in test files only"
+condition = "AND"
+paths = [
+  '''backend/tests/.*\.py''',
+  '''frontend/src/.*\.test\.tsx?''',
+]
+targetRules = ["generic-api-key"]

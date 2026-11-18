@@ -68,7 +68,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/src:ro" aquasec/trivy:latest config /src \
             --skip-dirs node_modules,backend/.venv,frontend/node_modules,frontend/.next \
-            --severity MEDIUM,HIGH,CRITICAL --exit-code 1 --no-progress
+            --severity MEDIUM,HIGH,CRITICAL --exit-code 1 --quiet
 
   secrets:
     name: Secrets in the code and its history
