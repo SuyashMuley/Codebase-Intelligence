@@ -140,7 +140,7 @@ export function RepoDetail({ id }: { id: string }) {
         </p>
       </div>
 
-      <div role="tablist" aria-label="Repository views" className="flex gap-1 border-b border-zinc-800">
+      <div role="tablist" aria-label="Repository views" className="flex gap-1 overflow-x-auto border-b border-zinc-800">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -150,7 +150,7 @@ export function RepoDetail({ id }: { id: string }) {
             aria-selected={tab === t.key}
             aria-controls={`panel-${t.key}`}
             onClick={() => update({ tab: t.key === "overview" ? null : t.key })}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-emerald-400 ${
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:px-4 focus-visible:outline-2 focus-visible:outline-emerald-400 ${
               tab === t.key
                 ? "border-emerald-400 text-zinc-100"
                 : "border-transparent text-zinc-400 hover:text-zinc-200"

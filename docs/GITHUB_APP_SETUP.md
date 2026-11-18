@@ -63,7 +63,8 @@ If sign-in fails:
 - You land back on the login page with "link expired": the state cookie did not survive. Make sure you start at `http://localhost:3000` (not `127.0.0.1`) and that `APP_BASE_URL` matches.
 - Indexing says "authorization expired": GitHub did not accept the user token for that call; sign in again. If it keeps happening for public repos, tell me: it would mean a GitHub App user token needs a permission I assumed it did not.
 
-## Deployment notes (M8)
-- Add the production callback URL to the app.
-- Set the same variables as secrets on Render, with `APP_BASE_URL` set to your Vercel URL and cookies marked Secure.
-- Render's free tier sleeps, so the first sign-in after idle can take 30 to 60 seconds. The login page will say so.
+## Production
+The full deployment steps are in [DEPLOYMENT.md](DEPLOYMENT.md). For the GitHub App specifically:
+- Add `https://<your-vercel-domain>/api/auth/github/callback` as a second Callback URL (keep the localhost one) and set the Homepage URL to the Vercel URL.
+- Put the same Client ID and secret on Render as secrets, with `APP_BASE_URL` set to your Vercel URL and `COOKIE_SECURE=true`. The API will not start in production without them.
+- Render's free tier sleeps, so the first sign-in after idle can take 30 to 60 seconds; the app says it is waking the server.

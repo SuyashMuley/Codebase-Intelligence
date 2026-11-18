@@ -1,0 +1,52 @@
+# Render Blueprint: the API only. The frontend goes on Vercel and the database on Neon.
+# Setup, in order, is in docs/DEPLOYMENT.md. Variables marked `sync: false` are asked for in
+# the Render dashboard the first time the blueprint is applied and are never stored in git.
+services:
+  - type: web
+    name: cip-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: ENVIRONMENT
+        value: production # the API refuses to start unless the auth settings below are valid
+      - key: LOG_LEVEL
+        value: INFO
+      # Neon: the POOLED connection string (host contains "-pooler") for the app...
+      - key: DATABASE_URL
+        sync: false
+      # ...and the DIRECT one for migrations, which run on every start.
+      - key: ALEMBIC_DATABASE_URL
+        sync: false
+      # Your Vercel URL, no trailing slash. Used for the OAuth callback and redirects.
+      - key: APP_BASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false # the same Vercel URL
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: FORWARDED_FOR_HOPS
+        value: "1" # Render's proxy; never trust X-Forwarded-For without it
+      - key: GITHUB_APP_CLIENT_ID
+        sync: false
+      - key: GITHUB_APP_CLIENT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CLIENT_KEY_SALT
+        generateValue: true
+      # Must be 32 random bytes, url-safe base64: Render's generated values are not that.
+      #   python3 -c "import base64, os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())"
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: EMBEDDING_PROVIDER
+        value: cloudflare
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false

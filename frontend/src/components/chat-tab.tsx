@@ -112,7 +112,7 @@ function AnswerView({
             <button
               type="button"
               onClick={() => onOpen(c.path, lineRange(c))}
-              className="text-emerald-400 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-400"
+              className="max-w-full break-all text-left text-emerald-400 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-400"
             >
               {c.path}:{lineRange(c)}
             </button>
@@ -223,7 +223,7 @@ export function ChatTab({
           onChange={(e) => setText(e.target.value)}
           aria-label="Your question"
           placeholder="Ask about this code"
-          className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-emerald-400"
+          className="w-full min-w-0 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-emerald-400 sm:w-auto sm:flex-1"
         />
         <Button type="submit" disabled={ask.isPending || !text.trim()}>
           {ask.isPending ? "Asking…" : "Ask"}

@@ -117,7 +117,7 @@ export function SearchTab({
                   <button
                     type="button"
                     onClick={() => onOpen(hit.path, lineLabel(hit))}
-                    className="text-left font-mono text-sm text-emerald-400 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-400"
+                    className="max-w-full break-all text-left font-mono text-sm text-emerald-400 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-400"
                   >
                     {hit.path}:{lineLabel(hit)}
                   </button>

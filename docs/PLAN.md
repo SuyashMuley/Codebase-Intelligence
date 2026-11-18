@@ -295,12 +295,27 @@ Frontend (thin vertical slice)
 **Added after manual testing of M7:** a Re-index button (`POST .../index` with `{"force": true}`, behind a confirmation) and a Disconnect button (`DELETE /api/repositories/{id}`, behind a confirmation). Re-index replaces a same-commit snapshot and counts toward the daily indexing quota. Disconnect removes the user's link and deletes the repository's data when nobody else is connected. 9 backend and 5 frontend tests. Limitations: disconnecting and connecting again resets the per-repository daily question count (it lives with the repository's data), though it costs a full re-index, which has its own daily limit; another person viewing a shared repository while it is re-indexed sees it as indexing for a few minutes; a person connecting at the exact moment the last other person disconnects can get an error and should retry.
 
 ### M8. Polish and deployment
-- [ ] Responsive layouts and consistent loading, empty and error states across every page
-- [ ] Dockerfiles, `vercel.json` (including the `/api` rewrite), `render.yaml`, Neon setup notes, `.env.example`
-- [ ] Production callback URL and secrets for the GitHub App documented
-- [ ] README, architecture docs with Mermaid, API docs, demo script
+- [x] Responsive layouts and consistent loading, empty and error states across every page
+- [x] Dockerfile checked, `render.yaml`, Neon setup notes, `.env.example` for the backend and the frontend (no `vercel.json`: see deviations)
+- [x] Production callback URL and secrets for the GitHub App documented
+- [x] README, architecture docs with Mermaid (already present), API docs (FastAPI's `/docs`), demo script
 
-**Exit:** the deployed app lets a new user sign in, index a real repo, and query it, and the demo script runs start to finish.
+**Exit:** the deployed app lets a new user sign in, index a real repo, and query it, and the demo script runs start to finish. **Not yet met: nothing has been deployed.** The files and steps exist; the first real deploy is the test of them.
+
+**Status: files and docs written; deployment itself not done.**
+- **Verified here:** the backend image builds (435 MB); started with production settings against a fresh pgvector database it ran all six migrations and answered `/health` and `/ready`. A real browser (Playwright, the real backend with only GitHub faked) loaded login, repositories, and every tab of an indexed repository (153 files) at 375, 768 and 1280 px wide.
+- **Found and fixed by that check:** at 375 px every repository page was 15 px wider than the screen (the five tabs did not fit; the tab bar now scrolls); the Ask input was squeezed to about 100 px next to its buttons (it now takes its own row on a phone); long file paths in search results made the page 415 px wide (they now wrap; the same fix is on the Ask sources list, which could not be exercised in a browser without a model key). After the fixes there was no horizontal overflow on any page at 375 px, and no page errors.
+- **Error states seen in the browser:** "not set up on this server" for Ask without a key, "too many requests" when the rate limit tripped (it did, from the audit's own traffic), repository not found. The cold-start message ("Waking up the server") already existed from M3.
+- **Not verified:** Neon, Render and Vercel themselves (no accounts here), `render.yaml` as an applied blueprint, the Vercel build, and the production GitHub callback. [DEPLOYMENT.md](DEPLOYMENT.md) is a checklist written from the documented behaviour of those services and from this project's code; expect to correct it on first use.
+
+**Deviations from the plan**
+- No `vercel.json`. The `/api` rewrite already lives in `next.config.ts` and reads `BACKEND_URL` at build time, and local development exercises it. A second copy could only disagree with it.
+- No scheduled GitHub Actions `tick` workflow. `tick` requires the owner's session, so an unauthenticated cron cannot call it; indexing therefore advances only while the repository page is open, and the docs say so.
+- The graph on a phone is small and needs zooming; it is usable but not designed for a phone.
+
+**Known limitations**
+- On a phone the code viewer scrolls sideways inside its own box (intended), and the graph canvas is small.
+- Search always returns the nearest chunks, even for a nonsense query; it shows their scores but does not say "nothing relevant".
 
 ### M9. Private repos with user-supplied providers (post-MVP)
 Design: [Production architecture](ARCHITECTURE.md#production-architecture-post-mvp-planned-in-m9-and-m10). Sign-in and ownership exist from M3. Public repos keep using the platform's providers; private repos require the user's own embedding and chat providers.
