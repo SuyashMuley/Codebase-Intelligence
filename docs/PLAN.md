@@ -329,7 +329,7 @@ Design: [Production architecture](ARCHITECTURE.md#production-architecture-post-m
 - [x] Embedding choice for user providers limited to a supported 384-dimension list
 - [x] Private snapshots owner-scoped, never shared or deduplicated; retention TTL; delete-repository endpoint that removes all derived data
 - [x] Frontend: provider settings (key entry, masked display, remove) and a notice of what is sent to which provider before connecting a private repo
-- [ ] Tests: private repo blocked without providers; SSRF guard rejects internal addresses and redirects; keys never in logs or responses; deletion leaves no rows; revoked access stops queries; the wrong-user matrix still holds for private repos
+- [x] Tests: private repo blocked without providers; SSRF guard rejects internal addresses and redirects; keys never in logs or responses; deletion leaves no rows; revoked access stops queries; the wrong-user matrix still holds for private repos
 
 **Exit:** two users cannot see or query each other's private repos on any route, and a private repo cannot be indexed through the platform's providers.
 
@@ -391,7 +391,7 @@ Needs paid hosting tiers. Numbers in the README come from measurements, not esti
 
 **Exit:** a load test with recorded numbers, a successful restore drill, and sandbox limits shown to hold against a hostile archive.
 
-**Progress: 3 of 10 tasks done (audit log and log hygiene; worker process; scanning and threat model) and 1 partly (metrics and alerts; tracing missing). Redis-backed limits were deliberately skipped for now. The rest are not started.** M10 is mostly infrastructure that this project cannot verify from a laptop and a free tier. The honest order of work is: what can be built and tested locally first (worker process, Redis-backed limits, metrics, CI scanning, a written threat model, a load test and restore drill on local numbers), then what needs real services (object storage, KMS, row-level security with a non-owner database role, sandboxed workers). Numbers measured locally will be labelled as local; none will be presented as production figures.
+**Progress: 3 of 10 tasks done (audit log and log hygiene; worker process; scanning and threat model) and 2 partly (metrics and alerts, without tracing; load test done, but the backup and restore drill has never been run). Redis-backed limits were deliberately skipped for now. Object storage, KMS, row-level security and sandboxed parsing are not started.** M10 is mostly infrastructure that this project cannot verify from a laptop and a free tier. The honest order of work is: what can be built and tested locally first (worker process, Redis-backed limits, metrics, CI scanning, a written threat model, a load test and restore drill on local numbers), then what needs real services (object storage, KMS, row-level security with a non-owner database role, sandboxed workers). Numbers measured locally will be labelled as local; none will be presented as production figures.
 
 **Worker process (done)**
 - `python -m app.worker` (`--once` drains the work available now and exits; otherwise it runs until SIGTERM or SIGINT, finishing the step in progress first). It runs the same `runner.tick` as the API's tick endpoint, so there is one implementation of a job step. The lease compare-and-set already in the runner is what makes several workers, and workers next to browser tabs, safe: whoever holds an unexpired lease runs the step, the rest see "busy". Verified with two workers on six jobs: one download per job, no duplicate rows, all ready.
