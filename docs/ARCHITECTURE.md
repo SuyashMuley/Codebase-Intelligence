@@ -241,6 +241,13 @@ OpenAPI is served at `/docs`. All bodies are Pydantic models. From M3, every rou
 | `POST /api/repositories` | `{url}` | 201 new repository, or 200 with the existing one (idempotent, case-insensitive). Validates and stores only; no fetch. |
 | `GET /api/repositories` | paging params | list of repositories with latest snapshot summary |
 | `GET /api/repositories/{id}` | none | repository (M1). Snapshots and stats are added in M2 and later. |
+| `GET /api/providers` | none | The provider catalogue and what you saved: `{chat_providers, embedding_providers, embedding, chat}`. Saved entries show provider, model, mode and the last four characters of a stored key, never the key (M9). |
+| `PUT /api/providers/{slot}` | `{kind, mode, model?, account_id?, api_key?}` | Save the `embedding` or `chat` provider. `mode: stored` needs `api_key` (encrypted at rest); `mode: browser` must not send one. 422 `invalid_provider` otherwise. |
+| `POST /api/internal/purge-expired` | bearer `MAINTENANCE_TOKEN` | `{deleted_snapshots, deleted_audit_events}`. Deletes private snapshots older than `PRIVATE_RETENTION_DAYS` and audit events older than `AUDIT_RETENTION_DAYS`. For a scheduler; 404 unless a token is configured (M9, M10). |
+| `GET /metrics` | bearer `METRICS_TOKEN` | Prometheus text format: HTTP, indexing, queue and provider metrics. Not in OpenAPI; 404 unless a token is configured (M10). The worker serves the same at its own port. |
+| `GET /api/audit` | `limit` (1 to 200) | Your own audit trail, newest first: `{items[{at, action, repository, repository_id, detail}]}`. It says that something happened, never what was in it (M10). |
+| `DELETE /api/providers/{slot}` | none | 204; removes the provider and its stored key. |
+| `GET /api/github/private-repos` | none | `{items[], install_url}`: private repositories the user can see that the GitHub App is installed on (M9). |
 | `DELETE /api/repositories/{id}` | none | 204. Disconnects it from your account. Repository data is public source shared by everyone who connected it, so snapshots, files, chunks, embeddings, graph, jobs and chat counters are deleted (by database cascade) when the last person disconnects; while others remain only your link is removed. The repository row is locked so two disconnects cannot race. 404 if it is not yours. |
 | `POST /api/repositories/{id}/index` | optional `{ref}` (branch, tag or SHA), `{force: true}` | With `force`, a finished or failed snapshot of that commit is deleted and indexed again (counts as a new snapshot for the daily quota; the old one is kept if the quota refuses; a running one is returned unchanged). 202 `{created: true, status}` for a new commit. 200 `{created: false, status}` if that commit already has a snapshot (a failed one is restarted). 409 `job_in_progress` if a different commit is still being indexed. |
 | `POST /api/repositories/{id}/index/tick` | none | `{ran, reason, status}` after one bounded step. Safe to call repeatedly or concurrently. 409 `no_active_job` if nothing is pending. |
@@ -354,7 +361,7 @@ flowchart LR
     W --> KMS
 ```
 
-Workers run the same runner code the MVP's `tick` endpoint uses. The lease claim is already a compare-and-set, so a worker claims a job exactly as a tick does. Browser-driven ticks become an optional fallback.
+Workers run the same runner code the MVP's `tick` endpoint uses (built in M10 as `python -m app.worker`: it picks the least recently worked active job that is not leased, and runs one `runner.tick` for it). The lease claim is already a compare-and-set, so a worker claims a job exactly as a tick does. Browser-driven ticks become an optional fallback.
 
 ## Components
 
@@ -394,7 +401,7 @@ Indexing sends every code chunk to an embedding provider, and chat sends retriev
 
 ## Data lifecycle
 
-- Private snapshots have a retention period and are deleted when it expires.
+- Private snapshots have a retention period (`PRIVATE_RETENTION_DAYS`, default 30) and are deleted when it expires: lazily whenever the repository is used, and by a scheduled call to the purge endpoint. Deleting rows does not erase database backups.
 - Users can delete a repository and all its derived data (files, symbols, chunks, edges, jobs) in one action. Deletion is tested to leave no rows behind.
 - Neither the platform nor its logs retain prompts, file contents, or provider keys.
 - Users see a plain-language notice, before connecting a private repo, of what is sent to which provider.

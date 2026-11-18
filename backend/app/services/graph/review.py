@@ -17,10 +17,10 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import LlmBadResponse
 from app.db.models import File, Snapshot, Symbol
-from app.providers.llm.openrouter import OpenRouterClient
 from app.schemas.graph import AiReviewOut, AiRisk, AiTestIdea, ImpactOut
 from app.services.graph import queries
 from app.services.graph.impact import is_test_path
+from app.services.qa.graph import ChatModel
 
 NOTICE = (
     "AI suggestion. It was written from the static results on this page and a code excerpt. It "
@@ -204,7 +204,7 @@ def parse_review(text: str, ctx: ReviewContext, model: str | None) -> AiReviewOu
     )
 
 
-def run_review(llm: OpenRouterClient, ctx: ReviewContext) -> AiReviewOut:
+def run_review(llm: ChatModel, ctx: ReviewContext) -> AiReviewOut:
     text = llm.complete(
         SYSTEM, build_prompt(ctx), max_tokens=LLM_MAX_TOKENS, json_mode=True, temperature=0.2
     )

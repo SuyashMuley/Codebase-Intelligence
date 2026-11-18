@@ -40,6 +40,14 @@ class CommitInfo:
 
 
 @dataclass(frozen=True)
+class RepoMeta:
+    """What GitHub says about one repository, as seen with the caller's own token."""
+
+    private: bool
+    default_branch: str
+
+
+@dataclass(frozen=True)
 class GithubRepoInfo:
     """A public repository as shown in the picker."""
 
@@ -62,7 +70,13 @@ class ByteSource(Protocol):
 class GitHubGateway(Protocol):
     """What the indexing code needs from GitHub. Tests substitute a fake."""
 
-    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo: ...
+    def get_repo(self, owner: str, name: str) -> RepoMeta: ...
+
+    def resolve_commit(
+        self, owner: str, name: str, ref: str | None = None, allow_private: bool = False
+    ) -> CommitInfo: ...
+
+    def list_private_repos(self, limit: int = 100) -> list[GithubRepoInfo]: ...
 
     def list_public_repos(self, login: str, limit: int = 100) -> list[GithubRepoInfo]: ...
 
@@ -165,7 +179,8 @@ class GitHubClient:
             )
         if status in (403, 404, 409, 410, 422, 451):
             raise RepoNotFound(
-                "Repository or ref was not found, is empty, or is not publicly accessible."
+                "Repository or ref was not found, is empty, or is not accessible to you. "
+                "For a private repository, the GitHub App must be installed on it."
             )
         raise GithubUnavailable(f"GitHub returned an unexpected error (HTTP {status}).")
 
@@ -180,9 +195,23 @@ class GitHubClient:
 
     # --- API ----------------------------------------------------------------------------
 
-    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo:
+    def get_repo(self, owner: str, name: str) -> RepoMeta:
+        """Visibility and default branch, read from GitHub with the caller's token. This is the
+        only source of "is it private": the browser's claim is never used. For a private
+        repository GitHub answers 404 unless the caller has access and the GitHub App is
+        installed on it."""
+        _check_names(owner, name)
         repo = self._get(f"/repos/{owner}/{name}").json()
-        if repo.get("private"):
+        if not isinstance(repo, dict) or not isinstance(repo.get("default_branch"), str):
+            raise GithubUnavailable("GitHub returned an unexpected repository description.")
+        return RepoMeta(private=repo.get("private") is True, default_branch=repo["default_branch"])
+
+    def resolve_commit(
+        self, owner: str, name: str, ref: str | None = None, allow_private: bool = False
+    ) -> CommitInfo:
+        _check_names(owner, name)
+        repo = self._get(f"/repos/{owner}/{name}").json()
+        if repo.get("private") and not allow_private:
             raise RepoNotFound("Repository was not found or is not public.")
         default_branch = str(repo["default_branch"])
         target = quote(ref or default_branch, safe="/")
@@ -213,33 +242,40 @@ class GitHubClient:
 
         repos: list[GithubRepoInfo] = []
         for item in data:
-            if not isinstance(item, dict) or item.get("private") is True:
+            if isinstance(item, dict) and item.get("private") is True:
                 continue
-            owner = (item.get("owner") or {}).get("login")
-            name = item.get("name")
-            if not (
-                isinstance(owner, str)
-                and isinstance(name, str)
-                and _LOGIN_RE.match(owner)
-                and _REPO_NAME_RE.match(name)
-            ):
+            info = _repo_info(item)
+            if info is not None:
+                repos.append(info)
+        return repos
+
+    def list_private_repos(self, limit: int = 100) -> list[GithubRepoInfo]:
+        """Private repositories the signed-in user can reach through the GitHub App.
+
+        A GitHub App user token sees a repository only if the user has access to it and the app
+        is installed on it, so this is exactly the set that can be connected. Needs the user's
+        token (a platform token would list nothing useful and is refused)."""
+        if not self._token_is_user:
+            raise ReauthRequired("Please sign in with GitHub.")
+        data = self._get("/user/installations?per_page=20").json()
+        installations = data.get("installations") if isinstance(data, dict) else None
+        if not isinstance(installations, list):
+            raise GithubUnavailable("GitHub returned an unexpected installation list.")
+        repos: list[GithubRepoInfo] = []
+        for inst in installations[:10]:
+            inst_id = inst.get("id") if isinstance(inst, dict) else None
+            if not isinstance(inst_id, int):
                 continue
-            description = item.get("description")
-            language = item.get("language")
-            stars = item.get("stargazers_count")
-            pushed = item.get("pushed_at")
-            repos.append(
-                GithubRepoInfo(
-                    owner=owner,
-                    name=name,
-                    description=description[:200] if isinstance(description, str) else None,
-                    language=language[:40] if isinstance(language, str) else None,
-                    stars=stars if isinstance(stars, int) else 0,
-                    pushed_at=pushed if isinstance(pushed, str) else None,
-                    fork=item.get("fork") is True,
-                    archived=item.get("archived") is True,
-                )
-            )
+            page = self._get(f"/user/installations/{inst_id}/repositories?per_page=100").json()
+            items = page.get("repositories") if isinstance(page, dict) else None
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                info = _repo_info(item)
+                if info is not None and isinstance(item, dict) and item.get("private") is True:
+                    repos.append(info)
+                if len(repos) >= limit:
+                    return repos
         return repos
 
     @contextmanager
@@ -263,6 +299,41 @@ class GitHubClient:
                 yield _CappedReader(body.iter_raw(), max_bytes)
         except httpx.HTTPError:
             raise GithubUnavailable("Connection to GitHub was interrupted.") from None
+
+
+def _check_names(owner: str, name: str) -> None:
+    if not _LOGIN_RE.match(owner) or not _REPO_NAME_RE.match(name) or name in {".", ".."}:
+        raise ValueError("not a valid GitHub repository name")
+
+
+def _repo_info(item: object) -> GithubRepoInfo | None:
+    """One entry of a GitHub repository list, or None if it does not look like a normal
+    owner/name pair (such entries are dropped rather than passed on to the browser)."""
+    if not isinstance(item, dict):
+        return None
+    owner = (item.get("owner") or {}).get("login")
+    name = item.get("name")
+    if not (
+        isinstance(owner, str)
+        and isinstance(name, str)
+        and _LOGIN_RE.match(owner)
+        and _REPO_NAME_RE.match(name)
+    ):
+        return None
+    description = item.get("description")
+    language = item.get("language")
+    stars = item.get("stargazers_count")
+    pushed = item.get("pushed_at")
+    return GithubRepoInfo(
+        owner=owner,
+        name=name,
+        description=description[:200] if isinstance(description, str) else None,
+        language=language[:40] if isinstance(language, str) else None,
+        stars=stars if isinstance(stars, int) else 0,
+        pushed_at=pushed if isinstance(pushed, str) else None,
+        fork=item.get("fork") is True,
+        archived=item.get("archived") is True,
+    )
 
 
 def _human(n: int) -> str:

@@ -24,7 +24,7 @@ flowchart LR
 | Graph | Files and symbols as a graph. An edge is drawn solid only when the code proves it; everything else is dashed and labelled with why it is unresolved. Selecting a node opens the impact panel: who depends on it, with the path to each, suggested tests, and an optional AI review kept apart from the proven results |
 | Ask | Questions answered with numbered citations. Each cited statement must quote the code word for word, or it is dropped |
 
-Languages: Python, JavaScript, TypeScript and Go, plus README files. Public repositories only.
+Languages: Python, JavaScript, TypeScript and Go, plus README files. Public repositories work out of the box. Private repositories (GitHub App installed on them) are supported with **your own** embedding and chat providers and keys: their code is never sent to this app's providers. That part is newer and has been tested against fakes, not yet against real provider keys; see `docs/PLAN.md` (M9).
 
 ## Run it locally
 
@@ -71,12 +71,12 @@ Hybrid never beat vector search, so vector is the default. The click intervals a
 
 ## How it is built
 
-- **Indexing without a worker.** A resumable job state machine (fetch, parse, embed, graph) advances one bounded step per `tick` request, driven by the open browser tab. A restart loses at most one step.
+- **Indexing with or without a worker.** A resumable job state machine (fetch, parse, embed, graph) advances one bounded step at a time. On the free tier the open browser tab drives it through `tick` requests; an optional background worker (`python -m app.worker`) runs the same step with no tab open. A restart loses at most one step.
 - **Static graph you can trust.** Imports and calls are resolved only when the code proves them; unresolved ones are stored with a reason and never used as facts.
 - **Answers that are checked.** The model returns claims with a verbatim quote; a validator confirms each quote exists in the excerpt it cites. Retrieved code is wrapped in a per-request random delimiter and treated as data, not instructions.
 - **Safe by default.** No repository code is ever executed; detected secrets are replaced before anything is stored; every route checks ownership; limits apply per user.
 
-More: [architecture, schema, API and security model](docs/ARCHITECTURE.md) · [plan, results and known limitations](docs/PLAN.md) · [deployment](docs/DEPLOYMENT.md) · [demo script](docs/DEMO.md). The API's interactive reference is served at `/docs` on the backend.
+More: [architecture, schema, API and security model](docs/ARCHITECTURE.md) · [threat model and open security risks](docs/THREAT_MODEL.md) · [plan, results and known limitations](docs/PLAN.md) · [deployment](docs/DEPLOYMENT.md) · [demo script](docs/DEMO.md). The API's interactive reference is served at `/docs` on the backend.
 
 ## Known limits
 

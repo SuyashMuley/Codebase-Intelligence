@@ -2,25 +2,23 @@
 verified lines of code, or an honest "cannot determine"."""
 
 import uuid
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 
 from app.api.deps import (
     AppSettings,
     CurrentUser,
     DbSession,
     OwnedRepo,
+    Providers,
     csrf_guard,
-    get_embedder,
-    get_llm,
     ip_backstop,
     user_chat_limit,
     user_general_limit,
 )
+from app.core.dbrelease import ReleasingRouter
 from app.core.errors import SnapshotNotFound
-from app.providers.embeddings.base import Embedder
-from app.providers.llm.openrouter import OpenRouterClient
 from app.schemas.chat import (
     ChatAnswer,
     ChatRequest,
@@ -33,7 +31,7 @@ from app.services.indexing import queries
 from app.services.qa import quota
 from app.services.qa.graph import QADeps, run
 
-router = APIRouter(
+router = ReleasingRouter(
     prefix="/api/repositories/{repository_id}",
     tags=["chat"],
     dependencies=[
@@ -57,15 +55,16 @@ _ERRORS: dict[int | str, dict[str, Any]] = {
 def ask(
     body: ChatRequest,
     repo: OwnedRepo,
+    providers: Providers,
     user: CurrentUser,
     db: DbSession,
-    embedder: Annotated[Embedder | None, Depends(get_embedder)],
-    llm: Annotated[OpenRouterClient, Depends(get_llm)],
     settings: AppSettings,
 ) -> ChatAnswer:
     """Answer from the indexed code. Every claim carries a quotation that was checked against
     the cited lines; claims that could not be checked are removed. When nothing relevant is
     found, no model is called and the answer says it cannot determine."""
+    llm = providers.need_llm()  # before anything else: a missing provider is the first thing to say
+    embedder = providers.embedder()
     if body.snapshot is not None:
         try:
             snapshot_id: uuid.UUID | None = uuid.UUID(body.snapshot)

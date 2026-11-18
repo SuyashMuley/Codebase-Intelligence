@@ -1,0 +1,83 @@
+name: Security
+
+# Dependency, image, configuration and secret scanning. It also runs weekly: new advisories appear
+# without any change to this repository, and an old green build says nothing about them.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: Python dependencies and code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - name: Known vulnerabilities in the locked dependencies
+        run: |
+          uv export --frozen --no-hashes --no-emit-project -o /tmp/requirements.txt
+          uv run pip-audit -r /tmp/requirements.txt --no-deps --disable-pip
+      - name: Static security checks on the application code
+        run: uv run bandit -r app -c pyproject.toml
+
+  node:
+    name: Node dependencies
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Production dependencies (what ships to users) must be clean of high advisories
+        run: npm audit --omit=dev --audit-level=high
+      - name: Everything, development tools included (accepted advisories are in scripts/audit-policy.mjs)
+        run: npm run audit:dev
+
+  image:
+    name: Container image and configuration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the API image from a fresh base
+        run: docker build --pull -t cip-api:scan backend
+      - name: Scan the image (high and critical findings that have a fix)
+        # Findings with no fix yet cannot be acted on, so they do not fail the build; they are
+        # listed in docs/THREAT_MODEL.md.
+        run: |
+          docker save cip-api:scan -o /tmp/cip-api.tar
+          docker run --rm -v /tmp/cip-api.tar:/img.tar:ro aquasec/trivy:latest image \
+            --input /img.tar --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress
+      - name: Scan the Dockerfile, compose file and workflows for risky settings
+        run: |
+          docker run --rm -v "$PWD:/src:ro" aquasec/trivy:latest config /src \
+            --skip-dirs node_modules,backend/.venv,frontend/node_modules,frontend/.next \
+            --severity MEDIUM,HIGH,CRITICAL --exit-code 1 --no-progress
+
+  secrets:
+    name: Secrets in the code and its history
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the whole history: a secret removed in a later commit is still leaked
+      - name: Scan every commit
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:latest detect \
+            --source /repo --config /repo/.gitleaks.toml --redact --no-banner

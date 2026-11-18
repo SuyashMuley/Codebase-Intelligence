@@ -2,27 +2,27 @@
 
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import Depends, Query
 
 from app.api.deps import (
     DbSession,
     OwnedRepo,
+    Providers,
     csrf_guard,
-    get_llm,
     ip_backstop,
     user_ai_limit,
     user_general_limit,
 )
 from app.api.files import MAX_PATH_LENGTH, SnapshotParam
+from app.core.dbrelease import ReleasingRouter
 from app.core.errors import MissingTarget
-from app.providers.llm.openrouter import OpenRouterClient
 from app.schemas.graph import AiReviewOut, GraphOut, ImpactOut, ReviewRequest
 from app.schemas.repository import ErrorEnvelope
 from app.services.graph import queries as graph_queries
 from app.services.graph import review
 from app.services.indexing import queries
 
-router = APIRouter(
+router = ReleasingRouter(
     prefix="/api/repositories/{repository_id}",
     tags=["graph"],
     dependencies=[Depends(ip_backstop), Depends(csrf_guard), Depends(user_general_limit)],
@@ -84,13 +84,14 @@ def get_impact(
 def review_impact(
     body: ReviewRequest,
     repo: OwnedRepo,
+    providers: Providers,
     db: DbSession,
-    llm: Annotated[OpenRouterClient, Depends(get_llm)],
     snapshot: SnapshotParam = None,
 ) -> AiReviewOut:
     """An AI reading of the static impact result: risks, tests to consider, open questions.
     Always separate from the static facts, labelled as unverified, and checked so it can only cite
     files the analysis surfaced."""
+    llm = providers.need_llm()
     snap = queries.resolve_snapshot(db, repo.id, snapshot)
     if body.file is None and body.symbol is None:
         raise MissingTarget("Give a file path or a symbol id.")

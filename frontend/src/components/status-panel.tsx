@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { DriverStop } from "@/lib/hooks";
-import { formatBytes, shortSha, SKIP_LABELS } from "@/lib/format";
+import { formatBytes, formatDate, shortSha, SKIP_LABELS } from "@/lib/format";
 import type { ApiError } from "@/lib/api";
 import type { IndexStatus } from "@/lib/types";
 import { Badge, Button, Card, ConfirmButton, EmptyState, ErrorNotice } from "./ui";
@@ -111,6 +111,14 @@ export function StatusPanel({
       </div>
 
       <Stepper status={status} />
+
+      {status.expires_at ? (
+        <p className="text-xs text-zinc-500" data-testid="expiry">
+          This private repository&apos;s indexed data is deleted automatically on{" "}
+          {formatDate(status.expires_at)}. You can index it again after that, or delete it any time
+          with Disconnect.
+        </p>
+      ) : null}
 
       {progress ? (
         <dl className="grid gap-4 sm:grid-cols-3">

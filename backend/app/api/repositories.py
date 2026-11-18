@@ -1,24 +1,26 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import Depends, Query, Response, status
 from sqlalchemy import delete, func, select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from app.api.deps import (
     CurrentUser,
     DbSession,
-    OwnedRepo,
+    OwnedRepoUnchecked,
     csrf_guard,
+    get_github,
     ip_backstop,
     user_general_limit,
 )
+from app.core.dbrelease import ReleasingRouter
 from app.db.models import Repository, UserRepository
 from app.schemas.repository import ErrorEnvelope, RepositoryCreate, RepositoryList, RepositoryOut
+from app.services import audit
+from app.services.github.client import GitHubGateway
 from app.services.github.url import parse_github_url
+from app.services.repos import access
 
-router = APIRouter(
+router = ReleasingRouter(
     prefix="/api/repositories",
     tags=["repositories"],
     dependencies=[Depends(ip_backstop), Depends(csrf_guard), Depends(user_general_limit)],
@@ -31,28 +33,6 @@ _ERRORS: dict[int | str, dict[str, Any]] = {
 }
 
 
-def _find_by_name(db: Session, owner: str, name: str) -> Repository | None:
-    return db.scalar(
-        select(Repository).where(
-            func.lower(Repository.owner) == owner.lower(),
-            func.lower(Repository.name) == name.lower(),
-        )
-    )
-
-
-def _link(db: Session, user: CurrentUser, repo: Repository) -> bool:
-    """Connect the repository to the user. Returns True if the link is new."""
-    result = db.execute(
-        pg_insert(UserRepository)
-        .values(user_id=user.id, repository_id=repo.id)
-        .on_conflict_do_nothing()
-        .returning(UserRepository.user_id)
-    )
-    created = result.first() is not None
-    db.commit()
-    return created
-
-
 @router.post(
     "",
     response_model=RepositoryOut,
@@ -60,29 +40,25 @@ def _link(db: Session, user: CurrentUser, repo: Repository) -> bool:
     responses={200: {"model": RepositoryOut, "description": "Already connected"}, **_ERRORS},
 )
 def create_repository(
-    body: RepositoryCreate, response: Response, db: DbSession, user: CurrentUser
+    body: RepositoryCreate,
+    response: Response,
+    db: DbSession,
+    user: CurrentUser,
+    gh: Annotated[GitHubGateway, Depends(get_github)],
 ) -> Repository:
-    """Connect a public GitHub repository to your account. Idempotent.
+    """Connect a GitHub repository to your account. Idempotent.
 
-    The repository record itself is shared between users (public data); what is yours is the
-    connection. This validates and stores the URL only; indexing happens separately.
+    GitHub is asked, with your own token, whether the repository is private. A public one is a
+    shared record (what is yours is the connection). A private one is a record only you have:
+    it exists only if GitHub shows it to you, which needs the GitHub App installed on it.
+    Indexing happens separately.
     """
     ref = parse_github_url(body.url)
-
-    repo = _find_by_name(db, ref.owner, ref.name)
-    if repo is None:
-        repo = Repository(owner=ref.owner, name=ref.name, url=ref.url)
-        db.add(repo)
-        try:
-            db.commit()
-        except IntegrityError:
-            # Lost a race with a concurrent identical request; use the winner's row.
-            db.rollback()
-            repo = _find_by_name(db, ref.owner, ref.name)
-            if repo is None:
-                raise
-
-    if not _link(db, user, repo):
+    meta = gh.get_repo(ref.owner, ref.name)
+    repo, created = access.connect(db, user, ref, meta)
+    if repo.is_private:
+        audit.record(db, "private.connect", user.id, repo, {"new": created})
+    if not created:
         response.status_code = status.HTTP_200_OK
     return repo
 
@@ -120,7 +96,7 @@ def list_repositories(
         404: {"model": ErrorEnvelope, "description": "Repository not found"},
     },
 )
-def get_repository(repo: OwnedRepo) -> Repository:
+def get_repository(repo: OwnedRepoUnchecked) -> Repository:
     return repo
 
 
@@ -132,7 +108,7 @@ def get_repository(repo: OwnedRepo) -> Repository:
         404: {"model": ErrorEnvelope, "description": "Repository not found"},
     },
 )
-def disconnect_repository(repo: OwnedRepo, db: DbSession, user: CurrentUser) -> Response:
+def disconnect_repository(repo: OwnedRepoUnchecked, db: DbSession, user: CurrentUser) -> Response:
     """Disconnect a repository from your account.
 
     The repository's data (snapshots, files, chunks, embeddings, graph, chat counters) is public
@@ -141,6 +117,8 @@ def disconnect_repository(repo: OwnedRepo, db: DbSession, user: CurrentUser) -> 
     """
     # Lock the repository row so two people disconnecting at once cannot both see the other
     # still connected, and so nobody connects in between the count and the delete.
+    if repo.is_private:
+        audit.record(db, "private.disconnect", user.id, repo)
     locked = db.scalar(select(Repository).where(Repository.id == repo.id).with_for_update())
     if locked is None:  # already gone
         return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -38,5 +38,47 @@ services:
       db:
         condition: service_healthy
 
+  # Optional background worker: advances indexing jobs with no browser tab open.
+  #   docker compose --profile worker up -d worker
+  # It runs the same code as the API's tick endpoint (python -m app.worker) and needs the same
+  # environment, so any number of workers can run next to the API and browser tabs.
+  worker:
+    build: ./backend
+    profiles: ["worker"]
+    command: ["python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://cip:cip@db:5432/cip
+      LOG_LEVEL: INFO
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_APP_CLIENT_ID: ${GITHUB_APP_CLIENT_ID:-}
+      GITHUB_APP_CLIENT_SECRET: ${GITHUB_APP_CLIENT_SECRET:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-cloudflare}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WORKER_HTTP_HOST: 0.0.0.0
+      WORKER_HTTP_PORT: 9100
+    ports:
+      - "9100:9100"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Optional Prometheus for local use (scrapes the API on :8000 and the worker on :9100):
+  #   echo -n "$METRICS_TOKEN" > infra/prometheus/metrics_token   # same value as the API's
+  #   docker compose --profile observability up -d prometheus      # then open localhost:9090
+  # Run the API with METRICS_TOKEN set and the worker with WORKER_HTTP_PORT=9100.
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["observability"]
+    volumes:
+      - ./infra/prometheus:/etc/prometheus:ro
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   pgdata:

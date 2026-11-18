@@ -72,7 +72,7 @@ def start_indexing(
     With `force`, a finished or failed snapshot of the same commit is deleted and indexed again
     (for example after the indexer learned to keep more kinds of file). It counts as a new
     snapshot against the daily quota. One that is still running is simply returned."""
-    info = gh.resolve_commit(repo.owner, repo.name, ref)
+    info = gh.resolve_commit(repo.owner, repo.name, ref, allow_private=repo.is_private)
     if repo.default_branch != info.default_branch:
         repo.default_branch = info.default_branch
         db.commit()
@@ -147,7 +147,9 @@ def active_job(db: Session, repo_id: Any) -> IndexJob:
     return job
 
 
-def latest_status(db: Session, repo_id: Any, max_attempts: int) -> StatusOut:
+def latest_status(
+    db: Session, repo_id: Any, max_attempts: int, retention_days: int | None = None
+) -> StatusOut:
     row = db.execute(
         select(Snapshot, IndexJob)
         .join(IndexJob, IndexJob.snapshot_id == Snapshot.id)
@@ -157,10 +159,12 @@ def latest_status(db: Session, repo_id: Any, max_attempts: int) -> StatusOut:
     ).first()
     if row is None:
         return StatusOut(state="not_indexed", attempts=0, max_attempts=max_attempts)
-    return build_status(row[0], row[1], max_attempts)
+    return build_status(row[0], row[1], max_attempts, retention_days)
 
 
-def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> StatusOut:
+def build_status(
+    snapshot: Snapshot, job: IndexJob, max_attempts: int, retention_days: int | None = None
+) -> StatusOut:
     cursor = job.cursor or {}
     fetch = cursor.get("fetch")
     progress = (
@@ -239,4 +243,9 @@ def build_status(snapshot: Snapshot, job: IndexJob, max_attempts: int) -> Status
         embed=embed_progress,
         graph=graph_progress,
         updated_at=job.updated_at,
+        expires_at=(
+            snapshot.created_at + timedelta(days=retention_days)
+            if retention_days is not None and snapshot.created_at is not None
+            else None
+        ),
     )

@@ -3,14 +3,14 @@ from pathlib import Path
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from fastapi import APIRouter
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.core.dbrelease import ReleasingRouter
 from app.core.errors import NotReady
 from app.db.session import get_engine
 
-router = APIRouter(tags=["health"])
+router = ReleasingRouter(tags=["health"])
 
 _ALEMBIC_DIR = Path(__file__).resolve().parents[2] / "alembic"
 

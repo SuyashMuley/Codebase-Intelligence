@@ -5,6 +5,8 @@ from typing import Any
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
+    Boolean,
+    CheckConstraint,
     Computed,
     Date,
     DateTime,
@@ -16,6 +18,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -112,10 +115,30 @@ class Repository(Base):
     url: Mapped[str] = mapped_column(String(200))
     default_branch: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Private repositories belong to exactly one user and are never shared or deduplicated:
+    # every other user gets their own row. Public ones have no owner and are shared.
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    owner_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    # When GitHub last confirmed the owner can still see a private repository.
+    access_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    # GitHub names are case-insensitive, so uniqueness is enforced on the lowercased pair.
+    # GitHub names are case-insensitive, so uniqueness is enforced on the lowercased pair, per
+    # owner for private repositories.
     __table_args__ = (
-        Index("uq_repositories_owner_name_lower", func.lower(owner), func.lower(name), unique=True),
+        Index(
+            "uq_repositories_owner_name_lower",
+            func.lower(owner),
+            func.lower(name),
+            func.coalesce(owner_user_id, text("'00000000-0000-0000-0000-000000000000'::uuid")),
+            unique=True,
+        ),
+        CheckConstraint(
+            "(is_private AND owner_user_id IS NOT NULL)"
+            " OR (NOT is_private AND owner_user_id IS NULL)",
+            name="ck_repositories_private_has_owner",
+        ),
     )
 
 
@@ -291,4 +314,62 @@ class ChatUsage(Base):
         UniqueConstraint(
             "repository_id", "client_key", "day", name="uq_chat_usage_repository_id_client_key_day"
         ),
+    )
+
+
+class UserProvider(Base):
+    """One provider a user brought for one slot ('embedding' or 'chat') of their private repos.
+
+    mode 'stored': the key is here, encrypted (Fernet, TOKEN_ENCRYPTION_KEY), and only its last
+    four characters are ever shown. mode 'browser': no key here at all; the browser sends it with
+    each request and the server never keeps it."""
+
+    __tablename__ = "user_providers"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    slot: Mapped[str] = mapped_column(String(10), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(30))
+    mode: Mapped[str] = mapped_column(String(10))
+    key_enc: Mapped[str | None] = mapped_column(Text)
+    key_last4: Mapped[str | None] = mapped_column(String(4))
+    model: Mapped[str | None] = mapped_column(String(100))
+    account_id: Mapped[str | None] = mapped_column(String(32))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("slot IN ('embedding', 'chat')", name="ck_user_providers_slot"),
+        CheckConstraint("mode IN ('stored', 'browser')", name="ck_user_providers_mode"),
+        CheckConstraint(
+            "(mode = 'stored' AND key_enc IS NOT NULL) OR (mode = 'browser' AND key_enc IS NULL)",
+            name="ck_user_providers_key_matches_mode",
+        ),
+    )
+
+
+class AuditEvent(Base):
+    """Who used a private repository, or changed a provider, and when. Append-only by design: the
+    application has no way to change or delete a row except the retention purge.
+
+    It records that something happened, never what: no file contents, questions, answers, prompts
+    or keys, only names, ids and small counts. There are deliberately no foreign keys, so an event
+    outlives the repository or account it describes."""
+
+    __tablename__ = "audit_events"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    repository_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    repository: Mapped[str | None] = mapped_column(String(140))  # "owner/name", for reading
+    action: Mapped[str] = mapped_column(String(60))
+    detail: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    request_id: Mapped[str | None] = mapped_column(String(64))
+
+    __table_args__ = (
+        Index("ix_audit_events_user_id_at", "user_id", "at"),
+        Index("ix_audit_events_repository_id_at", "repository_id", "at"),
     )

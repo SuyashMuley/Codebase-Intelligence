@@ -10,7 +10,7 @@ from typing import Any
 
 from sqlalchemy import exists, func, select, update
 
-from app.core.errors import EmbeddingNotConfigured
+from app.core.errors import EmbeddingNotConfigured, ProvidersRequired
 from app.db.models import Chunk, File
 from app.providers.embeddings.factory import embedding_model_id, get_embedder
 from app.services.indexing.runner import PhaseContext, PhaseResult, register
@@ -28,8 +28,14 @@ def run_embed(ctx: PhaseContext) -> PhaseResult:
     # tick discard the previous tick's vectors). Without credentials we fall back to the
     # configured id, which is enough to notice stale vectors and to finish if nothing is pending.
     missing: EmbeddingNotConfigured | None = None
+    if ctx.repository.is_private and ctx.embedder is None:
+        # Whoever drives the job must supply the owner's own embedder: a private repository is
+        # never embedded with the platform's, whatever the configuration.
+        raise ProvidersRequired(
+            "A private repository can only be embedded with its owner's own provider."
+        )
     try:
-        embedder = get_embedder(s)
+        embedder = ctx.embedder or get_embedder(s)
         model = embedder.model_id
     except EmbeddingNotConfigured as exc:
         embedder, missing, model = None, exc, embedding_model_id(s)

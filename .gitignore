@@ -10,3 +10,9 @@ __pycache__/
 node_modules/
 .next/
 .DS_Store
+
+# Prometheus bearer token for local scraping
+infra/prometheus/metrics_token
+
+# Load-test fixture: holds live session tokens for the scratch database it was seeded into
+backend/loadtest/fixture.json

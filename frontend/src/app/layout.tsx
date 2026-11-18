@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: "Connect a public GitHub repository, index it, and explore it.",
 };
 
+// A Content-Security-Policy with a per-request nonce (src/proxy.ts) needs every page rendered per
+// request: a prerendered page cannot carry a nonce that does not exist yet.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>

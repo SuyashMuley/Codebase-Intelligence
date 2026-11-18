@@ -29,6 +29,8 @@ _NAME_BONUS = """
                      AND s.start_line BETWEEN c.start_line AND c.end_line
                      AND lower(s.name) = ANY(CAST(:names AS text[]))
                ) THEN 1 ELSE 0 END"""
+# The f-string only splices in the module constants above (fixed SQL fragments). Every value that
+# comes from a request (:query, :sid, :names, :limit, ...) is a bound parameter.
 _KEYWORD_SQL = text(
     f"""
     WITH q AS (SELECT to_tsquery('simple', :query) AS tsq)
@@ -42,7 +44,7 @@ _KEYWORD_SQL = text(
       AND (c.tsv @@ q.tsq OR {_PATH_TOKENS} @@ q.tsq)
     ORDER BY score DESC, c.id
     LIMIT :limit
-    """
+    """  # nosec B608
 )
 
 
@@ -125,6 +127,21 @@ def _has_embeddings(db: Session, snapshot_id: uuid.UUID) -> bool:
     )
 
 
+def embeddings_match(db: Session, snapshot_id: uuid.UUID, model_id: str) -> bool:
+    """True when the snapshot's vectors exist and all came from `model_id`. A query vector from a
+    different model (say, the owner switched providers after indexing) lives in another space, so
+    comparing them returns confident nonsense; the caller falls back to keywords instead."""
+    return _has_embeddings(db, snapshot_id) and not db.scalar(
+        select(
+            exists().where(
+                Chunk.snapshot_id == snapshot_id,
+                Chunk.embedding_model.is_not(None),
+                Chunk.embedding_model != model_id,
+            )
+        )
+    )
+
+
 def search(
     db: Session,
     snapshot_id: uuid.UUID,
@@ -156,6 +173,10 @@ def search(
             if strict:
                 raise RuntimeError("this snapshot has no embeddings")
             warnings.append("embeddings_not_ready")
+        elif not embeddings_match(db, snapshot_id, embedder.model_id):
+            if strict:
+                raise RuntimeError("this snapshot was embedded with a different model")
+            warnings.append("embeddings_model_changed")
         else:
             try:
                 vector_ids = vector_search(db, snapshot_id, embedder.embed_query(query), CANDIDATES)

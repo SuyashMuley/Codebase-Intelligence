@@ -50,3 +50,26 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      # Optional: lets the scheduled workflow purge expired private data (see DEPLOYMENT.md).
+      - key: MAINTENANCE_TOKEN
+        generateValue: true
+      - key: GITHUB_APP_SLUG
+        sync: false
+      # Lets a monitoring system read /metrics (see docs/DEPLOYMENT.md). Copy the value from here.
+      - key: METRICS_TOKEN
+        generateValue: true
+
+  # A background worker lets indexing finish with no browser tab open. Render's free plan has no
+  # background workers, so this stays commented out until you are on a paid plan. It must have the
+  # same environment variables as cip-api (use an environment group, or copy them), and it runs the
+  # same image with a different command. Any number of workers may run next to the API.
+  #
+  # - type: worker
+  #   name: cip-worker
+  #   runtime: docker
+  #   plan: starter
+  #   dockerfilePath: ./backend/Dockerfile
+  #   dockerContext: ./backend
+  #   dockerCommand: python -m app.worker
+  #   envVars:
+  #     - fromGroup: cip-shared

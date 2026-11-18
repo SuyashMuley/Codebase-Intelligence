@@ -9,7 +9,10 @@ class RepositoryCreate(BaseModel):
         min_length=1,
         max_length=200,
         examples=["https://github.com/pallets/flask"],
-        description="Public GitHub repository URL.",
+        description=(
+            "GitHub repository URL. Whether it is private is read from GitHub with your own "
+            "token, never taken from this request."
+        ),
     )
 
 
@@ -22,6 +25,7 @@ class RepositoryOut(BaseModel):
     url: str
     default_branch: str | None
     created_at: datetime
+    is_private: bool = False
 
 
 class RepositoryList(BaseModel):

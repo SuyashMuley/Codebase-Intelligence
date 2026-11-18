@@ -6,7 +6,7 @@ import logging
 from typing import Annotated
 from urllib.parse import quote, urlsplit
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -25,6 +25,7 @@ from app.api.deps import (
     session_cookie_name,
     user_general_limit,
 )
+from app.core.dbrelease import ReleasingRouter
 from app.core.errors import AppError
 from app.db.models import User
 from app.schemas.auth import MeOut
@@ -42,7 +43,7 @@ from app.services.auth.oauth import GitHubOAuthGateway
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api", tags=["auth"])
+router = ReleasingRouter(prefix="/api", tags=["auth"])
 
 STATE_COOKIE = "cip_oauth_state"
 DEFAULT_NEXT = "/repos"

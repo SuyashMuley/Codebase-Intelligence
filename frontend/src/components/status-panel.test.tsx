@@ -21,6 +21,23 @@ function setup(status: ReturnType<typeof makeStatus>, extra: Partial<Parameters<
 }
 
 describe("StatusPanel", () => {
+  it("says when a private repository's data will be deleted, and nothing for public ones", () => {
+    const { unmount } = render(
+      <StatusPanel
+        status={makeStatus({ state: "ready", phase: "done", expires_at: "2026-12-18T00:00:00Z" })}
+        stopped={null}
+        driverError={null}
+        starting={false}
+        onIndex={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("expiry")).toHaveTextContent(/deleted automatically on/i);
+    expect(screen.getByTestId("expiry")).toHaveTextContent(/2026/);
+    unmount();
+    setup(makeStatus({ state: "ready", phase: "done", expires_at: null }));
+    expect(screen.queryByTestId("expiry")).not.toBeInTheDocument();
+  });
+
   it("offers to index when nothing has been indexed", async () => {
     const onIndex = setup(makeStatus({ state: "not_indexed", snapshot_id: null, commit_sha: null, phase: null }));
     expect(screen.getByText(/not indexed yet/i)).toBeInTheDocument();

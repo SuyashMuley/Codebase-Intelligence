@@ -1,7 +1,7 @@
 """Request dependencies: settings, auth, CSRF, ownership, rate limits, GitHub access."""
 
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from functools import lru_cache
 from typing import Annotated
 
@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.errors import (
+    AppError,
     AuthNotConfigured,
     EmbeddingNotConfigured,
     ForbiddenOrigin,
@@ -25,11 +26,16 @@ from app.db.session import get_db
 from app.providers.embeddings.base import Embedder
 from app.providers.embeddings.factory import get_embedder as _build_embedder
 from app.providers.llm.factory import get_llm as _build_llm
-from app.providers.llm.openrouter import OpenRouterClient
+from app.services import audit
 from app.services.auth import credentials, sessions
 from app.services.auth.crypto import StateSealer, TokenCipher
 from app.services.auth.oauth import GitHubOAuth, GitHubOAuthGateway
 from app.services.github.client import GitHubClient, GitHubGateway
+from app.services.providers.resolve import RepoProviders
+from app.services.providers.resolve import for_repository as providers_for_repository
+from app.services.qa.graph import ChatModel
+from app.services.repos import retention
+from app.services.repos.access import ensure_private_access
 
 AppSettings = Annotated[Settings, Depends(get_settings)]
 DbSession = Annotated[Session, Depends(get_db)]
@@ -111,11 +117,26 @@ def get_sealer(settings: AppSettings) -> StateSealer:
 # --- who is calling ---------------------------------------------------------------------------
 
 
+def release(db: Session) -> None:
+    """End the current (read-only) transaction so the connection goes back to the pool now.
+
+    FastAPI runs each synchronous dependency and the endpoint as separate tasks on a shared pool of
+    worker threads. A connection held *between* those tasks is held while the request waits for a
+    free thread, and under load every connection ends up held by a request waiting for a thread
+    while every thread waits for a connection: nothing moves until the pool times out. So a
+    dependency that only reads calls this before it returns. Loaded objects stay usable (the
+    session does not expire them on commit), and the endpoint starts its own transaction.
+    """
+    db.commit()
+
+
 def current_user(request: Request, db: DbSession, settings: AppSettings) -> User:
     token = request.cookies.get(session_cookie_name(settings))
     user = sessions.resolve_session(db, token, settings) if token else None
     if user is None:
+        db.rollback()  # nothing was loaded; do not hold the connection while the error is built
         raise Unauthenticated("Sign in to continue.")
+    release(db)
     return user
 
 
@@ -136,24 +157,6 @@ def csrf_guard(request: Request, settings: AppSettings) -> None:
         raise ForbiddenOrigin("Request origin is not allowed.")
 
 
-# --- ownership ------------------------------------------------------------------------------
-
-
-def get_owned_repo(repository_id: uuid.UUID, user: CurrentUser, db: DbSession) -> Repository:
-    """The repository, only if the caller connected it. 404 (not 403) so IDs cannot be probed."""
-    repo = db.scalar(
-        select(Repository)
-        .join(UserRepository, UserRepository.repository_id == Repository.id)
-        .where(Repository.id == repository_id, UserRepository.user_id == user.id)
-    )
-    if repo is None:
-        raise RepoNotFound(f"Repository {repository_id} not found.")
-    return repo
-
-
-OwnedRepo = Annotated[Repository, Depends(get_owned_repo)]
-
-
 # --- GitHub access --------------------------------------------------------------------------
 
 
@@ -167,6 +170,38 @@ def _github_client() -> GitHubClient:
     )
 
 
+def github_for_user(
+    user_id: uuid.UUID,
+    db: Session,
+    settings: Settings,
+    cipher: TokenCipher | None,
+    oauth: GitHubOAuthGateway | None,
+) -> GitHubGateway:
+    """A GitHub client authenticated as this user (also used by the background worker)."""
+    base = _github_client()
+    if cipher is None or oauth is None:
+        if settings.github_token:
+            return base
+        raise _not_configured()
+    try:
+        token = credentials.get_access_token(db, user_id, cipher, oauth)
+    except ReauthRequired:
+        if settings.github_token:
+            return base
+        raise
+    return base.bind(token)
+
+
+def _build_github(
+    user: User,
+    db: Session,
+    settings: Settings,
+    cipher: TokenCipher | None,
+    oauth: GitHubOAuthGateway | None,
+) -> GitHubGateway:
+    return github_for_user(user.id, db, settings, cipher, oauth)
+
+
 def get_github(
     user: CurrentUser,
     db: DbSession,
@@ -178,18 +213,78 @@ def get_github(
 
     Falls back to the optional platform token only when the user has no usable credentials.
     """
-    base = _github_client()
-    if cipher is None or oauth is None:
-        if settings.github_token:
-            return base
-        raise _not_configured()
-    try:
-        token = credentials.get_access_token(db, user.id, cipher, oauth)
-    except ReauthRequired:
-        if settings.github_token:
-            return base
-        raise
-    return base.bind(token)
+    return _build_github(user, db, settings, cipher, oauth)
+
+
+GitHubFactory = Callable[[], GitHubGateway]
+
+
+def get_github_factory(
+    user: CurrentUser,
+    db: DbSession,
+    settings: AppSettings,
+    cipher: Annotated[TokenCipher | None, Depends(get_cipher_or_none)],
+    oauth: Annotated[GitHubOAuthGateway | None, Depends(get_oauth_or_none)],
+) -> GitHubFactory:
+    """A client built only when called, so routes that rarely need GitHub (every route of a
+    public repository) do not load or refresh the user's token. Tests override this."""
+    return lambda: _build_github(user, db, settings, cipher, oauth)
+
+
+# --- ownership ------------------------------------------------------------------------------
+
+
+# Called every few seconds while a page is open: recording each call would bury the real events.
+_UNAUDITED_ENDPOINTS = frozenset({"get_status", "tick_index"})
+
+
+def get_owned_repo_unchecked(
+    repository_id: uuid.UUID, user: CurrentUser, db: DbSession
+) -> Repository:
+    """The repository, only if the caller connected it. 404 (not 403) so IDs cannot be probed.
+
+    No GitHub recheck: used only where the user must still be able to reach a private
+    repository whose access was lost (to see it, and to disconnect it and delete its data)."""
+    repo = db.scalar(
+        select(Repository)
+        .join(UserRepository, UserRepository.repository_id == Repository.id)
+        .where(Repository.id == repository_id, UserRepository.user_id == user.id)
+    )
+    release(db)  # found or not: see release()
+    if repo is None:
+        raise RepoNotFound(f"Repository {repository_id} not found.")
+    return repo
+
+
+GitHubFactoryDep = Annotated[GitHubFactory, Depends(get_github_factory)]
+
+
+def get_owned_repo(
+    request: Request,
+    repo: Annotated[Repository, Depends(get_owned_repo_unchecked)],
+    db: DbSession,
+    settings: AppSettings,
+    github: GitHubFactoryDep,
+) -> Repository:
+    """As above, and for a private repository GitHub is asked whether the owner can still see
+    it (see services/repos/access.py). Every route that reads or changes repository data uses
+    this one."""
+    if repo.is_private:
+        ensure_private_access(db, repo, github(), settings)
+        # Expired data is removed before anything can read it.
+        purged = retention.purge_repository(db, repo, settings)
+        if purged:
+            audit.record(
+                db, "private.retention_purge", repo.owner_user_id, repo, {"snapshots": purged}
+            )
+        endpoint = getattr(request.scope.get("endpoint"), "__name__", "unknown")
+        if endpoint not in _UNAUDITED_ENDPOINTS:
+            audit.record(db, f"private.{endpoint}", repo.owner_user_id, repo)
+    return repo
+
+
+OwnedRepo = Annotated[Repository, Depends(get_owned_repo)]
+OwnedRepoUnchecked = Annotated[Repository, Depends(get_owned_repo_unchecked)]
 
 
 # --- rate limits ----------------------------------------------------------------------------
@@ -230,10 +325,14 @@ user_ai_limit = user_limit("ai", lambda s: s.ai_rate_limit_per_minute)
 user_chat_limit = user_limit("chat", lambda s: s.chat_rate_limit_per_minute)
 
 
-def get_llm(settings: AppSettings) -> OpenRouterClient:
-    """The configured chat model; raises LlmNotConfigured (HTTP 503) with the fix. Tests
-    override this."""
-    return _build_llm(settings)
+def get_llm(settings: AppSettings) -> ChatModel | AppError:
+    """The platform's chat model, or the error that says why it is not configured. It returns the
+    error instead of raising so a private repository (which never uses it) is not refused because
+    the platform has no key. Callers go through RepoProviders.need_llm(). Tests override this."""
+    try:
+        return _build_llm(settings)
+    except AppError as exc:
+        return exc
 
 
 def get_embedder(settings: AppSettings) -> Embedder | None:
@@ -243,3 +342,28 @@ def get_embedder(settings: AppSettings) -> Embedder | None:
         return _build_embedder(settings)
     except EmbeddingNotConfigured:
         return None
+
+
+def get_repo_providers(
+    request: Request,
+    repo: OwnedRepo,
+    user: CurrentUser,
+    db: DbSession,
+    settings: AppSettings,
+    cipher: Annotated[TokenCipher | None, Depends(get_cipher_or_none)],
+    platform_embedder: Annotated[Embedder | None, Depends(get_embedder)],
+    platform_llm: Annotated[ChatModel | AppError, Depends(get_llm)],
+) -> Iterator[RepoProviders]:
+    """The embedding and chat providers this request may use for this repository: the platform's
+    for a public one, only the owner's own for a private one (see services/providers/resolve.py).
+    Browser-held keys arrive in the X-Embedding-Key and X-Chat-Key headers."""
+    providers = providers_for_repository(
+        repo, user, db, request.headers, settings, cipher, platform_embedder, platform_llm
+    )
+    try:
+        yield providers
+    finally:
+        providers.close()
+
+
+Providers = Annotated[RepoProviders, Depends(get_repo_providers)]

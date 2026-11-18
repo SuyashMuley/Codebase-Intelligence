@@ -6,6 +6,15 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app
 
+# Security updates for the operating system packages in the base image, and no pip: the app is
+# installed by uv and never runs pip, and pip bundles its own copies of libraries (urllib3,
+# msgpack, ...) that scanners flag whenever the base image lags behind.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip \
+    && rm -rf /usr/local/lib/python3.13/site-packages/pip*
+
 WORKDIR /app
 
 # Dependencies first so this layer is cached until pyproject.toml changes.

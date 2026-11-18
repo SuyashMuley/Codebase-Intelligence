@@ -15,11 +15,19 @@ GitHub, Settings, Developer settings, GitHub Apps, **New GitHub App**.
 | Expire user authorization tokens | **Checked** (this gives you refresh tokens) |
 | Request user authorization (OAuth) during installation | Unchecked |
 | Webhook, Active | **Unchecked** |
-| Repository permissions | None |
+| Repository permissions | None for public repositories only. For private repositories (M9) set **Contents: Read-only** (Metadata read-only is added automatically) |
 | Account permissions | None (we do not request email) |
 | Where can this GitHub App be installed? | **Any account**, so other people can sign in |
 
 The callback goes through the frontend (`:3000`) because the frontend proxies `/api` to the backend. You can add more callback URLs to the same app later, for example `https://<your-vercel-domain>/api/auth/github/callback` at deployment (M8).
+
+## Private repositories (M9)
+Only needed if you want to connect private repositories.
+1. In the app's settings set **Repository permissions, Contents** to **Read-only**, and accept the new permission when GitHub asks (each user is asked once).
+2. **Install** the app: app settings, left sidebar, **Install App**, **Install** next to your account, **Only select repositories**, pick the private repositories. Use **Configure** later to change them.
+3. Optional: put the app's URL name (the part after `github.com/apps/`) in `GITHUB_APP_SLUG` so the app can link to the install page.
+
+A private repository only shows up in the app if you can see it on GitHub **and** the app is installed on it. Access is checked with GitHub again on every use, so uninstalling the app (or losing access) stops the app from showing or serving it. See [PLAN.md](PLAN.md) (M9) for what is and is not built yet.
 
 ## 2. Collect the values
 On the app's settings page:

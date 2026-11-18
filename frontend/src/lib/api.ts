@@ -1,3 +1,4 @@
+import { browserKeyHeaders } from "./browser-keys";
 import type { ApiErrorBody } from "./types";
 
 export class ApiError extends Error {
@@ -47,6 +48,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       credentials: "same-origin",
       headers: {
         Accept: "application/json",
+        ...browserKeyHeaders(path),
         ...(init.body ? { "Content-Type": "application/json" } : {}),
         ...init.headers,
       },

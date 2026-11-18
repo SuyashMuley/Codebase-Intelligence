@@ -1,0 +1,82 @@
+# Alert rules for queue depth, job failures, API errors and latency, provider errors and the
+# worker. THE THRESHOLDS ARE STARTING GUESSES, NOT TUNED VALUES: this project has no production
+# traffic to tune them against. Adjust them once there is real data, and expect the first ones to
+# be wrong. Rule behaviour is unit-tested in alerts_test.yml (promtool test rules).
+groups:
+  - name: cip-indexing
+    rules:
+      - alert: CipIndexQueueStuck
+        # A job that is due to run has been waiting for over 10 minutes. With no worker the queue
+        # only moves while someone has a repository page open, so this is expected overnight if
+        # you run without one; with a worker it means the worker is down or stuck.
+        expr: cip_index_oldest_waiting_seconds > 600
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "Indexing jobs are waiting and nothing is running them"
+          description: "The longest-waiting job has waited {{ $value | humanizeDuration }}."
+
+      - alert: CipIndexJobsFailing
+        # More than a fifth of finished indexing jobs failed for good in the last hour (at least
+        # three failures, so one bad repository does not page anyone).
+        expr: |
+          sum(increase(cip_index_job_failures_total[1h])) >= 3
+          and
+          sum(increase(cip_index_job_failures_total[1h]))
+            / clamp_min(sum(increase(cip_index_steps_total{phase="graph",outcome="ok"}[1h])), 1) > 0.2
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Many indexing jobs are failing for good"
+          description: "Check cip_index_job_failures_total by code: provider quota and GitHub errors look different from bugs."
+
+      - alert: CipIndexStepErrors
+        expr: |
+          sum(rate(cip_index_steps_total{outcome="error"}[15m]))
+            / clamp_min(sum(rate(cip_index_steps_total{outcome=~"ok|error"}[15m])), 0.001) > 0.5
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than half of indexing steps are erroring"
+
+  - name: cip-api
+    rules:
+      - alert: CipApiServerErrors
+        expr: |
+          sum(rate(cip_http_requests_total{status=~"5.."}[10m]))
+            / clamp_min(sum(rate(cip_http_requests_total[10m])), 0.001) > 0.05
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: "More than 5% of API requests are failing with a 5xx"
+
+      - alert: CipApiSlow
+        # Questions and AI reviews are slow by design (a free model takes 10 to 30 seconds), so
+        # they are excluded.
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(cip_http_request_duration_seconds_bucket{route!~".*/chat|.*/impact/review"}[10m]))
+          ) > 2
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "The 95th percentile API latency (excluding questions and reviews) is over 2 seconds"
+
+      - alert: CipProviderErrors
+        expr: |
+          sum by (provider, operation) (rate(cip_provider_requests_total{outcome!="ok"}[15m]))
+            / sum by (provider, operation) (rate(cip_provider_requests_total[15m])) > 0.3
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "{{ $labels.provider }} {{ $labels.operation }} calls are failing more than 30% of the time"
+          description: "Free tiers run out and rate limit; check cip_provider_requests_total by outcome."
+
+  - name: cip-availability
+    rules:
+      - alert: CipTargetDown
+        expr: up{job=~"cip-.*"} == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "{{ $labels.job }} cannot be scraped"

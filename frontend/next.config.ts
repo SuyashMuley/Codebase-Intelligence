@@ -5,8 +5,6 @@ import type { NextConfig } from "next";
 const BACKEND_URL = (process.env.BACKEND_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -26,6 +24,15 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "DENY" },
+          // The app needs none of these browser powers; denying them limits what an injected
+          // script could reach.
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+          },
+          // Keeps a window opened by another site from keeping a handle on this one. Sign-in is a
+          // full-page redirect, not a popup, so it is unaffected.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
         ],
       },
     ];

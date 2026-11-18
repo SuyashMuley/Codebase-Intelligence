@@ -6,9 +6,9 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 
-from app.core.errors import AppError, GithubAuthFailed, GithubUnavailable
+from app.core.errors import AppError, GithubAuthFailed, GithubUnavailable, RepoNotFound
 from app.services.auth.oauth import GitHubProfile, TokenSet
-from app.services.github.client import ByteSource, CommitInfo, GithubRepoInfo
+from app.services.github.client import ByteSource, CommitInfo, GithubRepoInfo, RepoMeta
 
 PREFIX = "owner-repo-abc123/"
 
@@ -78,11 +78,31 @@ class FakeGitHub:
         self.fail_next: list[AppError] = []
         self.fail_after_fraction: float | None = None
         self.public_repos: dict[str, list[GithubRepoInfo]] = {}
+        self.private_repos: list[GithubRepoInfo] = []
+        # "owner/name" (lowercase) -> repositories GitHub reports as private, and the ones the
+        # fake user may not see at all (GitHub answers 404 for both "missing" and "no access").
+        self.private_names: set[str] = set()
+        self.hidden_names: set[str] = set()
+        self.get_repo_calls: list[str] = []
+        self.resolve_allow_private: list[bool] = []
         self.repo_list_error: AppError | None = None
         self.repo_list_logins: list[str] = []
 
-    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo:
+    def get_repo(self, owner: str, name: str) -> RepoMeta:
+        key = f"{owner}/{name}".lower()
+        self.get_repo_calls.append(key)
+        if key in self.hidden_names:
+            raise RepoNotFound("Repository or ref was not found or is not accessible to you.")
+        return RepoMeta(private=key in self.private_names, default_branch=self.default_branch)
+
+    def list_private_repos(self, limit: int = 100) -> list[GithubRepoInfo]:
+        return list(self.private_repos)[:limit]
+
+    def resolve_commit(
+        self, owner: str, name: str, ref: str | None = None, allow_private: bool = False
+    ) -> CommitInfo:
         self.resolve_calls += 1
+        self.resolve_allow_private.append(allow_private)
         self.last_ref = ref
         if self.resolve_error:
             raise self.resolve_error

@@ -1,0 +1,7 @@
+after-fix-pool-3+2 vus=  1 rps=   47.5 p50=   16.2ms p95=    71.4ms err=    0% api_cpu= 38.9% db_conn=4
+after-fix-pool-3+2 vus=  5 rps=  107.7 p50=   37.3ms p95=   125.5ms err=    0% api_cpu= 89.7% db_conn=6
+after-fix-pool-3+2 vus= 10 rps=  115.5 p50=   78.5ms p95=   178.9ms err=    0% api_cpu=100.3% db_conn=6
+after-fix-pool-3+2 vus= 25 rps=  112.8 p50=  212.1ms p95=   369.1ms err=    0% api_cpu= 96.3% db_conn=6
+after-fix-pool-3+2 vus= 50 rps=  112.3 p50=  439.4ms p95=   692.0ms err=    0% api_cpu= 98.0% db_conn=6
+after-fix-pool-3+2 vus=100 rps=  108.8 p50=  920.2ms p95=  1287.5ms err=    0% api_cpu= 98.2% db_conn=6
+after-fix-pool-3+2 vus=200 rps=  104.1 p50= 1900.5ms p95=  2626.4ms err=    0% api_cpu= 94.8% db_conn=6

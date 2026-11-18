@@ -1,0 +1,20 @@
+title = "codebase-intelligence secret scanning"
+
+[extend]
+useDefault = true
+
+# Two test files hold *synthetic* credentials on purpose: the secret redactor's tests build a fake
+# private-key block from random characters at run time, and the token cipher's test encrypts a
+# made-up token in GitHub's documented example format. Only those two rules, in only those two
+# files, are allowed; a real-looking secret anywhere else still fails.
+[[allowlists]]
+description = "the redactor's tests build a fake private-key block from random characters"
+condition = "AND"
+paths = ['''backend/tests/unit/test_secrets\.py''']
+targetRules = ["private-key"]
+
+[[allowlists]]
+description = "the cipher test encrypts a made-up token in GitHub's documented example format"
+condition = "AND"
+paths = ['''backend/tests/unit/test_auth_crypto\.py''']
+targetRules = ["github-oauth", "generic-api-key"]

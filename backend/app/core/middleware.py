@@ -10,6 +10,9 @@ from starlette.responses import Response
 
 from app.core.errors import error_response
 from app.core.logging import request_id_var
+from app.metrics import HTTP_DURATION, HTTP_REQUESTS
+
+_METHODS = frozenset({"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"})
 
 logger = logging.getLogger("app.request")
 
@@ -35,13 +38,20 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
                 logger.exception("unhandled_error", extra={"path": request.url.path})
                 response = error_response(500, "internal_error", "Internal server error.")
             response.headers["X-Request-ID"] = request_id
+            elapsed = time.perf_counter() - started
+            # Route *templates* only (/api/repositories/{repository_id}/chat): a label never
+            # holds an id, a path or anything a user typed. Unknown routes share one label.
+            route = getattr(request.scope.get("route"), "path", None) or "unmatched"
+            method = request.method if request.method in _METHODS else "OTHER"
+            HTTP_REQUESTS.labels(method, route, str(response.status_code)).inc()
+            HTTP_DURATION.labels(method, route).observe(elapsed)
             logger.info(
                 "request",
                 extra={
                     "method": request.method,
                     "path": request.url.path,
                     "status": response.status_code,
-                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+                    "duration_ms": round(elapsed * 1000, 1),
                 },
             )
             return response

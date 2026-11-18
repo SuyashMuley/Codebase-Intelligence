@@ -21,6 +21,38 @@ export interface GithubRepoList {
   items: GithubRepo[];
 }
 
+export interface GithubPrivateRepoList extends GithubRepoList {
+  install_url: string | null;
+  retention_days: number | null;
+}
+
+export type ProviderSlot = "embedding" | "chat";
+
+export interface ProviderSetting {
+  slot: ProviderSlot;
+  kind: string;
+  mode: "stored" | "browser";
+  model: string | null;
+  account_id: string | null;
+  key_last4: string | null;
+  updated_at: string;
+}
+
+export interface ProviderCatalog {
+  chat_providers: { id: string; label: string; default_model: string }[];
+  embedding_providers: { id: string; label: string; models: string[]; needs_account_id: boolean }[];
+  embedding: ProviderSetting | null;
+  chat: ProviderSetting | null;
+}
+
+export interface ProviderInput {
+  kind: string;
+  mode: "stored" | "browser";
+  model?: string;
+  account_id?: string;
+  api_key?: string;
+}
+
 export interface Repository {
   id: string;
   owner: string;
@@ -28,6 +60,7 @@ export interface Repository {
   url: string;
   default_branch: string | null;
   created_at: string;
+  is_private?: boolean;
 }
 
 export interface RepositoryList {
@@ -96,6 +129,8 @@ export interface IndexStatus {
   embed: EmbedProgress | null;
   graph: GraphProgress | null;
   updated_at: string | null;
+  /** When a private repository's indexed data is deleted automatically. */
+  expires_at?: string | null;
 }
 
 export interface IndexStartResult {

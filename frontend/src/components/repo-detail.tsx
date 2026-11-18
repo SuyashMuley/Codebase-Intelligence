@@ -16,10 +16,11 @@ import { FilesTab } from "./files-tab";
 import { ChatTab } from "./chat-tab";
 import { GraphTab, type GraphSelection } from "./graph-tab";
 import { SearchTab } from "./search-tab";
+import { PrivateDataNotice } from "./private-data-notice";
 import { ReauthNotice } from "./reauth-notice";
 import { StatsPanel } from "./stats-panel";
 import { StatusPanel } from "./status-panel";
-import { Button, ConfirmButton, EmptyState, ErrorNotice, Spinner } from "./ui";
+import { Badge, Button, ConfirmButton, EmptyState, ErrorNotice, Spinner } from "./ui";
 import type { LineRange } from "./code-viewer";
 
 type Tab = "overview" | "files" | "search" | "graph" | "ask";
@@ -124,8 +125,9 @@ export function RepoDetail({ id }: { id: string }) {
             <ErrorNotice title="Could not disconnect">{disconnect.error.message}</ErrorNotice>
           </div>
         ) : null}
-        <h1 className="mt-2 text-xl font-semibold tracking-tight">
+        <h1 className="mt-2 flex flex-wrap items-center gap-2 text-xl font-semibold tracking-tight">
           {repo.data.owner}/{repo.data.name}
+          {repo.data.is_private ? <Badge tone="warn">private</Badge> : null}
         </h1>
         <p className="mt-1 text-sm text-zinc-400">
           <a
@@ -163,11 +165,22 @@ export function RepoDetail({ id }: { id: string }) {
 
       {needsReauth ? <ReauthNotice returnTo={`/repos/${id}`} /> : null}
       {startError && startError.code !== "reauth_required" ? (
-        <ErrorNotice title="Could not start indexing">{startError.message}</ErrorNotice>
+        <ErrorNotice title="Could not start indexing">
+          {startError.message}
+          {startError.code === "providers_required" ? (
+            <>
+              {" "}
+              <Link href="/settings/providers" className="text-emerald-300 underline">
+                Open provider settings
+              </Link>
+            </>
+          ) : null}
+        </ErrorNotice>
       ) : null}
 
       {tab === "overview" ? (
         <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" className="space-y-6">
+          {repo.data.is_private ? <PrivateDataNotice compact /> : null}
           {status.isPending ? <Spinner label="Loading status…" /> : null}
           {status.isError && !needsReauth ? (
             <div className="space-y-3">

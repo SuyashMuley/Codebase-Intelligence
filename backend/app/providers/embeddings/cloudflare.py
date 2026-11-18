@@ -11,6 +11,7 @@ from app.core.errors import (
     EmbeddingQuotaExceeded,
     EmbeddingUnavailable,
 )
+from app.metrics import observe_provider
 from app.providers.embeddings.base import l2_normalize
 
 _RETRY_STATUSES = {429, 500, 502, 503, 504}
@@ -36,7 +37,9 @@ class CloudflareEmbedder:
         timeout: float = 30.0,
         transport: httpx.BaseTransport | None = None,
         sleep: Any = time.sleep,
+        credentials_hint: str = "Check CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.",
     ) -> None:
+        self._credentials_hint = credentials_hint
         self.dim = dim
         self.batch_size = batch_size
         self.model_id = cloudflare_model_id(model, pooling)
@@ -51,6 +54,9 @@ class CloudflareEmbedder:
             headers={"Authorization": f"Bearer {api_token}"},
             follow_redirects=False,
         )
+
+    def close(self) -> None:
+        self._http.close()
 
     # --- one request ----------------------------------------------------------------------
 
@@ -72,12 +78,15 @@ class CloudflareEmbedder:
         raise AssertionError("unreachable")  # pragma: no cover
 
     def _embed_batch(self, texts: list[str]) -> list[list[float]]:
+        with observe_provider("cloudflare", "embed"):
+            return self._embed_batch_unobserved(texts)
+
+    def _embed_batch_unobserved(self, texts: list[str]) -> list[list[float]]:
         resp = self._post(texts)
         status = resp.status_code
         if status in (401, 403):
             raise EmbeddingAuthFailed(
-                "The embedding service rejected the credentials. Check CLOUDFLARE_API_TOKEN "
-                "and CLOUDFLARE_ACCOUNT_ID."
+                f"The embedding service rejected the credentials. {self._credentials_hint}"
             )
         if status == 402 or (status == 429 and _looks_like_quota(resp)):
             raise EmbeddingQuotaExceeded(

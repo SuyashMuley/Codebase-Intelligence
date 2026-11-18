@@ -21,6 +21,8 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.errors import AppError, InternalError
 from app.db.models import IndexJob, Repository, Snapshot
+from app.metrics import INDEX_JOB_FAILURES, INDEX_STEP_DURATION, INDEX_STEPS
+from app.providers.embeddings.base import Embedder
 from app.services.github.client import GitHubGateway
 
 logger = logging.getLogger(__name__)
@@ -39,6 +41,9 @@ class PhaseContext:
     gh: GitHubGateway
     settings: Settings
     deadline: float  # time.monotonic() value; handlers must stop before it
+    # The embedder to use instead of the platform's: set for a private repository, whose code may
+    # only go to its owner's provider.
+    embedder: Embedder | None = None
 
 
 @dataclass
@@ -83,10 +88,18 @@ def _claim(db: Session, job_id: Any, lease_seconds: int) -> IndexJob | None:
     return job
 
 
-def tick(db: Session, job_id: Any, gh: GitHubGateway, settings: Settings) -> TickResult:
+def tick(
+    db: Session,
+    job_id: Any,
+    gh: GitHubGateway,
+    settings: Settings,
+    embedder: Embedder | None = None,
+) -> TickResult:
     job = _claim(db, job_id, settings.lease_seconds)
     if job is None:
+        INDEX_STEPS.labels("none", "busy").inc()
         return TickResult(False, "busy_or_backing_off_or_finished")
+    started = time.monotonic()
 
     token = job.lease_until
     job_pk = job.id
@@ -116,6 +129,7 @@ def tick(db: Session, job_id: Any, gh: GitHubGateway, settings: Settings) -> Tic
         gh=gh,
         settings=settings,
         deadline=time.monotonic() + settings.fetch_timeout_seconds,
+        embedder=embedder,
     )
     try:
         result = handler(ctx)
@@ -136,22 +150,31 @@ def tick(db: Session, job_id: Any, gh: GitHubGateway, settings: Settings) -> Tic
         if done.rowcount != 1:  # type: ignore[attr-defined]
             db.rollback()
             logger.warning("lease_lost", extra={"job_id": str(job_pk), "phase": phase})
+            _observe_step(phase, "lease_lost", started)
             return TickResult(False, "lease_lost")
         if next_phase == "done":
             snapshot.status = "ready"
             snapshot.indexed_at = func.now()
         db.commit()
+        _observe_step(phase, "ok", started)
         return TickResult(True, None)
     except AppError as exc:
         db.rollback()
         _record_failure(db, job_pk, token, phase, attempts, cursor, exc, settings)
+        _observe_step(phase, "error", started)
         return TickResult(True, f"failed:{exc.code}")
     except Exception:
         db.rollback()
         logger.exception("tick_failed", extra={"job_id": str(job_pk), "phase": phase})
         err = InternalError("Unexpected error while indexing.")
         _record_failure(db, job_pk, token, phase, attempts, cursor, err, settings)
+        _observe_step(phase, "error", started)
         return TickResult(True, "failed:internal_error")
+
+
+def _observe_step(phase: str, outcome: str, started: float) -> None:
+    INDEX_STEPS.labels(phase, outcome).inc()
+    INDEX_STEP_DURATION.labels(phase).observe(time.monotonic() - started)
 
 
 def _record_failure(
@@ -174,6 +197,7 @@ def _record_failure(
     }
     if terminal:
         values.update(phase="failed", cursor={**cursor, "failed_phase": phase}, lease_until=None)
+        INDEX_JOB_FAILURES.labels(exc.code).inc()
     else:
         wait = exc.details.get("retry_after_seconds") or min(
             _MAX_BACKOFF_SECONDS, 5 * 2**new_attempts

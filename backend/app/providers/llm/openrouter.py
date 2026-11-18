@@ -17,6 +17,7 @@ from app.core.errors import (
     LlmRateLimited,
     LlmUnavailable,
 )
+from app.metrics import observe_provider
 
 _FALLBACK_STATUSES = {400, 404, 408, 409, 500, 502, 503, 504}
 _MAX_RESPONSE_BYTES = 1_000_000
@@ -35,7 +36,9 @@ class OpenRouterClient:
         transport: httpx.BaseTransport | None = None,
         clock: Callable[[], float] = time.monotonic,
         reasoning_effort: str | None = None,
+        label: str = "openrouter",
     ) -> None:
+        self.label = label  # which provider this is, for metrics (a fixed catalogue id)
         self.model = model
         self.fallback_model = fallback_model if fallback_model != model else None
         self.usage: dict[str, int] = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0}
@@ -55,6 +58,9 @@ class OpenRouterClient:
             follow_redirects=False,
         )
 
+    def close(self) -> None:
+        self._http.close()
+
     def complete(
         self,
         system: str,
@@ -66,6 +72,18 @@ class OpenRouterClient:
     ) -> str:
         """The model's text answer. Falls back once to the fallback model when the main one is
         unavailable; rate limits and bad credentials are reported as they are."""
+        with observe_provider(self.label, "chat"):
+            return self._complete(system, user, max_tokens, json_mode, temperature, budget_seconds)
+
+    def _complete(
+        self,
+        system: str,
+        user: str,
+        max_tokens: int,
+        json_mode: bool,
+        temperature: float,
+        budget_seconds: float | None,
+    ) -> str:
         models = [self.model] + ([self.fallback_model] if self.fallback_model else [])
         last_error: LlmUnavailable | LlmBadResponse | LlmRateLimited | None = None
         started = self._clock()

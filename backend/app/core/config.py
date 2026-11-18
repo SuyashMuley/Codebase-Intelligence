@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     alembic_database_url: str | None = None
     db_pool_size: int = Field(default=3, ge=1, le=10)
     db_max_overflow: int = Field(default=2, ge=0, le=10)
+    # How long a request waits for a free connection before giving up. A wait this long means the
+    # pool is saturated; failing in seconds beats holding the caller for the default 30.
+    db_pool_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
 
     # Comma-separated list of allowed browser origins. No wildcard.
     cors_origins: str = "http://localhost:3000"
@@ -36,6 +39,41 @@ class Settings(BaseSettings):
     github_token: SecretStr | None = None
     github_api_base: str = "https://api.github.com"
     github_timeout_seconds: float = 15.0
+
+    # --- Private repositories (M9) ---
+    # The GitHub App's URL name (github.com/apps/<slug>), only used to link to its install page.
+    github_app_slug: str | None = None
+    # A private repository's access is rechecked with GitHub at most this often per repository.
+    # It is the longest a revoked repository stays reachable; a failed check fails closed.
+    private_access_recheck_seconds: int = Field(default=300, ge=0, le=3600)
+
+    # Private snapshots are deleted this many days after they were indexed (0 keeps them until the
+    # owner deletes the repository). Public snapshots are never expired.
+    private_retention_days: int = Field(default=30, ge=0, le=3650)
+    # Audit events (who used a private repository, never what was in it) are deleted after this
+    # many days; 0 keeps them forever.
+    audit_retention_days: int = Field(default=365, ge=0, le=3650)
+    # Lets a scheduler call POST /api/internal/purge-expired. Unset: the endpoint does not exist
+    # (404). Expiry is also enforced whenever a private repository is used, with or without it.
+    maintenance_token: SecretStr | None = None
+
+    # --- Metrics and health ---
+    # Lets a monitoring system read GET /metrics (and the worker's /metrics) with this bearer token.
+    # Unset: /metrics does not exist (404). Metrics hold counts and timings, never contents.
+    metrics_token: SecretStr | None = None
+
+    # --- Background worker (python -m app.worker) ---
+    worker_poll_seconds: float = Field(default=2.0, gt=0, le=60)  # sleep when there is no work
+    # A job the worker cannot run on its own (its owner keeps the key in a browser, or has no
+    # provider, or lost access) is left alone this long, then looked at again.
+    worker_skip_seconds: float = Field(default=60.0, ge=0, le=3600)
+    # The worker's own small HTTP server (/health, and /metrics with the metrics token). Off unless
+    # a port is set. It binds to localhost by default; set the host to 0.0.0.0 inside a container.
+    worker_http_host: str = "127.0.0.1"
+    worker_http_port: int | None = Field(default=None, ge=0, le=65535)
+    # /health reports unhealthy if the worker's loop has not turned for this long (a step can take
+    # most of a minute, so this must be well above that).
+    worker_health_stale_seconds: float = Field(default=120.0, gt=0, le=3600)
 
     # --- Ingestion limits (free-tier friendly; all overridable by env) ---
     max_tarball_bytes: int = 25 * 1024 * 1024  # compressed download
@@ -145,6 +183,10 @@ class Settings(BaseSettings):
         "openrouter_api_key",
         "openrouter_fallback_model",
         "openrouter_reasoning_effort",
+        "github_app_slug",
+        "maintenance_token",
+        "metrics_token",
+        "worker_http_port",
         mode="before",
     )
     @classmethod

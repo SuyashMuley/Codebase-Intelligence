@@ -17,7 +17,8 @@ _REFRESH_MARGIN = timedelta(seconds=60)
 def save_tokens(db: Session, user_id: UUID, tokens: TokenSet, cipher: TokenCipher) -> None:
     row = db.get(GithubCredential, user_id)
     if row is None:
-        row = GithubCredential(user_id=user_id, access_token_enc="")
+        # An empty placeholder, replaced with the encrypted token on the next line.
+        row = GithubCredential(user_id=user_id, access_token_enc="")  # nosec B106
         db.add(row)
     row.access_token_enc = cipher.encrypt(tokens.access_token)
     row.refresh_token_enc = cipher.encrypt(tokens.refresh_token) if tokens.refresh_token else None

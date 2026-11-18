@@ -219,8 +219,9 @@ def test_real_github_dependency_asks_for_sign_in_when_user_has_no_tokens(
     assert isinstance(db_app, FastAPI)
     db_app.dependency_overrides.pop(get_github)
     c = make_client(db_app, alice)
-    rid = connect(c)
-    r = c.post(f"/api/repositories/{rid}/index")
+    # Connecting asks GitHub (with the user's token) whether the repository is private, so it
+    # needs sign-in too.
+    r = c.post("/api/repositories", json={"url": URL})
     assert r.status_code == 401
     assert r.json()["error"]["code"] == "reauth_required"
     assert User.__tablename__ == "users"  # keep the import honest

@@ -1,0 +1,30 @@
+name: Purge expired private data
+
+# Private repositories' indexed data is deleted after PRIVATE_RETENTION_DAYS. The API also enforces
+# that whenever a private repository is used; this job clears data nobody is touching. It needs two
+# repository secrets (Settings, Secrets and variables, Actions) and does nothing without them:
+#   API_URL            the API's own address, for example https://cip-api.onrender.com
+#   MAINTENANCE_TOKEN  the same value as the API's MAINTENANCE_TOKEN
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the API to purge
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          MAINTENANCE_TOKEN: ${{ secrets.MAINTENANCE_TOKEN }}
+        run: |
+          if [ -z "$API_URL" ] || [ -z "$MAINTENANCE_TOKEN" ]; then
+            echo "::notice::API_URL or MAINTENANCE_TOKEN is not set; nothing to do."
+            exit 0
+          fi
+          # The free API sleeps when idle, so the first request can take a minute to wake it.
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            --retry 3 --retry-delay 20 --retry-all-errors \
+            -X POST -H "Authorization: Bearer $MAINTENANCE_TOKEN" \
+            "${API_URL%/}/api/internal/purge-expired"

@@ -87,6 +87,10 @@ class StatusOut(BaseModel):
     embed: EmbedProgress | None = None
     graph: GraphProgress | None = None
     updated_at: datetime | None = None
+    expires_at: datetime | None = Field(
+        default=None,
+        description="When a private repository's indexed data is deleted automatically.",
+    )
 
 
 class IndexStartOut(BaseModel):

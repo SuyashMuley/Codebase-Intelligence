@@ -44,7 +44,12 @@ from sqlalchemy.exc import OperationalError  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from alembic import command  # noqa: E402
-from app.api.deps import current_user, get_github, get_oauth_or_none  # noqa: E402
+from app.api.deps import (  # noqa: E402
+    current_user,
+    get_github,
+    get_github_factory,
+    get_oauth_or_none,
+)
 from app.core.config import get_settings  # noqa: E402
 from app.db.models import User  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -70,6 +75,7 @@ class Persona:
 def build_app(fake_gh: FakeGitHub, fake_oauth: FakeOAuth | None) -> FastAPI:
     app = create_app()  # fresh app = fresh in-process rate limiter
     app.dependency_overrides[get_github] = lambda: fake_gh
+    app.dependency_overrides[get_github_factory] = lambda: lambda: fake_gh
     if fake_oauth is not None:
         app.dependency_overrides[get_oauth_or_none] = lambda: fake_oauth
     return app
@@ -84,6 +90,15 @@ def make_client(
     if persona:
         c.cookies.set(SESSION_COOKIE, persona.token)
     return c
+
+
+@pytest.fixture(autouse=True)
+def _public_provider_addresses(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests never touch DNS: every provider host 'resolves' to a public address, unless a test
+    says otherwise."""
+    from app.services.providers import ssrf
+
+    monkeypatch.setattr(ssrf, "resolver", lambda host: ["93.184.216.34"])
 
 
 @pytest.fixture(scope="session")
@@ -112,7 +127,7 @@ def db_engine() -> Iterator[Engine]:
 @pytest.fixture
 def db_clean(db_engine: Engine) -> Engine:
     with db_engine.begin() as conn:
-        conn.execute(text("TRUNCATE repositories, users CASCADE"))
+        conn.execute(text("TRUNCATE repositories, users, audit_events CASCADE"))
     return db_engine
 
 

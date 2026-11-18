@@ -11,6 +11,11 @@ import type {
   ChatTurn,
   FileList,
   GraphData,
+  GithubPrivateRepoList,
+  ProviderCatalog,
+  ProviderInput,
+  ProviderSetting,
+  ProviderSlot,
   GithubRepoList,
   IndexStartResult,
   Impact,
@@ -30,6 +35,8 @@ export const keys = {
   repo: (id: string) => ["repo", id] as const,
   status: (id: string) => ["status", id] as const,
   githubRepos: ["github-repos"] as const,
+  githubPrivateRepos: ["github-private-repos"] as const,
+  providers: ["providers"] as const,
   files: (id: string) => ["files", id] as const,
   file: (id: string, path: string) => ["file", id, path] as const,
   stats: (id: string) => ["stats", id] as const,
@@ -58,6 +65,42 @@ export function useGithubRepos() {
     queryFn: () => api<GithubRepoList>("/api/github/repos"),
     staleTime: 5 * 60_000,
     retry: false,
+  });
+}
+
+/** Private repositories the user can connect (the GitHub App is installed on them). */
+export function useGithubPrivateRepos() {
+  return useQuery({
+    queryKey: keys.githubPrivateRepos,
+    queryFn: () => api<GithubPrivateRepoList>("/api/github/private-repos"),
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
+/** The providers a user can choose from, and the ones they saved (never with a key). */
+export function useProviders() {
+  return useQuery({
+    queryKey: keys.providers,
+    queryFn: () => api<ProviderCatalog>("/api/providers"),
+    retry: false,
+  });
+}
+
+export function useSaveProvider(slot: ProviderSlot) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ProviderInput) =>
+      api<ProviderSetting>(`/api/providers/${slot}`, { method: "PUT", body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.providers }),
+  });
+}
+
+export function useRemoveProvider(slot: ProviderSlot) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>(`/api/providers/${slot}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.providers }),
   });
 }
 

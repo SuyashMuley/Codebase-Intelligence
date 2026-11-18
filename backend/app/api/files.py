@@ -3,14 +3,15 @@
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import Depends, Query
 
 from app.api.deps import DbSession, OwnedRepo, csrf_guard, ip_backstop, user_general_limit
+from app.core.dbrelease import ReleasingRouter
 from app.schemas.files import FileDetail, FileList, StatsOut
 from app.schemas.repository import ErrorEnvelope
 from app.services.indexing import queries
 
-router = APIRouter(
+router = ReleasingRouter(
     prefix="/api/repositories/{repository_id}",
     tags=["files"],
     dependencies=[Depends(ip_backstop), Depends(csrf_guard), Depends(user_general_limit)],

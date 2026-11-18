@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRepos } from "@/lib/hooks";
 import { formatDate } from "@/lib/format";
-import { Button, Card, EmptyState, ErrorNotice, Spinner } from "./ui";
+import { Badge, Button, Card, EmptyState, ErrorNotice, Spinner } from "./ui";
 
 export function RepoList() {
   const repos = useRepos();
@@ -32,8 +32,11 @@ export function RepoList() {
         <li key={repo.id}>
           <Link href={`/repos/${repo.id}`} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-emerald-400">
             <Card className="transition-colors hover:border-zinc-600">
-              <p className="truncate font-medium text-zinc-100">
-                {repo.owner}/{repo.name}
+              <p className="flex items-center gap-2 font-medium text-zinc-100">
+                <span className="truncate">
+                  {repo.owner}/{repo.name}
+                </span>
+                {repo.is_private ? <Badge tone="warn">private</Badge> : null}
               </p>
               <p className="mt-1 text-xs text-zinc-500">
                 Connected {formatDate(repo.created_at)}

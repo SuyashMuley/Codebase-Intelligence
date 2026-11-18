@@ -1,0 +1,157 @@
+# promtool test rules infra/prometheus/alerts_test.yml
+rule_files:
+  - alerts.yml
+evaluation_interval: 1m
+
+tests:
+  - name: a queue that does not drain alerts, one that does not
+    interval: 1m
+    input_series:
+      - series: 'cip_index_oldest_waiting_seconds'
+        values: '700+0x20'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: CipIndexQueueStuck
+        exp_alerts: []          # not yet: it has to hold for 10 minutes
+      - eval_time: 15m
+        alertname: CipIndexQueueStuck
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations:
+              summary: "Indexing jobs are waiting and nothing is running them"
+              description: "The longest-waiting job has waited 11m 40s."
+
+  - name: a short wait never alerts
+    interval: 1m
+    input_series:
+      - series: 'cip_index_oldest_waiting_seconds'
+        values: '30+0x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipIndexQueueStuck
+        exp_alerts: []
+
+  - name: many jobs failing for good alerts, a single failure does not
+    interval: 1m
+    input_series:
+      - series: 'cip_index_job_failures_total{code="repo_too_large"}'
+        values: '0+1x70'
+      - series: 'cip_index_steps_total{phase="graph",outcome="ok"}'
+        values: '0+1x70'
+    alert_rule_test:
+      - eval_time: 70m
+        alertname: CipIndexJobsFailing
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations:
+              summary: "Many indexing jobs are failing for good"
+              description: "Check cip_index_job_failures_total by code: provider quota and GitHub errors look different from bugs."
+
+  - name: one failed job among many finished ones is not an alert
+    interval: 1m
+    input_series:
+      - series: 'cip_index_job_failures_total{code="repo_too_large"}'
+        values: '0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'cip_index_steps_total{phase="graph",outcome="ok"}'
+        values: '0+2x31'
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: CipIndexJobsFailing
+        exp_alerts: []
+
+  - name: server errors above five percent alert
+    interval: 1m
+    input_series:
+      - series: 'cip_http_requests_total{status="200"}'
+        values: '0+90x30'
+      - series: 'cip_http_requests_total{status="500"}'
+        values: '0+10x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipApiServerErrors
+        exp_alerts:
+          - exp_labels: {severity: critical}
+            exp_annotations:
+              summary: "More than 5% of API requests are failing with a 5xx"
+
+  - name: client errors are not server errors
+    interval: 1m
+    input_series:
+      - series: 'cip_http_requests_total{status="200"}'
+        values: '0+50x30'
+      - series: 'cip_http_requests_total{status="404"}'
+        values: '0+50x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipApiServerErrors
+        exp_alerts: []
+
+  - name: slow questions do not trip the latency alert but slow listings do
+    interval: 1m
+    input_series:
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories/{repository_id}/chat",le="2.5"}'
+        values: '0+0x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories/{repository_id}/chat",le="+Inf"}'
+        values: '0+10x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="0.5"}'
+        values: '0+10x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="2.5"}'
+        values: '0+10x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="+Inf"}'
+        values: '0+10x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipApiSlow
+        exp_alerts: []
+
+  - name: slow ordinary routes alert
+    interval: 1m
+    input_series:
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="0.5"}'
+        values: '0+0x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="2.5"}'
+        values: '0+0x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="5"}'
+        values: '0+10x30'
+      - series: 'cip_http_request_duration_seconds_bucket{route="/api/repositories",le="+Inf"}'
+        values: '0+10x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipApiSlow
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations:
+              summary: "The 95th percentile API latency (excluding questions and reviews) is over 2 seconds"
+
+  - name: a failing provider alerts, naming it
+    interval: 1m
+    input_series:
+      - series: 'cip_provider_requests_total{provider="openai",operation="embed",outcome="ok"}'
+        values: '0+4x30'
+      - series: 'cip_provider_requests_total{provider="openai",operation="embed",outcome="embedding_unavailable"}'
+        values: '0+6x30'
+      - series: 'cip_provider_requests_total{provider="groq",operation="chat",outcome="ok"}'
+        values: '0+10x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: CipProviderErrors
+        exp_alerts:
+          - exp_labels: {severity: warning, provider: openai, operation: embed}
+            exp_annotations:
+              summary: "openai embed calls are failing more than 30% of the time"
+              description: "Free tiers run out and rate limit; check cip_provider_requests_total by outcome."
+
+  - name: a target that is down for five minutes alerts
+    interval: 1m
+    input_series:
+      - series: 'up{job="cip-worker",instance="w:9100"}'
+        values: '1 1 0 0 0 0 0 0 0 0'
+      - series: 'up{job="cip-api",instance="a:8000"}'
+        values: '1+0x9'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: CipTargetDown
+        exp_alerts:
+          - exp_labels: {severity: critical, job: cip-worker, instance: "w:9100"}
+            exp_annotations:
+              summary: "cip-worker cannot be scraped"

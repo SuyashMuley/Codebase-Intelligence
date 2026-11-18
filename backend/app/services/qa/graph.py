@@ -43,7 +43,7 @@ from app.services.qa.types import (
     Validation,
 )
 from app.services.qa.validate import json_object, validate_answer
-from app.services.retrieval.search import Hit, _has_embeddings
+from app.services.retrieval.search import Hit, embeddings_match
 
 MIN_SECONDS_FOR_RETRY = 8.0
 MAX_ATTEMPTS = 2
@@ -126,7 +126,9 @@ def build_graph(deps: QADeps) -> Any:
     def n_scope(state: QAState) -> dict[str, Any]:
         if deps.snapshot.status != "ready":
             raise SnapshotNotReady("This repository is still being indexed.")
-        ready = deps.embedder is not None and _has_embeddings(db, deps.snapshot.id)
+        ready = deps.embedder is not None and embeddings_match(
+            db, deps.snapshot.id, deps.embedder.model_id
+        )
         return step("scope", embeddings_ready=ready)
 
     def n_retrieve(state: QAState) -> dict[str, Any]:

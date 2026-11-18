@@ -61,6 +61,30 @@ describe("RepoDetail", () => {
     expect(screen.getByRole("link", { name: /view on github/i })).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  it("shows where a private repository's data goes, folded, and nothing for a public one", async () => {
+    const providers = () =>
+      jsonResponse({ chat_providers: [], embedding_providers: [], embedding: null, chat: null });
+    const status = () =>
+      jsonResponse(makeStatus({ state: "not_indexed", snapshot_id: null, commit_sha: null, phase: null }));
+    route({
+      "GET /api/repositories/repo-1": () => jsonResponse({ ...REPO, is_private: true }),
+      "GET /api/repositories/repo-1/status": status,
+      "GET /api/providers": providers,
+    });
+    const first = renderWithClient(<RepoDetail id="repo-1" />);
+    expect(await screen.findByText(/where this repository.s data goes/i)).toBeInTheDocument();
+    expect(screen.getByText("private")).toBeInTheDocument();
+    first.unmount();
+
+    route({
+      "GET /api/repositories/repo-1": () => jsonResponse(REPO),
+      "GET /api/repositories/repo-1/status": status,
+    });
+    renderWithClient(<RepoDetail id="repo-1" />);
+    await screen.findByText(/not indexed yet/i);
+    expect(screen.queryByText(/where this repository.s data goes/i)).not.toBeInTheDocument();
+  });
+
   it("says so, with a way back, when the repository is not in the account", async () => {
     route({
       "GET /api/repositories/repo-1": () => apiError(404, "repo_not_found", "not found"),

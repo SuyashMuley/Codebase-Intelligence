@@ -20,6 +20,7 @@ dependencies = [
     "tree-sitter-typescript>=0.23.2",
     "tree-sitter-go>=0.25.0",
     "langgraph>=1.2.22",
+    "prometheus-client>=0.26.0",
 ]
 
 [dependency-groups]
@@ -27,6 +28,8 @@ dev = [
     "pytest>=8.3",
     "ruff>=0.8",
     "mypy>=1.13",
+    "pip-audit>=2.10.1",
+    "bandit>=1.9.4",
 ]
 
 [tool.uv]
@@ -54,3 +57,12 @@ exclude = ["alembic/versions"]
 [[tool.mypy.overrides]]
 module = ["pgvector.*"]
 ignore_missing_imports = true
+
+[tool.bandit]
+# Static security checks on the application code (CI: `bandit -r app -c pyproject.toml`).
+# B101 (assert) is skipped on purpose: asserts here only narrow types for mypy (checked in strict
+# mode) and none guards a security decision; those are explicit `raise`s.
+skips = ["B101"]
+
+[tool.ruff.lint.per-file-ignores]
+"loadtest/*" = ["E501"]  # long SQL and shell strings in the measurement scripts

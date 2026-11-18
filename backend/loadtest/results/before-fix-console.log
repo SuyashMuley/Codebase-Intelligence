@@ -1,0 +1,12 @@
+default-pool-3+2 vus=  1 rps=   49.1 p50=    9.8ms p95=   100.6ms err=    0% api_cpu= 35.3% db_conn=4
+default-pool-3+2 vus=  5 rps=  123.3 p50=   32.5ms p95=   103.1ms err=    0% api_cpu= 91.0% db_conn=7
+default-pool-3+2 vus= 10 rps=  122.3 p50=   72.2ms p95=   171.9ms err=    0% api_cpu= 93.9% db_conn=8
+default-pool-3+2 vus= 25 rps=  116.1 p50=  198.5ms p95=   379.9ms err=    0% api_cpu= 92.0% db_conn=6
+default-pool-3+2 vus= 50 rps=    1.7 p50=30093.7ms p95= 30225.9ms err=78.43% api_cpu=  2.7% db_conn=6
+default-pool-3+2 vus=100 rps=    0.8 p50=30088.8ms p95= 30118.6ms err=97.56% api_cpu=  1.0% db_conn=6
+large-pool-10+10 vus=  1 rps=   51.4 p50=   16.2ms p95=    59.6ms err=    0% api_cpu= 39.9% db_conn=6
+large-pool-10+10 vus=  5 rps=  123.5 p50=   35.2ms p95=   106.1ms err=    0% api_cpu= 90.0% db_conn=8
+large-pool-10+10 vus= 10 rps=  125.4 p50=   69.9ms p95=   181.9ms err=    0% api_cpu=108.3% db_conn=13
+large-pool-10+10 vus= 25 rps=  118.1 p50=  173.0ms p95=   491.0ms err=    0% api_cpu=110.6% db_conn=21
+large-pool-10+10 vus= 50 rps=  114.4 p50=  405.7ms p95=   743.9ms err=    0% api_cpu=109.5% db_conn=21
+large-pool-10+10 vus=100 rps=    3.4 p50=30326.2ms p95= 30614.8ms err= 38.1% api_cpu=  8.2% db_conn=21

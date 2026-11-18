@@ -30,6 +30,12 @@ export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
                 className="h-7 w-7 rounded-full border border-zinc-700"
               />
             ) : null}
+            <Link
+              href="/settings/providers"
+              className="whitespace-nowrap rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-emerald-400"
+            >
+              Providers
+            </Link>
             <span className="hidden text-sm text-zinc-300 sm:inline">{me.login}</span>
             <Button
               variant="ghost"

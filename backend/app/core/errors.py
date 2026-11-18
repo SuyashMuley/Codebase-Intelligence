@@ -47,6 +47,32 @@ class RepoNotFound(AppError):
     code = "repo_not_found"
 
 
+class RepoAccessLost(AppError):
+    """GitHub no longer shows this private repository to its owner."""
+
+    status_code = 403
+    code = "repo_access_lost"
+
+
+class ProvidersRequired(AppError):
+    """A private repository may only use providers its owner supplied."""
+
+    status_code = 409
+    code = "providers_required"
+
+
+class InvalidProviderConfig(AppError):
+    status_code = 422
+    code = "invalid_provider"
+
+
+class ProviderAddressRefused(AppError):
+    """A provider address failed the SSRF guard (not https, not allowlisted, or internal)."""
+
+    status_code = 502
+    code = "provider_address_refused"
+
+
 class NotReady(AppError):
     status_code = 503
     code = "not_ready"

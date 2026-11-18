@@ -1,25 +1,25 @@
 """Search an indexed snapshot: keyword, vector, or both fused by rank."""
 
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 
 from app.api.deps import (
     DbSession,
     OwnedRepo,
+    Providers,
     csrf_guard,
-    get_embedder,
     ip_backstop,
     user_general_limit,
     user_search_limit,
 )
-from app.providers.embeddings.base import Embedder
+from app.core.dbrelease import ReleasingRouter
 from app.schemas.repository import ErrorEnvelope
 from app.schemas.search import SearchHitOut, SearchOut, SearchRequest
 from app.services.indexing import queries
 from app.services.retrieval.search import search
 
-router = APIRouter(
+router = ReleasingRouter(
     prefix="/api/repositories/{repository_id}",
     tags=["search"],
     dependencies=[
@@ -43,7 +43,7 @@ def search_code(
     body: SearchRequest,
     repo: OwnedRepo,
     db: DbSession,
-    embedder: Annotated[Embedder | None, Depends(get_embedder)],
+    providers: Providers,
 ) -> SearchOut:
     """Find the code chunks most relevant to a question.
 
@@ -52,6 +52,9 @@ def search_code(
     ready or the embedding service is down, the answer falls back to keyword search and
     `warnings` says so, rather than failing.
     """
+    # Keyword search sends nothing anywhere. Meaning search sends the question to an embedding
+    # provider: the platform's for a public repository, the owner's own for a private one.
+    embedder = None if body.mode == "keyword" else providers.embedder()
     snapshot = queries.resolve_snapshot(db, repo.id, body.snapshot)
     result = search(db, snapshot.id, body.query, body.mode, body.limit, embedder)
     return SearchOut(

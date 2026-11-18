@@ -15,7 +15,13 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.db.models import IndexJob, Repository, Snapshot
 from app.db.session import get_engine
-from app.services.github.client import ByteSource, CommitInfo, GitHubGateway, GithubRepoInfo
+from app.services.github.client import (
+    ByteSource,
+    CommitInfo,
+    GitHubGateway,
+    GithubRepoInfo,
+    RepoMeta,
+)
 from app.services.indexing import runner
 
 MAX_TICKS = 400
@@ -27,8 +33,16 @@ class _RealRepository:
     def __init__(self, inner: GitHubGateway, owner: str, name: str) -> None:
         self._inner, self._owner, self._name = inner, owner, name
 
-    def resolve_commit(self, owner: str, name: str, ref: str | None = None) -> CommitInfo:
-        return self._inner.resolve_commit(self._owner, self._name, ref)
+    def get_repo(self, owner: str, name: str) -> RepoMeta:
+        return self._inner.get_repo(self._owner, self._name)
+
+    def resolve_commit(
+        self, owner: str, name: str, ref: str | None = None, allow_private: bool = False
+    ) -> CommitInfo:
+        return self._inner.resolve_commit(self._owner, self._name, ref, allow_private)
+
+    def list_private_repos(self, limit: int = 100) -> list[GithubRepoInfo]:
+        return self._inner.list_private_repos(limit)
 
     def list_public_repos(self, login: str, limit: int = 100) -> list[GithubRepoInfo]:
         return self._inner.list_public_repos(login, limit)
